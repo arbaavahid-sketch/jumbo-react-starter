@@ -6,6 +6,7 @@ import useSWR from "swr";
 
 import NewsTicker from "../../components/NewsTicker";
 import DealsExecTable from "../../components/DealsExecTable";
+import ARListTable from "../../components/ARListTable";
 import CeoMessage from "../../components/CeoMessage";
 import LiveClock from "../../components/LiveClock";
 import TgjuTickersBlock from "../../components/TgjuTickersBlock";
@@ -201,6 +202,10 @@ export default function GroupDashboard() {
   const latestMap = raw.latest || {};
   const dealsExecAll = ensureArray(raw.deals_exec);
   const ceoMessages = raw.ceo_messages || {};
+  const arAll = ensureArray(raw.ar_list);
+  const arForGroup = arAll.filter(
+    (r) => toStr(r.group).toUpperCase() === groupKey
+  );
 
   const group =
     groups.find((g) => toStr(g.id) === id) ||
@@ -320,18 +325,29 @@ export default function GroupDashboard() {
 
       {/* Members chart + DealsExec table */}
       <section style={{ marginTop: 32 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: 16,
-            alignItems: "flex-start",
-          }}
-        >
-          <MembersHistoryChart rows={members[groupKey] || []} />
-          <DealsExecTable rows={dealsForGroup} />
-        </div>
-      </section>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+      gap: 16,
+      alignItems: "flex-start",
+    }}
+  >
+    <div>
+      <h3>Team Members</h3>
+      <MembersHistoryChart rows={members[groupKey] || []} />
+    </div>
+
+    <div>
+      <h3>Deal Executions Report</h3>
+      <DealsExecTable rows={dealsForGroup} />
+
+      {/* 🔹 AR List زیر جدول دیل‌ها */}
+      <ARListTable rows={arForGroup} />
+    </div>
+  </div>
+</section>
+
     </main>
   );
 }
