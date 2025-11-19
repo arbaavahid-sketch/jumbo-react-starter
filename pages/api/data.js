@@ -225,6 +225,16 @@ function mapSheetsToPayload({
     ceo_messages[g] = row.message || "";
   }
 
+  // --------- AR LIST نرمالایز شده ---------
+  const ar_list = arListSheet
+    .map((r) => ({
+      group: String(r.group || "").toUpperCase(),
+      deal_no: r.deal_no || "",
+      payment_currency: r.payment_currency || r.payment_curren || "",
+      percentage: r.percentage || "",
+    }))
+    .filter((r) => r.group && r.deal_no);
+
   return {
     groups,
     weekly_reports,
@@ -233,7 +243,7 @@ function mapSheetsToPayload({
     deals_exec,
     ceo_messages,
     history,
-    ar_list: arListSheet, // 👈 اضافه شد
+    ar_list, // 👈 حالا تمیز و آماده استفاده
   };
 }
 
