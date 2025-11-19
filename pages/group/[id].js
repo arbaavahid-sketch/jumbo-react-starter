@@ -241,8 +241,8 @@ export default function GroupDashboard() {
   const dealsForGroup = dealsExecAll.filter(
     (d) => toStr(d.group).toUpperCase() === groupKey
   );
-  const ceoText = ceoMessages[groupKey] || "CEO message — editable by admin panel.";
-
+  const rawCeoText = (ceoMessages[groupKey] ?? "").trim();
+const hasCeoMessage = rawCeoText.length > 0;
   const salesBarData = ["A", "B", "C"].map((gKey) => {
     const row = latestMap[gKey] || {};
     return { label: `Group ${gKey}`, value: Number(row.total_sales_eur || 0) };
@@ -288,9 +288,14 @@ export default function GroupDashboard() {
       <TgjuTickersBlock />
 
       {/* CEO message */}
-      <section style={{ margin: "0 0 24px" }}>
-        <CeoMessage text={ceoText} />
-      </section>
+      {/* CEO message */}
+{hasCeoMessage && (
+  <section style={{ margin: "0 0 24px" }}>
+    <CeoMessage text={rawCeoText} />
+  </section>
+)}
+
+
 
       {/* KPI Cards + Sales Bars */}
       <section style={{ marginTop: 8 }}>
@@ -334,12 +339,12 @@ export default function GroupDashboard() {
     }}
   >
     <div>
-      <h3>Team Members</h3>
+  
       <MembersHistoryChart rows={members[groupKey] || []} />
     </div>
 
     <div>
-      <h3>Deal Executions Report</h3>
+  
       <DealsExecTable rows={dealsForGroup} />
 
       {/* 🔹 AR List زیر جدول دیل‌ها */}

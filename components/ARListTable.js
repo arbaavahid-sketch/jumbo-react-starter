@@ -1,7 +1,16 @@
 // components/ARListTable.js
 
-const fmtPercent = (n) =>
-  n == null ? "-" : `${Number(n).toFixed(0)}%`;
+const fmtPercent = (raw, n) => {
+  const rawStr = raw != null ? String(raw).trim() : "";
+
+  if (rawStr) return rawStr;
+  if (n == null || n === "") return "-";
+
+  const num = Number(n);
+  if (Number.isNaN(num)) return "-";
+
+  return `${num.toFixed(2)}%`;
+};
 
 export default function ARListTable({ rows = [] }) {
   const safeRows = Array.isArray(rows) ? rows : [];
@@ -33,7 +42,7 @@ export default function ARListTable({ rows = [] }) {
 
       <div
         style={{
-          maxHeight: 150, // حدوداً ۳–۴ ردیف دیده می‌شود
+          maxHeight: 150,
           overflowY: "auto",
         }}
       >
@@ -76,7 +85,7 @@ export default function ARListTable({ rows = [] }) {
                   fontWeight: 600,
                 }}
               >
-                Percentage
+                Progress
               </th>
             </tr>
           </thead>
@@ -95,42 +104,72 @@ export default function ARListTable({ rows = [] }) {
                 </td>
               </tr>
             ) : (
-              safeRows.map((row, idx) => (
-                <tr
-                  key={idx}
-                  style={{
-                    background:
-                      idx % 2 === 0 ? "#ffffff" : "#f9fafb",
-                  }}
-                >
-                  <td
+              safeRows.map((row, idx) => {
+                const percent = row.percentage || 0;
+                const text = fmtPercent(row.percentage_raw, percent);
+
+                return (
+                  <tr
+                    key={idx}
                     style={{
-                      padding: "8px 12px",
-                      color: "#111827",
+                      background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
                     }}
                   >
-                    {row.deal_no}
-                  </td>
-                  <td
-                    style={{
-                      padding: "8px 12px",
-                      color: "#111827",
-                    }}
-                  >
-                    {row.payment_currency}
-                  </td>
-                  <td
-                    style={{
-                      padding: "8px 12px",
-                      textAlign: "right",
-                      color: "#111827",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {fmtPercent(row.percentage)}
-                  </td>
-                </tr>
-              ))
+                    <td
+                      style={{
+                        padding: "8px 12px",
+                        color: "#111827",
+                      }}
+                    >
+                      {row.deal_no}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px 12px",
+                        color: "#111827",
+                      }}
+                    >
+                      {row.payment_currency}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px 12px",
+                        textAlign: "right",
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: "relative",
+                          background: "#e5e7eb",
+                          borderRadius: 6,
+                          height: 10,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${percent}%`,
+                            background: "#10b981",
+                            height: "100%",
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          marginTop: 4,
+                          fontWeight: 600,
+                          color: "#374151",
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {text}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
