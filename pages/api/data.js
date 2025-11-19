@@ -226,14 +226,22 @@ function mapSheetsToPayload({
   }
 
   // --------- AR LIST نرمالایز شده ---------
-  const ar_list = arListSheet
-    .map((r) => ({
-      group: String(r.group || "").toUpperCase(),
-      deal_no: r.deal_no || "",
-      payment_currency: r.payment_currency || r.payment_curren || "",
-      percentage: r.percentage || "",
-    }))
-    .filter((r) => r.group && r.deal_no);
+ // --------- AR LIST نرمالایز شده ---------
+const ar_list = arListSheet
+  .map((r) => ({
+    group: String(r.group || "").toUpperCase(),
+    deal_no: r.deal_no || "",
+    payment_currency: r.payment_currency || r.payment_curren || "",
+    percentage: parseFloat(
+      (r.percentage || "")
+        .toString()
+        .replace("%", "")
+        .replace("٪", "")
+        .trim()
+    ) || 0,
+  }))
+  .filter((r) => r.group && r.deal_no);
+
 
   return {
     groups,
