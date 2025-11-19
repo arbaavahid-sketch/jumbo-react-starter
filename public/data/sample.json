@@ -1,0 +1,51 @@
+{
+  "groups": [
+    { "id": 1, "name": "گروه 1" },
+    { "id": 2, "name": "گروه 2" },
+    { "id": 3, "name": "گروه 3" }
+  ],
+  "weekly_reports": [
+    { "week": 1, "group_id": 1, "deals": 10 },
+    { "week": 2, "group_id": 1, "deals": 11 },
+    { "week":  3, "group_id": 1, "deals":  9 },
+
+    { "week": 1, "group_id": 2, "deals":  8 },
+    { "week": 2, "group_id": 2, "deals": 12 },
+    { "week": 3, "group_id": 2, "deals": 13 },
+
+    { "week": 1, "group_id": 3, "deals":  9 },
+    { "week": 2, "group_id": 3, "deals": 11 },
+    { "week": 3, "group_id": 3, "deals": 10 },
+
+    {
+      "week": 4,
+      "group_id": 1,
+      "deals": 5,
+      "offers_sent": 4,
+      "metrics": {
+        "deals_in_sales_process": 1,
+        "total_deals_in_sales_process": 6,
+        "total_deals_in_supply_process": 6,
+        "total_deals_after_po": 18,
+        "group_target_yearly_eur": 2260000,
+        "big_project_eur": 1500000,
+        "weekly_sales_eur": 41846.38,
+        "total_sales_eur": 2745899.35,
+        "business_trips_month": 2,
+        "erp_in_process": 0,
+        "active_companies": 47,
+        "mega_deals": 5,
+        "technical_stage_deals": 5,
+        "important_lost_deals": 1,
+        "last_meeting_jalali": "1404/08/04"
+      },
+      "members": [
+        { "name": "Ali", "deals": 0, "offers_sent": 0 },
+        { "name": "Mahnaz", "deals": 3, "offers_sent": 0 },
+        { "name": "Taheri", "deals": 1, "offers_sent": 2 },
+        { "name": "VIDA", "deals": 0, "offers_sent": 0 },
+        { "name": "Mohammadreza", "deals": 1, "offers_sent": 2 }
+      ]
+    }
+  ]
+}
