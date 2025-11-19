@@ -7,6 +7,26 @@ const SOURCES = [
     url: "https://www.bbc.co.uk/persian/index.xml",
   },
   {
+    id: "mehr",
+    name: "Mehr News",
+    url: "https://www.mehrnews.com/rss",
+  },
+  {
+    id: "tasnim",
+    name: "Tasnim News",
+    url: "https://www.tasnimnews.com/fa/rss/feed/0/News",
+  },
+  {
+    id: "eghtesadonline",
+    name: "Eghtesad Online",
+    url: "https://www.eghtesadonline.com/rss",
+  },
+  {
+    id: "isna",
+    name: "ISNA",
+    url: "https://www.isna.ir/rss",
+  },
+  {
     id: "euronews-fa",
     name: "Euronews Farsi",
     url: "https://fa.euronews.com/rss?level=theme&name=news",

@@ -3,6 +3,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import useSWR from "swr";
+import NewsTickerEn from "../../components/NewsTickerEn";
 
 import NewsTicker from "../../components/NewsTicker";
 import DealsExecTable from "../../components/DealsExecTable";
@@ -281,19 +282,20 @@ const hasCeoMessage = rawCeoText.length > 0;
         </div>
       </div>
 
-      {/* 🔹 نوار خبر زیر هدر */}
-      <NewsTicker />
+     <section>
+  <div style={{ marginBottom: 20 }}>
+    <NewsTicker />
+  </div>
 
-      {/* TGJU tickers */}
-      <TgjuTickersBlock />
+  <div style={{ marginBottom: 20 }}>
+    <TgjuTickersBlock />
+  </div>
 
-      {/* CEO message */}
-      {/* CEO message */}
-{hasCeoMessage && (
-  <section style={{ margin: "0 0 24px" }}>
-    <CeoMessage text={rawCeoText} />
-  </section>
-)}
+  <div style={{ marginBottom: 32 }}>
+    <NewsTickerEn />
+  </div>
+</section>
+
 
 
 
