@@ -67,7 +67,7 @@ export default function NewsTickerEn() {
   .ticker-content {
     display: inline-block;
     padding-left: 100%;
-    animation: ticker-en 900s linear infinite;
+    animation: ticker-en 950s linear infinite;
     white-space: nowrap;
     direction: ltr;
     text-align: left;

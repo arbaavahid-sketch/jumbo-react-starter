@@ -120,19 +120,32 @@ function mapSheetsToPayload({
     }));
   }
 
-  // members
+    // members  ✅ فقط آخرین رکورد هر نفر در هر گروه
   const members = {};
+
   for (const m of membersSheet) {
     const g = String(m.group || m.Group || "").toUpperCase();
     if (!g) continue;
-    if (!members[g]) members[g] = [];
 
-    members[g].push({
-      name: m.member || "",
-      deals: Number(m.deals || 0),
-      offers_sent: Number(m.offers_sent || 0),
-    });
+    const name = (m.member || m.name || "").trim();
+    if (!name) continue;
+
+    if (!members[g]) members[g] = {};
+
+    // هر بار که برای یک نفر در یک گروه ردیف جدید می‌آید،
+    // اینجا روی قبلی overwrite می‌شود و فقط آخرین مقدار می‌ماند
+    members[g][name] = {
+      name,
+      deals: Number(m.deals || m.Deals || 0),
+      offers_sent: Number(m.offers_sent || m.Offers_sent || 0),
+    };
   }
+
+  // تبدیل map به آرایه برای هر گروه
+  Object.keys(members).forEach((g) => {
+    members[g] = Object.values(members[g]);
+  });
+
 
   // latest
   const latest = {};
