@@ -5,24 +5,34 @@ const AUTH_COOKIE = "dashboard_auth";
 export function middleware(req) {
   const { pathname, search } = req.nextUrl;
 
-  // مسیرهای آزاد
-  const publicPaths = ["/login", "/api/login", "/favicon.ico"];
+  const isPublicPath =
+    pathname === "/login" ||
+    pathname === "/api/login" ||
+    pathname === "/favicon.ico" ||
 
-  if (
-    publicPaths.includes(pathname) ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api/tgju")
-  ) {
+    // --- مسیرهای لینک عمومی ---
+    pathname.startsWith("/share/") ||
+
+    // --- APIهای لازم برای داشبورد آزاد ---
+    pathname.startsWith("/api/data") ||
+    pathname.startsWith("/api/tgju") ||
+    pathname.startsWith("/api/news") ||        // همین خط همه‌ی news و news-en را پوشش می‌دهد
+    pathname.startsWith("/api/rates") ||
+    pathname.startsWith("/api/technical") ||
+    pathname.startsWith("/api/ceo-message") ||
+
+    pathname.startsWith("/_next");
+
+  if (isPublicPath) {
     return NextResponse.next();
   }
 
-  // چک کوکی
+  // --- مسیرهای محافظت‌شده ---
   const auth = req.cookies.get(AUTH_COOKIE)?.value;
   if (auth === "ok") {
     return NextResponse.next();
   }
 
-  // ری‌دایرکت به لاگین
   const loginUrl = new URL("/login", req.url);
   loginUrl.searchParams.set("next", pathname + search);
   return NextResponse.redirect(loginUrl);
