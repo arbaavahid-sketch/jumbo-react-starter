@@ -1,37 +1,52 @@
-import { parse } from "rss-to-json";
-
-const SOURCES = [
-  {
-    id: "bloomberg",
-    name: "Bloomberg",
-    url: "https://news.google.com/rss/search?q=bloomberg&hl=en-US&gl=US&ceid=US:en",
-  },
-];
-
+// pages/api/news-en.js
 export default async function handler(req, res) {
   try {
-    const results = await Promise.all(
-      SOURCES.map(async (src) => {
-        try {
-          const feed = await parse(src.url);
-          return (feed.items || []).map((item) => ({
-            title: item.title,
-            link: item.link,
-            date: item.published || item.created || null,
-            source: src.name,
-          }));
-        } catch (e) {
-          console.error("RSS error for", src.id, e);
-          return [];
-        }
-      })
+    const { NEWSAPI_KEY } = process.env;
+
+    if (!NEWSAPI_KEY) {
+      return res
+        .status(500)
+        .json({ items: [], error: "NEWSAPI_KEY is missing" });
+    }
+
+    // 🔹 کوئری اقتصادی از چند منبع معتبر
+    const url =
+      "https://newsapi.org/v2/everything" +
+      "?language=en" +
+      "&pageSize=30" +
+      "&sortBy=publishedAt" +
+      "&domains=bloomberg.com,ft.com,wsj.com,reuters.com" +
+      "&q=markets OR stocks OR oil OR inflation OR \"central bank\"";
+
+    const r = await fetch(url, {
+      headers: {
+        "X-Api-Key": NEWSAPI_KEY,
+      },
+    });
+
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("NewsAPI error:", r.status, text);
+      return res
+        .status(500)
+        .json({ items: [], error: "newsapi_http_" + r.status });
+    }
+
+    const json = await r.json();
+
+    const items =
+      (json.articles || []).map((a) => ({
+        title: a.title,
+        link: a.url,
+        date: a.publishedAt || null,
+        source: a.source?.name || "News",
+      })) || [];
+
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=300, stale-while-revalidate=600"
     );
 
-    let items = results.flat();
-    items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-    items = items.slice(0, 30);
-
-    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
     res.status(200).json({ items });
   } catch (err) {
     console.error("NEWS-EN API ERROR", err);
