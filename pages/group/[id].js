@@ -23,6 +23,7 @@ import {
   FiAward,
   FiCalendar,
   FiNavigation,
+  FiLink, // 👈 برای لینک MOM
 } from "react-icons/fi";
 
 // ---------- Helpers ----------
@@ -92,7 +93,7 @@ function DeltaBadge({ pct, dir, inf }) {
 }
 
 // ---------- StatCard Component ----------
-function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
+function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon }) {
   return (
     <div
       style={{
@@ -116,16 +117,6 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
           "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)";
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          background:
-            "radial-gradient(circle at top right, rgba(37,99,235,0.18), transparent 55%)",
-          opacity: 0.9,
-        }}
-      />
       <div
         style={{
           position: "relative",
@@ -154,7 +145,9 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
             {delta ? <DeltaBadge {...delta} /> : null}
           </div>
         </div>
-        {Icon && (
+
+        {/* اگر actionIcon نداشتیم، آیکون معمولی KPI */}
+        {Icon && !actionIcon && (
           <div
             style={{
               width: 32,
@@ -171,6 +164,9 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
             <Icon size={16} />
           </div>
         )}
+
+        {/* اگر actionIcon پاس داده شد (مثل لینک MOM) */}
+        {actionIcon}
       </div>
     </div>
   );
@@ -225,6 +221,26 @@ export default function GroupDashboard() {
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
 
+  // 👇 momLink: اول از latest.mom، اگر خالی بود از آخرین ردیف weekly که mom دارد
+  let momLink = toStr(latest.mom || "").trim();
+  if (!momLink) {
+    const rowsWithMom = weekly
+      .filter(
+        (r) =>
+          toStr(r.group).toUpperCase() === groupKey &&
+          toStr(r.mom || "").trim() !== ""
+      )
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(a.date || 0) - new Date(b.date || 0) ||
+          String(a.week).localeCompare(String(b.week))
+      );
+    if (rowsWithMom.length) {
+      momLink = toStr(rowsWithMom[rowsWithMom.length - 1].mom || "").trim();
+    }
+  }
+
   const deltas = {
     weekly_sales_eur: pctDelta(curr?.weekly_sales_eur, prev?.weekly_sales_eur),
     offers_sent: pctDelta(curr?.offers_sent, prev?.offers_sent),
@@ -243,7 +259,7 @@ export default function GroupDashboard() {
     (d) => toStr(d.group).toUpperCase() === groupKey
   );
   const rawCeoText = (ceoMessages[groupKey] ?? "").trim();
-const hasCeoMessage = rawCeoText.length > 0;
+  const hasCeoMessage = rawCeoText.length > 0;
   const salesBarData = ["A", "B", "C"].map((gKey) => {
     const row = latestMap[gKey] || {};
     return { label: `Group ${gKey}`, value: Number(row.total_sales_eur || 0) };
@@ -270,34 +286,51 @@ const hasCeoMessage = rawCeoText.length > 0;
         }}
       >
         <h1 style={{ margin: 0 }}>{pageTitle}</h1>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: 6,
+          }}
+        >
           <img
             src="/company-logo.svg"
             alt="company logo"
-            style={{ width: 160, height: 80, objectFit: "contain", display: "block" }}
+            style={{
+              width: 160,
+              height: 80,
+              objectFit: "contain",
+              display: "block",
+            }}
           />
-          <div style={{ fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#4b5563" }}>
+          <div
+            style={{
+              fontSize: 12,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#4b5563",
+            }}
+          >
             <LiveClock />
           </div>
         </div>
       </div>
 
-     <section>
-  <div style={{ marginBottom: 20 }}>
-    <NewsTicker />
-  </div>
+      {/* News Section */}
+      <section>
+        <div style={{ marginBottom: 20 }}>
+          <NewsTicker />
+        </div>
 
-  <div style={{ marginBottom: 20 }}>
-    <TgjuTickersBlock />
-  </div>
+        <div style={{ marginBottom: 20 }}>
+          <TgjuTickersBlock />
+        </div>
 
-  <div style={{ marginBottom: 32 }}>
-    <NewsTickerEn />
-  </div>
-</section>
-
-
-
+        <div style={{ marginBottom: 32 }}>
+          <NewsTickerEn />
+        </div>
+      </section>
 
       {/* KPI Cards + Sales Bars */}
       <section style={{ marginTop: 8 }}>
@@ -311,15 +344,112 @@ const hasCeoMessage = rawCeoText.length > 0;
         >
           {/* KPI Cards */}
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 18 }}>
-              <StatCard label="Total Sales (2025)" value={fmtEUR(latest?.total_sales_eur)} delta={deltas.total_sales_eur} Icon={FiTrendingUp} accent="#0ea5e9" />
-              <StatCard label="Offers Sent" value={latest?.offers_sent ?? 0} delta={deltas.offers_sent} Icon={FiSend} accent="#6366f1" />
-              <StatCard label="Total Deals in Sales process" value={curr?.in_sales_process ?? 0} delta={deltas.in_sales_process} Icon={FiShoppingBag} accent="#f97316" />
-              <StatCard label="Deals in Supply process" value={curr?.in_supply ?? 0} delta={deltas.in_supply} Icon={FiTruck} accent="#22c55e" />
-              <StatCard label="Deals in Technical process" value={curr?.in_technical ?? 0} delta={deltas.in_technical} Icon={FiActivity} accent="#ec4899" />
-              <StatCard label="Mega Projects" value={latest?.mega_deals ?? 0} delta={deltas.mega_deals} Icon={FiAward} accent="#eab308" />
-              <StatCard label="Last Group Meeting" value={latest?.last_meeting || "-"} Icon={FiCalendar} accent="#3b82f6" />
-              <StatCard label="Weekly Trips" value={latest?.weekly_trips ?? 0} delta={deltas.weekly_trips} Icon={FiNavigation} accent="#0d9488" />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+                gap: 18,
+              }}
+            >
+              <StatCard
+                label="Total Sales (2025)"
+                value={fmtEUR(latest?.total_sales_eur)}
+                delta={deltas.total_sales_eur}
+                Icon={FiTrendingUp}
+                accent="#0ea5e9"
+              />
+              <StatCard
+                label="Offers Sent"
+                value={latest?.offers_sent ?? 0}
+                delta={deltas.offers_sent}
+                Icon={FiSend}
+                accent="#6366f1"
+              />
+              <StatCard
+                label="Total Deals in Sales process"
+                value={curr?.in_sales_process ?? 0}
+                delta={deltas.in_sales_process}
+                Icon={FiShoppingBag}
+                accent="#f97316"
+              />
+              <StatCard
+                label="Deals in Supply process"
+                value={curr?.in_supply ?? 0}
+                delta={deltas.in_supply}
+                Icon={FiTruck}
+                accent="#22c55e"
+              />
+              <StatCard
+                label="Deals in Technical process"
+                value={curr?.in_technical ?? 0}
+                delta={deltas.in_technical}
+                Icon={FiActivity}
+                accent="#ec4899"
+              />
+              <StatCard
+                label="Mega Projects"
+                value={latest?.mega_deals ?? 0}
+                delta={deltas.mega_deals}
+                Icon={FiAward}
+                accent="#eab308"
+              />
+
+              {/* 👇 کارت Last Group Meeting با آیکون لینک جلسات */}
+              <StatCard
+                label="Last Group Meeting"
+                value={latest?.last_meeting || "-"}
+                accent="#3b82f6"
+                actionIcon={
+                  momLink ? (
+                    <a
+                      href={momLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="مشاهده لینک جلسه (MOM)"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(59,130,246,0.12)",
+                        color: "#3b82f6",
+                        boxShadow:
+                          "0 0 0 1px rgba(148,163,184,0.35)",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <FiLink size={16} />
+                    </a>
+                  ) : (
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(15,23,42,0.06)",
+                        color: "#3b82f6",
+                        boxShadow:
+                          "0 0 0 1px rgba(148,163,184,0.35)",
+                      }}
+                    >
+                      <FiCalendar size={16} />
+                    </div>
+                  )
+                }
+              />
+
+              <StatCard
+                label="Weekly Trips"
+                value={latest?.weekly_trips ?? 0}
+                delta={deltas.weekly_trips}
+                Icon={FiNavigation}
+                accent="#0d9488"
+              />
             </div>
           </div>
 
@@ -330,31 +460,26 @@ const hasCeoMessage = rawCeoText.length > 0;
         </div>
       </section>
 
-      {/* Members chart + DealsExec table */}
+      {/* Members chart + DealsExec table + AR List */}
       <section style={{ marginTop: 32 }}>
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-      gap: 16,
-      alignItems: "flex-start",
-    }}
-  >
-    <div>
-  
-      <MembersHistoryChart rows={members[groupKey] || []} />
-    </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: 16,
+            alignItems: "flex-start",
+          }}
+        >
+          <div>
+            <MembersHistoryChart rows={members[groupKey] || []} />
+          </div>
 
-    <div>
-  
-      <DealsExecTable rows={dealsForGroup} />
-
-      {/* 🔹 AR List زیر جدول دیل‌ها */}
-      <ARListTable rows={arForGroup} />
-    </div>
-  </div>
-</section>
-
+          <div>
+            <DealsExecTable rows={dealsForGroup} />
+            <ARListTable rows={arForGroup} />
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

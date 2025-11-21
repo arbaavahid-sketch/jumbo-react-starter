@@ -100,6 +100,9 @@ function mapSheetsToPayload({
         in_supply: inSupply,
 
         total_deals: offers + inSales,
+
+        // 👇 mom را هم از همان شیت می‌خوانیم
+        mom: r.mom || "",
       };
     })
     .filter((x) => x.group);
@@ -120,7 +123,7 @@ function mapSheetsToPayload({
     }));
   }
 
-    // members  ✅ فقط آخرین رکورد هر نفر در هر گروه
+  // members  ✅ فقط آخرین رکورد هر نفر در هر گروه
   const members = {};
 
   for (const m of membersSheet) {
@@ -132,8 +135,6 @@ function mapSheetsToPayload({
 
     if (!members[g]) members[g] = {};
 
-    // هر بار که برای یک نفر در یک گروه ردیف جدید می‌آید،
-    // اینجا روی قبلی overwrite می‌شود و فقط آخرین مقدار می‌ماند
     members[g][name] = {
       name,
       deals: Number(m.deals || m.Deals || 0),
@@ -141,13 +142,11 @@ function mapSheetsToPayload({
     };
   }
 
-  // تبدیل map به آرایه برای هر گروه
   Object.keys(members).forEach((g) => {
     members[g] = Object.values(members[g]);
   });
 
-
-  // latest
+  // latest  ✅ اینجا mom را هم اضافه می‌کنیم
   const latest = {};
   if (latestSheet.length) {
     for (const l of latestSheet) {
@@ -164,10 +163,11 @@ function mapSheetsToPayload({
         total_deals: Number(l.total_deals || 0),
         last_meeting: l.last_meeting || "",
         weekly_trips: Number(l.weekly_trips || 0),
+        mom: l.mom || "", // 👈 اگر ستون mom در latest باشد
       };
     }
   } else {
-    // fallback: compute from weekly
+    // fallback: compute from weekly (که mom را هم داریم)
     const byG = {};
     for (const row of weekly_reports) {
       if (!byG[row.group]) byG[row.group] = [];
@@ -188,6 +188,7 @@ function mapSheetsToPayload({
         total_deals: last.total_deals || 0,
         last_meeting: last.last_meeting || "",
         weekly_trips: last.weekly_trips || 0,
+        mom: last.mom || "", // 👈 mom از آخرین weekly
       };
     }
   }
@@ -239,22 +240,21 @@ function mapSheetsToPayload({
   }
 
   // --------- AR LIST نرمالایز شده ---------
- // --------- AR LIST نرمالایز شده ---------
-const ar_list = arListSheet
-  .map((r) => ({
-    group: String(r.group || "").toUpperCase(),
-    deal_no: r.deal_no || "",
-    payment_currency: r.payment_currency || r.payment_curren || "",
-    percentage: parseFloat(
-      (r.percentage || "")
-        .toString()
-        .replace("%", "")
-        .replace("٪", "")
-        .trim()
-    ) || 0,
-  }))
-  .filter((r) => r.group && r.deal_no);
-
+  const ar_list = arListSheet
+    .map((r) => ({
+      group: String(r.group || "").toUpperCase(),
+      deal_no: r.deal_no || "",
+      payment_currency: r.payment_currency || r.payment_curren || "",
+      percentage:
+        parseFloat(
+          (r.percentage || "")
+            .toString()
+            .replace("%", "")
+            .replace("٪", "")
+            .trim()
+        ) || 0,
+    }))
+    .filter((r) => r.group && r.deal_no);
 
   return {
     groups,
@@ -264,7 +264,7 @@ const ar_list = arListSheet
     deals_exec,
     ceo_messages,
     history,
-    ar_list, // 👈 حالا تمیز و آماده استفاده
+    ar_list,
   };
 }
 
