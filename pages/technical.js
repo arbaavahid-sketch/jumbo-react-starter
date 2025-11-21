@@ -196,6 +196,22 @@ export default function TechnicalDashboard() {
 
     const installedCount = installedRows.length;
 
+    // 👇 محاسبه درصد نصب موفق: installed / (installed + waiting)
+    const waitingCount = Number(
+      t.waiting_installation != null
+        ? t.waiting_installation
+        : waitingRows.length
+    );
+    const totalInstall = installedCount + (waitingCount || 0);
+    const installSuccessPct =
+      totalInstall > 0 ? (installedCount / totalInstall) * 100 : 0;
+
+    // ساخت شیء delta برای کارت Installed deals
+    const installedDelta =
+      totalInstall > 0
+        ? { pct: installSuccessPct, dir: 1, inf: false }
+        : null;
+
     // داده‌ی نمودار: Deals این هفته + Total deals برای هر نفر
     const dealsChartData = [
       {
@@ -270,10 +286,12 @@ export default function TechnicalDashboard() {
             delta={deltas.waiting}
           />
 
+          {/* 👇 این کارت حالا درصد موفقیت نصب را هم زیر عدد نشان می‌دهد */}
           <TechCard
             icon={<FiCheckCircle />}
-            label="Installed deals"
+            label="Installed Deals at 2025"
             value={installedCount}
+            delta={installedDelta}
           />
 
           <TechCard
@@ -295,7 +313,12 @@ export default function TechnicalDashboard() {
           />
 
           {/* کارت MOM link */}
-          <TechCard icon={<FiLink />} label="MOM link" value="Open" link={t.mom_link} />
+          <TechCard
+            icon={<FiLink />}
+            label="MOM link"
+            value="Open"
+            link={t.mom_link}
+          />
         </div>
 
         {/* سه بخش پایین: Installed + Waiting + Chart */}
@@ -308,7 +331,7 @@ export default function TechnicalDashboard() {
             alignItems: "flex-start",
           }}
         >
-          {/* Installed deals */}
+          {/* Installed Deals at 2025 */}
           <div>
             <div
               style={{

@@ -13,6 +13,9 @@ export default function NewsTickerEn() {
   });
 
   const items = data?.items || [];
+
+  // اگه دوست داری تا لود شه، خود نوار رو نشون بده:
+  // if (!data && !error) فقط عنوان رو نشون بده
   if (error || isLoading || items.length === 0) return null;
 
   const line = items.map((n) => `[${n.source}] ${n.title}`).join("   •   ");
@@ -29,59 +32,58 @@ export default function NewsTickerEn() {
       }}
     >
       <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    color: "#e5e7eb",
-    fontSize: 13,
-    paddingInline: 14,
-    whiteSpace: "nowrap",
-    direction: "ltr",
-    textAlign: "left",
-  }}
->
-  {/* ⬅️ ابتدا عنوان خبری بیاد سمت چپ */}
-  <span
-    style={{
-      fontSize: 11,
-      fontWeight: 700,
-      letterSpacing: "0.12em",
-      textTransform: "uppercase",
-      color: "#34d399",
-      flexShrink: 0,
-    }}
-  >
-    BLOOMBERG NEWS
-  </span>
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          color: "#e5e7eb",
+          fontSize: 13,
+          paddingInline: 14,
+          whiteSpace: "nowrap",
+          direction: "ltr",
+          textAlign: "left",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#34d399",
+            flexShrink: 0,
+          }}
+        >
+          BLOOMBERG NEWS
+        </span>
 
-  {/* اسکرول اخبار */}
-  <div className="ticker-wrapper" style={{ flex: 1 }}>
-    <div className="ticker-content">{line} • {line}</div>
-  </div>
-</div>
+        <div className="ticker-wrapper" style={{ flex: 1 }}>
+          <div className="ticker-content">
+            {line} • {line}
+          </div>
+        </div>
+      </div>
+
       <style jsx>{`
-  .ticker-wrapper {
-    overflow: hidden;
-  }
-  .ticker-content {
-    display: inline-block;
-    padding-left: 100%;
-    animation: ticker-en 950s linear infinite;
-    white-space: nowrap;
-    direction: ltr;
-    text-align: left;
-  }
+        .ticker-wrapper {
+          overflow: hidden;
+        }
 
-  @keyframes ticker-en {
-    0% {
-      transform: translateX(100%);
-    }
-    100% {
-      transform: translateX(-100%);
-    }
-  }
-`}</style>
+        .ticker-content {
+          display: inline-block;
+          white-space: nowrap;
+          animation: ticker-en 300s linear infinite;
+        }
+
+        @keyframes ticker-en {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </div>
   );
 }

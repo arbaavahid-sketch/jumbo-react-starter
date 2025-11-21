@@ -25,3 +25,83 @@
     grid-template-columns: 1fr;
   }
 }
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --ring: #e2e8f0;
+}
+
+* { box-sizing: border-box; }
+html, body, #__next { height: 100%; }
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  direction: ltr; /* مهم: LTR */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--ring);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 6px 24px rgba(2, 6, 23, .05);
+}
+
+.h1 { font-size: 28px; font-weight: 700; margin: 0 0 16px; }
+.kpi { font-size: 28px; font-weight: 800; }
+.kpi-label { color: var(--muted); letter-spacing: .02em; text-transform: uppercase; font-size: 12px; }
+.table { width: 100%; border-collapse: collapse; margin-top: 24px; background: var(--card); border: 1px solid var(--ring); border-radius: 12px; overflow: hidden; }
+.table th, .table td { padding: 14px 16px; border-bottom: 1px solid var(--ring); text-align: left; }
+.badge { background:#eef2ff; color:#3730a3; padding:4px 8px; border-radius: 999px; font-size:12px; }
+.nav { display:flex; gap: 12px; margin: 16px 0 24px; }
+.btn { background:#111827; color:#fff; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; }
+
+/* --- جدید: گرید داشبورد (KPI + ستون راست) --- */
+.group-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* گرید کارت‌های KPI */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+/* تبلت / موبایل: ستون‌ها زیر هم */
+@media (max-width: 900px) {
+  .group-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* موبایل کوچک: KPIها هم تک‌ستونی */
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+}

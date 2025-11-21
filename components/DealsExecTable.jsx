@@ -1,6 +1,11 @@
 // components/DealsExecTable.js
 
 export default function DealsExecTable({ rows = [] }) {
+  // 🔥 مرتب‌سازی از مبلغ زیاد → کم (اینجا اضافه شد)
+  const sortedRows = [...rows].sort(
+    (a, b) => Number(b.amount_eur || 0) - Number(a.amount_eur || 0)
+  );
+
   return (
     <div
       style={{
@@ -25,10 +30,9 @@ export default function DealsExecTable({ rows = [] }) {
         Deal Executions Report
       </div>
 
-      {/* این ظرف ارتفاع ثابت دارد و بقیه‌اش اسکرول می‌شود */}
       <div
         style={{
-          maxHeight: 140,       // تقریباً ارتفاع ۳ ردیف + هدر جدول
+          maxHeight: 140,
           overflowY: "auto",
         }}
       >
@@ -54,7 +58,9 @@ export default function DealsExecTable({ rows = [] }) {
               <th style={{ padding: "8px 12px", textAlign: "left" }}>
                 Responsible
               </th>
-              <th style={{ padding: "8px 12px", textAlign: "left" }}>Status</th>
+              <th style={{ padding: "8px 12px", textAlign: "left" }}>
+                Status
+              </th>
               <th style={{ padding: "8px 12px", textAlign: "right" }}>
                 Amount (€)
               </th>
@@ -62,7 +68,7 @@ export default function DealsExecTable({ rows = [] }) {
           </thead>
 
           <tbody>
-            {rows.length === 0 ? (
+            {sortedRows.length === 0 ? (
               <tr>
                 <td
                   colSpan={4}
@@ -76,7 +82,7 @@ export default function DealsExecTable({ rows = [] }) {
                 </td>
               </tr>
             ) : (
-              rows.map((d, idx) => (
+              sortedRows.map((d, idx) => (
                 <tr
                   key={idx}
                   style={{

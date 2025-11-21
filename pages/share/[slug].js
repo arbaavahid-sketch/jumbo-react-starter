@@ -23,6 +23,7 @@ import {
   FiAward,
   FiCalendar,
   FiNavigation,
+  FiLink, // 👈 برای لینک MOM
 } from "react-icons/fi";
 
 // ---------- getServerSideProps: گرفتن slug از URL ----------
@@ -43,7 +44,6 @@ export async function getServerSideProps(context) {
     },
   };
 }
-
 
 // ---------- Helpers ----------
 const fetcher = async (url) => {
@@ -112,7 +112,7 @@ function DeltaBadge({ pct, dir, inf }) {
 }
 
 // ---------- StatCard Component ----------
-function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
+function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon }) {
   return (
     <div
       style={{
@@ -174,7 +174,9 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
             {delta ? <DeltaBadge {...delta} /> : null}
           </div>
         </div>
-        {Icon && (
+
+        {/* اگر actionIcon نداشتیم، آیکون معمولی KPI */}
+        {Icon && !actionIcon && (
           <div
             style={{
               width: 32,
@@ -191,6 +193,9 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
             <Icon size={16} />
           </div>
         )}
+
+        {/* اگر اکشن آیکون (مثلاً لینک MOM) پاس داده شده */}
+        {actionIcon}
       </div>
     </div>
   );
@@ -198,9 +203,6 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
 
 // ---------- PublicGroupDashboard Component ----------
 export default function PublicGroupDashboard({ slug, groupKey }) {
-  // دیگه لازم نیست از slug حدس بزنیم، مستقیم groupKey رو داریم
-
-
   const { data: raw, error, isLoading } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
@@ -225,7 +227,7 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
     (r) => toStr(r.group).toUpperCase() === groupKey
   );
 
-  // اینجا بر خلاف /group/[id] فقط براساس key گروه را پیدا می‌کنیم
+  // فقط براساس key گروه را پیدا می‌کنیم
   const group =
     groups.find(
       (g) => toStr(g.key || g.code || g.slug).toUpperCase() === groupKey
@@ -240,6 +242,26 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
 
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
+
+  // 👇 momLink: اول از latest.mom، اگر خالی بود از آخرین ردیف weekly با mom
+  let momLink = toStr(latest.mom || "").trim();
+  if (!momLink) {
+    const rowsWithMom = weekly
+      .filter(
+        (r) =>
+          toStr(r.group).toUpperCase() === groupKey &&
+          toStr(r.mom || "").trim() !== ""
+      )
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(a.date || 0) - new Date(b.date || 0) ||
+          String(a.week).localeCompare(String(b.week))
+      );
+    if (rowsWithMom.length) {
+      momLink = toStr(rowsWithMom[rowsWithMom.length - 1].mom || "").trim();
+    }
+  }
 
   const deltas = {
     weekly_sales_eur: pctDelta(curr?.weekly_sales_eur, prev?.weekly_sales_eur),
@@ -267,7 +289,6 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
   const rawCeoText = (ceoMessages[groupKey] ?? "").trim();
   const hasCeoMessage = rawCeoText.length > 0;
 
-  // به جای ["A","B","C"]، داینامیک از groups می‌سازیم
   const salesBarData = groups.map((g) => {
     const k = String(g.key || g.code || g.slug || "").toUpperCase();
     const row = latestMap[k] || {};
@@ -345,23 +366,12 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
 
       {/* KPI Cards + Sales Bars */}
       <section style={{ marginTop: 8 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0,2fr) minmax(0,1.4fr)",
-            gap: 20,
-            alignItems: "stretch",
-          }}
-        >
-          {/* KPI Cards */}
-          <div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
-                gap: 18,
-              }}
-            >
+  {/* به‌جای استایل inline از کلاس group-grid استفاده می‌کنیم */}
+  <div className="group-grid">
+    {/* KPI Cards */}
+    <div>
+      {/* اینجا هم از کلاس kpi-grid استفاده می‌کنیم */}
+      <div className="kpi-grid">
               <StatCard
                 label="Total Sales (2025)"
                 value={fmtEUR(latest?.total_sales_eur)}
@@ -404,12 +414,54 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
                 Icon={FiAward}
                 accent="#eab308"
               />
+
+              {/* 👇 کارت Last Group Meeting با آیکون لینک MOM */}
               <StatCard
                 label="Last Group Meeting"
                 value={latest?.last_meeting || "-"}
-                Icon={FiCalendar}
                 accent="#3b82f6"
+                actionIcon={
+                  momLink ? (
+                    <a
+                      href={momLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="مشاهده لینک جلسه (MOM)"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(59,130,246,0.12)",
+                        color: "#3b82f6",
+                        boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <FiLink size={16} />
+                    </a>
+                  ) : (
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(15,23,42,0.06)",
+                        color: "#3b82f6",
+                        boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                      }}
+                    >
+                      <FiCalendar size={16} />
+                    </div>
+                  )
+                }
               />
+
               <StatCard
                 label="Weekly Trips"
                 value={latest?.weekly_trips ?? 0}
@@ -448,7 +500,6 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
         </div>
       </section>
 
-      {/* (اختیاری) اگر خواستی پیام CEO هم اضافه کن */}
       {hasCeoMessage && (
         <section style={{ marginTop: 32 }}>
           <CeoMessage text={rawCeoText} />

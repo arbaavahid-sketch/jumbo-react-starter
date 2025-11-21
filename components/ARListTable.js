@@ -85,7 +85,7 @@ export default function ARListTable({ rows = [] }) {
                   fontWeight: 600,
                 }}
               >
-                Progress
+                % of Total 
               </th>
             </tr>
           </thead>
