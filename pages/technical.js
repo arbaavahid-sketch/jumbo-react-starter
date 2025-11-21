@@ -1,4 +1,14 @@
 // pages/technical.js — داشبورد Technical
+import {
+  ResponsiveContainer,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Bar,
+} from "recharts";
 
 import Head from "next/head";
 import useSWR from "swr";
@@ -15,6 +25,7 @@ import {
   FiBriefcase,
   FiCamera,
   FiBookOpen,
+  FiLink,
 } from "react-icons/fi";
 
 const fetcher = async (url) => {
@@ -40,6 +51,7 @@ export default function TechnicalDashboard() {
     "Technical CEO message — editable in CEO Messages panel.";
 
   let body;
+
   if (error) {
     body = (
       <div
@@ -81,6 +93,52 @@ export default function TechnicalDashboard() {
   } else {
     const t = data.latest;
 
+    // ردیف‌های Waiting for installation از متن چندخطی شیت
+    const waitingRows = (t.waiting_installation_ids || "")
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [idPart, ...rest] = line.split("-");
+        return {
+          id: idPart.trim(),
+          description: rest.join("-").trim(),
+        };
+      });
+
+    const waitingCount = waitingRows.length;
+    // داده‌ی نمودار: Deals این هفته + Total deals برای هر نفر
+    const dealsChartData = [
+      {
+        name: "Aref",
+        weeklyDeals: t.aref_deals_done ?? 0,
+        totalDeals: t.aref ?? 0,
+      },
+      {
+        name: "Golsanam",
+        weeklyDeals: t.golsanam_deals_done ?? 0,
+        totalDeals: t.golsanam ?? 0,
+      },
+      {
+        name: "Vahid",
+        weeklyDeals: t.vahid_deals_done ?? 0,
+        totalDeals: t.vahid ?? 0,
+      },
+      {
+        name: "Pouria",
+        weeklyDeals: t.pouria_deals_done ?? 0,
+        totalDeals: t.pouria ?? 0,
+      },
+    ];
+
+    // جدول تعداد دیل‌های انجام‌شده توسط هر نفر
+    const dealsByPerson = [
+      { name: "Aref", value: t.aref_deals_done ?? 0 },
+      { name: "Golsanam", value: t.golsanam_deals_done ?? 0 },
+      { name: "Vahid", value: t.vahid_deals_done ?? 0 },
+      { name: "Pouria", value: t.pouria_deals_done ?? 0 },
+    ];
+
     body = (
       <div
         style={{
@@ -100,66 +158,246 @@ export default function TechnicalDashboard() {
           }}
         >
           <TechCard icon={<FiCalendar />} label="Date of Publish" value={t.date} />
+
           <TechCard
             icon={<FiPlusCircle />}
             label="Deals added this week"
             value={t.deals_added_technical}
           />
+
           <TechCard
             icon={<FiCheckCircle />}
             label="Total deals done"
             value={t.total_deals_week}
           />
+
           <TechCard
             icon={<FiList />}
-            label="Remaining queue"
+            label="Technical Approval Queue"
             value={t.remaining_queue}
           />
+
           <TechCard
             icon={<FiTruck />}
-            label="Waiting installation"
-            value={t.waiting_installation}
+            label="Waiting for Installation"
+            value={waitingCount}
           />
+
           <TechCard
             icon={<FiBriefcase />}
             label="Promotion trips / meetings"
             value={t.promotion_trips}
           />
+
           <TechCard
             icon={<FiCamera />}
             label="Demo shows (quarterly)"
             value={t.demo_shows}
           />
+
           <TechCard
             icon={<FiBookOpen />}
             label="Internal trainings (quarterly)"
             value={t.internal_trainings}
           />
+
+          {/* کارت MOM link */}
+          <TechCard
+            icon={<FiLink />}
+            label="MOM link"
+            value="Open"
+            link={t.mom_link}
+          />
         </div>
 
-        {/* تیم فنی */}
+        {/* دو جدول کنار هم: Waiting + Deals per person */}
         <div
           style={{
-            marginTop: 28,
+            marginTop: 32,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-            gap: 12,
+            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+            gap: 24,
+            alignItems: "flex-start",
           }}
         >
-          <TechSmall label="Aref" value={t.aref} />
-          <TechSmall label="Golsanam" value={t.golsanam} />
-          <TechSmall label="Vahid" value={t.vahid} />
-          <TechSmall label="Pouria" value={t.pouria} />
-        </div>
+          {/* جدول Waiting installation */}
+          <div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "#4b5563",
+                marginBottom: 8,
+              }}
+            >
+              Waiting installation details
+            </div>
 
-        {/* لینک‌ها */}
-        <div style={{ marginTop: 24, fontSize: 13 }}>
-          <b>Waiting installation IDs:</b> {t.waiting_installation_ids || "-"}
-          <br />
-          <b>MOM link: </b>
-          <a href={t.mom_link} target="_blank" style={{ color: "#2563eb" }}>
-            Open
-          </a>
+            {waitingRows.length === 0 ? (
+              <div
+                style={{
+                  fontSize: 13,
+                  padding: 10,
+                  borderRadius: 12,
+                  background: "rgba(148,163,184,0.1)",
+                  color: "#6b7280",
+                }}
+              >
+                No items in installation queue.
+              </div>
+            ) : (
+              <div
+                style={{
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  boxShadow:
+                    "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
+                  background: "#ffffff",
+                }}
+              >
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: 13,
+                  }}
+                >
+                  <thead>
+                    <tr
+                      style={{
+                        background:
+                          "linear-gradient(135deg,rgba(59,130,246,0.15),rgba(56,189,248,0.12))",
+                      }}
+                    >
+                      <th
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                          width: 80,
+                        }}
+                      >
+                        ID
+                      </th>
+                      <th
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        }}
+                      >
+                        Center / Subject
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {waitingRows.map((row, idx) => (
+                      <tr
+                        key={idx}
+                        style={{
+                          background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                        }}
+                      >
+                        <td
+                          style={{
+                            padding: "7px 12px",
+                            borderBottom:
+                              idx === waitingRows.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            whiteSpace: "nowrap",
+                            color: "#111827",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {row.id}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 12px",
+                            borderBottom:
+                              idx === waitingRows.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            color: "#374151",
+                          }}
+                        >
+                          {row.description}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* جدول تعداد دیل‌های انجام‌شده برای هر نفر */}
+                    {/* نمودار Deals per person */}
+          <div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "#4b5563",
+                marginBottom: 8,
+              }}
+            >
+              Deals done during the week by person
+            </div>
+
+            <div
+              style={{
+                borderRadius: 16,
+                overflow: "hidden",
+                boxShadow:
+                  "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
+                background: "#ffffff",
+                height: 260,
+                padding: "12px 16px",
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+  <BarChart
+    data={dealsChartData}
+    margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
+  >
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="name" />
+    <YAxis allowDecimals={false} />
+    <Tooltip />
+    <Legend />
+
+    {/* Deals این هفته — آبی اصلی داشبورد */}
+    <Bar
+      dataKey="weeklyDeals"
+      name="Deals this week"
+      fill="#2563eb"
+      radius={[6, 6, 0, 0]}
+      barSize={38}
+    />
+
+    {/* Total deals — نارنجی تم داشبورد */}
+    <Bar
+      dataKey="totalDeals"
+      name="Total deals"
+      fill="#f97316"
+      radius={[6, 6, 0, 0]}
+      barSize={38}
+    />
+  </BarChart>
+</ResponsiveContainer>
+
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -171,7 +409,7 @@ export default function TechnicalDashboard() {
         <title>Technical Dashboard</title>
       </Head>
 
-      {/* هدر بدون آیکون */}
+      {/* هدر بالا */}
       <div
         style={{
           display: "flex",
@@ -211,7 +449,9 @@ export default function TechnicalDashboard() {
 
 /* --- کارت‌ها با آیکون --- */
 
-function TechCard({ icon, label, value }) {
+function TechCard({ icon, label, value, link }) {
+  const hasLink = !!link;
+
   return (
     <div
       style={{
@@ -237,25 +477,23 @@ function TechCard({ icon, label, value }) {
       </div>
 
       <div style={{ fontSize: 22, fontWeight: 700, marginTop: 10 }}>
-        {value ?? 0}
+        {hasLink ? (
+          link ? (
+            <a
+              href={link}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "#2563eb", textDecoration: "underline", fontSize: 16 }}
+            >
+              {value || "Open"}
+            </a>
+          ) : (
+            "-" // اگر لینک خالی بود
+          )
+        ) : (
+          value ?? 0
+        )}
       </div>
-    </div>
-  );
-}
-
-function TechSmall({ label, value }) {
-  return (
-    <div
-      style={{
-        padding: 12,
-        borderRadius: 12,
-        background: "#ffffff",
-        boxShadow:
-          "0 8px 20px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.15)",
-      }}
-    >
-      <div style={{ fontSize: 12, color: "#6b7280" }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 600 }}>{value ?? 0}</div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // pages/api/technical.js
-// خواندن داشبورد فنی از Google Sheets (شیت technical_dashboard)
+// خواندن داشبورد فنی از Google Sheets (technical_dashboard CSV)
 
 function parseCSV(text) {
   const rows = [];
@@ -31,14 +31,13 @@ function parseCSV(text) {
         rows.push(row);
         row = [];
         field = "";
-      } else if (c === "\r") {
-        // ignore
-      } else {
+      } else if (c !== "\r") {
         field += c;
       }
     }
     i++;
   }
+
   if (field.length || row.length) {
     row.push(field);
     rows.push(row);
@@ -58,43 +57,51 @@ function parseCSV(text) {
 export default async function handler(req, res) {
   try {
     const SHEET_URL = process.env.SHEET_TECH_CSV_URL;
-    if (!SHEET_URL) {
-      throw new Error("SHEET_TECH_CSV_URL is not set in env");
-    }
+    if (!SHEET_URL) throw new Error("SHEET_TECH_CSV_URL is not set in env");
 
     const r = await fetch(SHEET_URL);
-    if (!r.ok) {
-      throw new Error(`CSV HTTP ${r.status}`);
-    }
+    if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
+
     const text = await r.text();
     const csvRows = parseCSV(text);
 
-    // مپ بر اساس هدرهای شیت technical_dashboard
     const rows = csvRows.map((r) => ({
       date: r.date || r.Date || "",
-      deals_added_technical: Number(
-        r.deals_added_technical || r.deals_added_technical || 0
-      ),
+
+      deals_added_technical: Number(r.deals_added_technical || 0),
       total_deals_week: Number(r.total_deals_week || 0),
+
       aref: Number(r.aref || 0),
       golsanam: Number(r.golsanam || 0),
       vahid: Number(r.vahid || 0),
       pouria: Number(r.pouria || 0),
-      remaining_queue: Number(r.remaining_queue || 0),
+
+      // 🔹 تعداد دیل‌های انجام‌شده توسط هر نفر
+      aref_deals_done: Number(r["aref deals done during the week"] || 0),
+      golsanam_deals_done: Number(
+        r["golsanam deals done during the week"] || 0
+      ),
+      vahid_deals_done: Number(r["vahid deals done during the week"] || 0),
+      pouria_deals_done: Number(r["pouria deals done during the week"] || 0),
+
+      // Technical queue
+      Technical_Approval_Queue: Number(r["Technical Approval Queue"] || 0),
+      remaining_queue: Number(r["Technical Approval Queue"] || 0),
+
+      // Waiting for installation
       waiting_installation: Number(r.waiting_installation || 0),
-      waiting_installation_ids:
-        (r.waiting_installation_ids || "").trim(),
+      waiting_installation_ids: (r.waiting_installation_ids || "").trim(),
+
+      // سایر KPIها
       promotion_trips: Number(r.promotion_trips || 0),
       demo_shows: Number(r.demo_shows || 0),
       internal_trainings: Number(r.internal_trainings || 0),
+
       mom_link: (r.mom_link || "").trim(),
     }));
 
-    // مرتب‌سازی بر اساس تاریخ و انتخاب آخرین ردیف
-    rows.sort(
-      (a, b) =>
-        new Date(a.date || 0) - new Date(b.date || 0)
-    );
+    // مرتب‌سازی براساس تاریخ
+    rows.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
     const latest = rows.length ? rows[rows.length - 1] : null;
 
     res.status(200).json({ rows, latest });
