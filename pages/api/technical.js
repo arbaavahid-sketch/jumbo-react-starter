@@ -66,39 +66,37 @@ export default async function handler(req, res) {
     const csvRows = parseCSV(text);
 
     const rows = csvRows.map((r) => ({
-      date: r.date || r.Date || "",
+  date: r.date || r.Date || "",
 
-      deals_added_technical: Number(r.deals_added_technical || 0),
-      total_deals_week: Number(r.total_deals_week || 0),
+  deals_added_technical: Number(r.deals_added_technical || 0),
+  total_deals_week: Number(r.total_deals_week || 0),
 
-      aref: Number(r.aref || 0),
-      golsanam: Number(r.golsanam || 0),
-      vahid: Number(r.vahid || 0),
-      pouria: Number(r.pouria || 0),
+  aref: Number(r.aref || 0),
+  golsanam: Number(r.golsanam || 0),
+  vahid: Number(r.vahid || 0),
+  pouria: Number(r.pouria || 0),
 
-      // 🔹 تعداد دیل‌های انجام‌شده توسط هر نفر
-      aref_deals_done: Number(r["aref deals done during the week"] || 0),
-      golsanam_deals_done: Number(
-        r["golsanam deals done during the week"] || 0
-      ),
-      vahid_deals_done: Number(r["vahid deals done during the week"] || 0),
-      pouria_deals_done: Number(r["pouria deals done during the week"] || 0),
+  aref_deals_done: Number(r["aref deals done during the week"] || 0),
+  golsanam_deals_done: Number(r["golsanam deals done during the week"] || 0),
+  vahid_deals_done: Number(r["vahid deals done during the week"] || 0),
+  pouria_deals_done: Number(r["pouria deals done during the week"] || 0),
 
-      // Technical queue
-      Technical_Approval_Queue: Number(r["Technical Approval Queue"] || 0),
-      remaining_queue: Number(r["Technical Approval Queue"] || 0),
+  Technical_Approval_Queue: Number(r["Technical Approval Queue"] || 0),
+  remaining_queue: Number(r["Technical Approval Queue"] || 0),
 
-      // Waiting for installation
-      waiting_installation: Number(r.waiting_installation || 0),
-      waiting_installation_ids: (r.waiting_installation_ids || "").trim(),
+  waiting_installation: Number(r.waiting_installation || 0),
+  waiting_installation_ids: (r.waiting_installation_ids || "").trim(),
 
-      // سایر KPIها
-      promotion_trips: Number(r.promotion_trips || 0),
-      demo_shows: Number(r.demo_shows || 0),
-      internal_trainings: Number(r.internal_trainings || 0),
+  // 🔹 ستون جدید: لیست نصب‌شده‌ها
+  installed_ids: (r.installed_ids_2025 || r.installed_ids || "").trim(),
 
-      mom_link: (r.mom_link || "").trim(),
-    }));
+  promotion_trips: Number(r.promotion_trips || 0),
+  demo_shows: Number(r.demo_shows || 0),
+  internal_trainings: Number(r.internal_trainings || 0),
+
+  mom_link: (r.mom_link || "").trim(),
+}));
+
 
     // مرتب‌سازی براساس تاریخ
     rows.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
