@@ -334,23 +334,12 @@ export default function GroupDashboard() {
 
       {/* KPI Cards + Sales Bars */}
       <section style={{ marginTop: 8 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0,2fr) minmax(0,1.4fr)",
-            gap: 20,
-            alignItems: "stretch",
-          }}
-        >
+        <div className="group-grid">
+
           {/* KPI Cards */}
           <div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
-                gap: 18,
-              }}
-            >
+           <div className="kpi-grid">
+
               <StatCard
                 label="Total Sales (2025)"
                 value={fmtEUR(latest?.total_sales_eur)}
