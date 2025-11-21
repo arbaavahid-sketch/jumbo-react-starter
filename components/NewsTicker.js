@@ -77,10 +77,10 @@ export default function NewsTicker() {
 
         @keyframes ticker-move {
           0% {
-            transform: translateX(0);
+            transform: translateX(-50%);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translateX(0);
           }
         }
       `}</style>
