@@ -30,6 +30,20 @@ const ensureArray = (v) => (Array.isArray(v) ? v : []);
 
 const GROUP_COLORS = ["#2563eb", "#f97316", "#14b8a6"]; // رنگ برای Group A,B,C
 
+// helper برای تبدیل متن چند خطی تکنیکال به لیست
+const parseTechList = (text = "") =>
+  text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [idPart, ...rest] = line.split("-");
+      return {
+        id: idPart.trim(),
+        description: rest.join("-").trim(),
+      };
+    });
+
 export default function Admin() {
   const { data, error, isLoading } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
@@ -59,6 +73,21 @@ export default function Admin() {
 
   const latest = data.latest || {};
   const allDeals = ensureArray(data.deals_exec);
+
+  // 👇 AR list کامل
+  const arListAll = ensureArray(data.ar_list)
+    .slice()
+    .sort((a, b) => {
+      const ga = toStr(a.group).localeCompare(toStr(b.group));
+      if (ga !== 0) return ga;
+      return toStr(a.deal_no).localeCompare(toStr(b.deal_no));
+    });
+
+  // 👇 لیست نصب‌شده و در انتظار نصب از تکنیکال
+  const installedList = parseTechList(techLatest?.installed_ids || "");
+  const waitingInstallList = parseTechList(
+    techLatest?.waiting_installation_ids || ""
+  );
 
   // ---------- Total Deals و Total Sales هر گروه بر اساس آخرین هفته ----------
   const totalsByGroup = groups.map((g) => {
@@ -137,8 +166,7 @@ export default function Admin() {
               fontSize: 13,
               color: "#6b7280",
             }}
-          >
-          </p>
+          ></p>
 
           {/* دکمه CEO Messages زیر توضیحات */}
           <div style={{ marginTop: 14 }}>
@@ -399,25 +427,19 @@ export default function Admin() {
               }}
             >
               <div>
-                <div style={{ opacity: 0.8 }}>
-                  Deals added this week
-                </div>
+                <div style={{ opacity: 0.8 }}>Deals added this week</div>
                 <div style={{ fontWeight: 700 }}>
                   {techLatest?.deals_added_technical ?? 0}
                 </div>
               </div>
               <div>
-                <div style={{ opacity: 0.8 }}>
-                  Remaining in queue
-                </div>
+                <div style={{ opacity: 0.8 }}>Remaining in queue</div>
                 <div style={{ fontWeight: 700 }}>
                   {techLatest?.remaining_queue ?? 0}
                 </div>
               </div>
               <div>
-                <div style={{ opacity: 0.8 }}>
-                  Waiting for installation
-                </div>
+                <div style={{ opacity: 0.8 }}>Waiting for installation</div>
                 <div style={{ fontWeight: 700 }}>
                   {techLatest?.waiting_installation ?? 0}
                 </div>
@@ -447,8 +469,7 @@ export default function Admin() {
           {/* Pie Chart تعداد کل دیل‌ها */}
           <div
             style={{
-              background:
-                "radial-gradient(circle at top left,#eff6ff,#ffffff)",
+              background: "radial-gradient(circle at top left,#eff6ff,#ffffff)",
               borderRadius: 22,
               padding: 18,
               boxShadow:
@@ -470,7 +491,7 @@ export default function Admin() {
                   color: "#0f172a",
                 }}
               >
-                Total Deals 
+                Total Deals
               </div>
               <div
                 style={{
@@ -479,9 +500,7 @@ export default function Admin() {
                   letterSpacing: "0.08em",
                   color: "#6b7280",
                 }}
-              >
-                
-              </div>
+              ></div>
             </div>
 
             <div style={{ width: "100%", height: 260 }}>
@@ -521,8 +540,7 @@ export default function Admin() {
           {/* Pie Chart کل فروش یورو */}
           <div
             style={{
-              background:
-                "radial-gradient(circle at top left,#ecfeff,#ffffff)",
+              background: "radial-gradient(circle at top left,#ecfeff,#ffffff)",
               borderRadius: 22,
               padding: 18,
               boxShadow:
@@ -544,7 +562,7 @@ export default function Admin() {
                   color: "#0f172a",
                 }}
               >
-                Total Sales (€) 
+                Total Sales (€)
               </div>
               <div
                 style={{
@@ -553,9 +571,7 @@ export default function Admin() {
                   letterSpacing: "0.08em",
                   color: "#6b7280",
                 }}
-              >
-                
-              </div>
+              ></div>
             </div>
 
             <div style={{ width: "100%", height: 260 }}>
@@ -586,9 +602,7 @@ export default function Admin() {
                     iconType="circle"
                     iconSize={10}
                   />
-                  <Tooltip
-                    formatter={(value) => fmtEUR(value)}
-                  />
+                  <Tooltip formatter={(value) => fmtEUR(value)} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -596,10 +610,10 @@ export default function Admin() {
         </div>
       </section>
 
-      {/* ---------- Deal Executions Report برای همه گروه‌ها (بدون ستون Group) ---------- */}
+      {/* ---------- Deal Executions Report برای همه گروه‌ها ---------- */}
       <section style={{ marginTop: 32 }}>
         <h2 style={{ fontSize: 18, marginBottom: 12 }}>
-          Deal Executions Report 
+          Deal Executions Report
         </h2>
 
         <div
@@ -626,8 +640,7 @@ export default function Admin() {
             >
               <thead
                 style={{
-                  background:
-                    "linear-gradient(135deg, #0f172a, #111827)",
+                  background: "linear-gradient(135deg, #0f172a, #111827)",
                   color: "#e5e7eb",
                 }}
               >
@@ -736,6 +749,388 @@ export default function Admin() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- AR List کامل ---------- */}
+      <section style={{ marginTop: 32 }}>
+        <h2 style={{ fontSize: 18, marginBottom: 12 }}>AR List – All Deals</h2>
+
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 18,
+            boxShadow:
+              "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              maxHeight: 420,
+              overflow: "auto",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: 13,
+              }}
+            >
+              <thead
+                style={{
+                  background: "linear-gradient(135deg,#0f172a,#111827)",
+                  color: "#e5e7eb",
+                }}
+              >
+                <tr>
+                  <th
+                    style={{
+                      padding: "10px 12px",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      fontSize: 12,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Group
+                  </th>
+                  <th
+                    style={{
+                      padding: "10px 12px",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      fontSize: 12,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Deal No
+                  </th>
+                  <th
+                    style={{
+                      padding: "10px 12px",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      fontSize: 12,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Currency
+                  </th>
+                  <th
+                    style={{
+                      padding: "10px 12px",
+                      textAlign: "right",
+                      fontWeight: 600,
+                      fontSize: 12,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    % of Total AR
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {arListAll.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      style={{
+                        padding: 16,
+                        textAlign: "center",
+                        fontSize: 13,
+                        color: "#6b7280",
+                      }}
+                    >
+                      No AR records found.
+                    </td>
+                  </tr>
+                ) : (
+                  arListAll.map((r, idx) => (
+                    <tr
+                      key={`${r.group}-${r.deal_no}-${idx}`}
+                      style={{
+                        backgroundColor:
+                          idx % 2 === 0 ? "#f9fafb" : "#ffffff",
+                      }}
+                    >
+                      <td style={{ padding: "8px 12px", color: "#111827" }}>
+                        {r.group}
+                      </td>
+                      <td style={{ padding: "8px 12px", color: "#111827" }}>
+                        {r.deal_no}
+                      </td>
+                      <td style={{ padding: "8px 12px", color: "#374151" }}>
+                        {r.payment_currency || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "right",
+                          color: "#111827",
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {typeof r.percentage === "number"
+                          ? `${r.percentage.toFixed(1)}%`
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- لیست نصب‌شده‌ها و لیست در انتظار نصب (Technical) ---------- */}
+      <section style={{ marginTop: 32 }}>
+        <h2 style={{ fontSize: 18, marginBottom: 12 }}>
+          Technical – Installation Deals
+        </h2>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
+            gap: 18,
+          }}
+        >
+          {/* Installed deals */}
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 18,
+              boxShadow:
+                "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "10px 14px",
+                borderBottom: "1px solid #e5e7eb",
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "#16a34a",
+              }}
+            >
+              Installed Deals ({installedList.length})
+            </div>
+            <div
+              style={{
+                maxHeight: 320,
+                overflow: "auto",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                }}
+              >
+                <thead
+                  style={{
+                    background:
+                      "linear-gradient(135deg,rgba(16,185,129,0.12),rgba(56,189,248,0.10))",
+                    color: "#0f172a",
+                  }}
+                >
+                  <tr>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      ID
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      Center / Subject
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {installedList.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={2}
+                        style={{
+                          padding: 14,
+                          textAlign: "center",
+                          color: "#6b7280",
+                        }}
+                      >
+                        No installed deals recorded.
+                      </td>
+                    </tr>
+                  ) : (
+                    installedList.map((row, idx) => (
+                      <tr
+                        key={`inst-${idx}`}
+                        style={{
+                          backgroundColor:
+                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                        }}
+                      >
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            whiteSpace: "nowrap",
+                            color: "#111827",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {row.id}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            color: "#374151",
+                          }}
+                        >
+                          {row.description}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Waiting for installation */}
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 18,
+              boxShadow:
+                "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "10px 14px",
+                borderBottom: "1px solid #e5e7eb",
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "#2563eb",
+              }}
+            >
+              Waiting for Installation ({waitingInstallList.length})
+            </div>
+            <div
+              style={{
+                maxHeight: 320,
+                overflow: "auto",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                }}
+              >
+                <thead
+                  style={{
+                    background:
+                      "linear-gradient(135deg,rgba(59,130,246,0.15),rgba(56,189,248,0.12))",
+                    color: "#0f172a",
+                  }}
+                >
+                  <tr>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      ID
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      Center / Subject
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {waitingInstallList.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={2}
+                        style={{
+                          padding: 14,
+                          textAlign: "center",
+                          color: "#6b7280",
+                        }}
+                      >
+                        No items in installation queue.
+                      </td>
+                    </tr>
+                  ) : (
+                    waitingInstallList.map((row, idx) => (
+                      <tr
+                        key={`wait-${idx}`}
+                        style={{
+                          backgroundColor:
+                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                        }}
+                      >
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            whiteSpace: "nowrap",
+                            color: "#111827",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {row.id}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            color: "#374151",
+                          }}
+                        >
+                          {row.description}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
