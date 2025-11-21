@@ -1,4 +1,5 @@
 // pages/technical.js — داشبورد Technical
+
 import {
   ResponsiveContainer,
   BarChart,
@@ -33,6 +34,69 @@ const fetcher = async (url) => {
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 };
+
+// --- helpers برای درصد تغییرات ---
+
+function lastTwo(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { curr: null, prev: null };
+  }
+  const sorted = [...rows].sort(
+    (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
+  );
+  const n = sorted.length;
+  return {
+    prev: n >= 2 ? sorted[n - 2] : null,
+    curr: sorted[n - 1],
+  };
+}
+
+function pctDelta(curr, prev) {
+  if (curr == null || prev == null) return null;
+  const c = Number(curr) || 0;
+  const p = Number(prev) || 0;
+  if (p === 0) {
+    if (c === 0) return { pct: 0, dir: 0 };
+    // از صفر به عدد → 100٪+
+    return { pct: 100, dir: 1, inf: true };
+  }
+  const diff = ((c - p) / Math.abs(p)) * 100;
+  return {
+    pct: diff,
+    dir: diff === 0 ? 0 : diff > 0 ? 1 : -1,
+  };
+}
+
+// Badge کوچک زیر عدد کارت
+function DeltaBadge({ delta }) {
+  if (!delta) return null;
+  const { pct, dir, inf } = delta;
+
+  const arrow = dir > 0 ? "▲" : dir < 0 ? "▼" : "•";
+  const color = dir > 0 ? "#0a7f2e" : dir < 0 ? "#c92a2a" : "#6b7280";
+  const text =
+    dir === 0 ? "0.0%" : inf ? "100%+" : `${Math.abs(pct).toFixed(1)}%`;
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        fontSize: 11,
+        fontWeight: 600,
+        color,
+        background: "rgba(15,23,42,0.03)",
+        padding: "2px 8px",
+        borderRadius: 999,
+        marginTop: 6,
+      }}
+    >
+      <span aria-hidden>{arrow}</span>
+      <span>{text}</span>
+    </span>
+  );
+}
 
 export default function TechnicalDashboard() {
   const { data, error, isLoading } = useSWR("/api/technical", fetcher, {
@@ -93,6 +157,17 @@ export default function TechnicalDashboard() {
   } else {
     const t = data.latest;
 
+    // دو ردیف آخر برای درصد تغییرات
+    const { curr, prev } = lastTwo(data.rows);
+
+    const deltas = {
+      queue: pctDelta(curr?.remaining_queue, prev?.remaining_queue),
+      waiting: pctDelta(
+        curr?.waiting_installation,
+        prev?.waiting_installation
+      ),
+    };
+
     // ردیف‌های Waiting for installation از متن چندخطی شیت
     const waitingRows = (t.waiting_installation_ids || "")
       .split(/\r?\n/)
@@ -106,9 +181,7 @@ export default function TechnicalDashboard() {
         };
       });
 
-    const waitingCount = waitingRows.length;
-
-    // ردیف‌های Installed از متن چندخطی شیت
+    // ردیف‌های Installed از متن شیت
     const installedRows = (t.installed_ids || "")
       .split(/\r?\n/)
       .map((l) => l.trim())
@@ -157,7 +230,7 @@ export default function TechnicalDashboard() {
             "0 24px 60px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.35)",
         }}
       >
-        {/* کارت‌های KPI بالا */}
+        {/* کارت‌ها */}
         <div
           style={{
             display: "grid",
@@ -165,7 +238,11 @@ export default function TechnicalDashboard() {
             gap: 16,
           }}
         >
-          <TechCard icon={<FiCalendar />} label="Date of Publish" value={t.date} />
+          <TechCard
+            icon={<FiCalendar />}
+            label="Date of Publish"
+            value={t.date}
+          />
 
           <TechCard
             icon={<FiPlusCircle />}
@@ -183,12 +260,14 @@ export default function TechnicalDashboard() {
             icon={<FiList />}
             label="Technical Approval Queue"
             value={t.remaining_queue}
+            delta={deltas.queue}
           />
 
           <TechCard
             icon={<FiTruck />}
             label="Waiting for Installation"
-            value={waitingCount}
+            value={t.waiting_installation}
+            delta={deltas.waiting}
           />
 
           <TechCard
@@ -219,19 +298,18 @@ export default function TechnicalDashboard() {
           <TechCard icon={<FiLink />} label="MOM link" value="Open" link={t.mom_link} />
         </div>
 
-        {/* سه ستون هم‌تراز: Installed + Waiting + Chart */}
+        {/* سه بخش پایین: Installed + Waiting + Chart */}
         <div
           style={{
             marginTop: 32,
             display: "grid",
-            gridTemplateColumns:
-              "minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,1.4fr)",
+            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
             gap: 24,
-            alignItems: "stretch",
+            alignItems: "flex-start",
           }}
         >
-          {/* ستون ۱: Installed deals */}
-          <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          {/* Installed deals */}
+          <div>
             <div
               style={{
                 fontSize: 13,
@@ -253,7 +331,6 @@ export default function TechnicalDashboard() {
                   borderRadius: 12,
                   background: "rgba(148,163,184,0.1)",
                   color: "#6b7280",
-                  flex: 1,
                 }}
               >
                 No installed deals recorded yet.
@@ -266,95 +343,93 @@ export default function TechnicalDashboard() {
                   boxShadow:
                     "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
                   background: "#ffffff",
-                  flex: 1,
-                  minHeight: 220,
+                  maxHeight: 280,
+                  overflowY: "auto",
                 }}
               >
-                <div style={{ maxHeight: 260, overflowY: "auto" }}>
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      fontSize: 13,
-                    }}
-                  >
-                    <thead>
-                      <tr
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: 13,
+                  }}
+                >
+                  <thead>
+                    <tr
+                      style={{
+                        background:
+                          "linear-gradient(135deg,rgba(16,185,129,0.15),rgba(56,189,248,0.12))",
+                      }}
+                    >
+                      <th
                         style={{
-                          background:
-                            "linear-gradient(135deg,rgba(16,185,129,0.15),rgba(56,189,248,0.12))",
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                          width: 80,
                         }}
                       >
-                        <th
+                        ID
+                      </th>
+                      <th
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        }}
+                      >
+                        Center / Subject
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {installedRows.map((row, idx) => (
+                      <tr
+                        key={idx}
+                        style={{
+                          background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                        }}
+                      >
+                        <td
                           style={{
-                            padding: "8px 12px",
-                            textAlign: "left",
-                            fontWeight: 600,
-                            color: "#0f172a",
-                            borderBottom: "1px solid rgba(148,163,184,0.4)",
-                            width: 80,
+                            padding: "7px 12px",
+                            borderBottom:
+                              idx === installedRows.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            whiteSpace: "nowrap",
+                            color: "#111827",
+                            fontWeight: 500,
                           }}
                         >
-                          ID
-                        </th>
-                        <th
+                          {row.id}
+                        </td>
+                        <td
                           style={{
-                            padding: "8px 12px",
-                            textAlign: "left",
-                            fontWeight: 600,
-                            color: "#0f172a",
-                            borderBottom: "1px solid rgba(148,163,184,0.4)",
+                            padding: "7px 12px",
+                            borderBottom:
+                              idx === installedRows.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            color: "#374151",
                           }}
                         >
-                          Center / Subject
-                        </th>
+                          {row.description}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {installedRows.map((row, idx) => (
-                        <tr
-                          key={idx}
-                          style={{
-                            background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
-                          }}
-                        >
-                          <td
-                            style={{
-                              padding: "7px 12px",
-                              borderBottom:
-                                idx === installedRows.length - 1
-                                  ? "none"
-                                  : "1px solid rgba(226,232,240,0.9)",
-                              whiteSpace: "nowrap",
-                              color: "#111827",
-                              fontWeight: 500,
-                            }}
-                          >
-                            {row.id}
-                          </td>
-                          <td
-                            style={{
-                              padding: "7px 12px",
-                              borderBottom:
-                                idx === installedRows.length - 1
-                                  ? "none"
-                                  : "1px solid rgba(226,232,240,0.9)",
-                              color: "#374151",
-                            }}
-                          >
-                            {row.description}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
 
-          {/* ستون ۲: Waiting installation details */}
-          <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          {/* Waiting installation table */}
+          <div>
             <div
               style={{
                 fontSize: 13,
@@ -376,7 +451,6 @@ export default function TechnicalDashboard() {
                   borderRadius: 12,
                   background: "rgba(148,163,184,0.1)",
                   color: "#6b7280",
-                  flex: 1,
                 }}
               >
                 No items in installation queue.
@@ -389,8 +463,6 @@ export default function TechnicalDashboard() {
                   boxShadow:
                     "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
                   background: "#ffffff",
-                  flex: 1,
-                  minHeight: 220,
                 }}
               >
                 <table
@@ -474,8 +546,8 @@ export default function TechnicalDashboard() {
             )}
           </div>
 
-          {/* ستون ۳: نمودار Deals per person */}
-          <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          {/* Chart */}
+          <div>
             <div
               style={{
                 fontSize: 13,
@@ -496,8 +568,7 @@ export default function TechnicalDashboard() {
                 boxShadow:
                   "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
                 background: "#ffffff",
-                flex: 1,
-                minHeight: 220,
+                height: 260,
                 padding: "12px 16px",
               }}
             >
@@ -540,7 +611,7 @@ export default function TechnicalDashboard() {
         <title>Technical Dashboard</title>
       </Head>
 
-      {/* هدر بالا */}
+      {/* هدر */}
       <div
         style={{
           display: "flex",
@@ -579,7 +650,8 @@ export default function TechnicalDashboard() {
 }
 
 /* --- کارت‌ها با آیکون --- */
-function TechCard({ icon, label, value, link }) {
+
+function TechCard({ icon, label, value, link, delta }) {
   const hasLink = !!link;
 
   return (
@@ -606,27 +678,39 @@ function TechCard({ icon, label, value, link }) {
         </span>
       </div>
 
-      <div style={{ fontSize: 22, fontWeight: 700, marginTop: 10 }}>
-        {hasLink ? (
-          link ? (
-            <a
-              href={link}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                color: "#2563eb",
-                textDecoration: "underline",
-                fontSize: 16,
-              }}
-            >
-              {value || "Open"}
-            </a>
+      <div
+        style={{
+          marginTop: 10,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 2,
+        }}
+      >
+        <span style={{ fontSize: 22, fontWeight: 700 }}>
+          {hasLink ? (
+            link ? (
+              <a
+                href={link}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  color: "#2563eb",
+                  textDecoration: "underline",
+                  fontSize: 16,
+                }}
+              >
+                {value || "Open"}
+              </a>
+            ) : (
+              "-"
+            )
           ) : (
-            "-"
-          )
-        ) : (
-          value ?? 0
-        )}
+            value ?? 0
+          )}
+        </span>
+
+        {delta && !hasLink && <DeltaBadge delta={delta} />}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 // pages/api/technical.js
-// خواندن داشبورد فنی از Google Sheets (technical_dashboard CSV)
+// خواندن داشبورد فنی از Google Sheets (شیت technical_dashboard)
 
 function parseCSV(text) {
   const rows = [];
@@ -45,19 +45,24 @@ function parseCSV(text) {
   if (!rows.length) return [];
 
   const headers = rows[0].map((h) => h.trim());
-  return rows.slice(1).filter((r) => r.some(Boolean)).map((r) => {
-    const obj = {};
-    headers.forEach((h, idx) => {
-      obj[h] = r[idx];
+  return rows
+    .slice(1)
+    .filter((r) => r.some(Boolean))
+    .map((r) => {
+      const obj = {};
+      headers.forEach((h, idx) => {
+        obj[h] = r[idx];
+      });
+      return obj;
     });
-    return obj;
-  });
 }
 
 export default async function handler(req, res) {
   try {
     const SHEET_URL = process.env.SHEET_TECH_CSV_URL;
-    if (!SHEET_URL) throw new Error("SHEET_TECH_CSV_URL is not set in env");
+    if (!SHEET_URL) {
+      throw new Error("SHEET_TECH_CSV_URL is not set in env");
+    }
 
     const r = await fetch(SHEET_URL);
     if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
@@ -65,41 +70,94 @@ export default async function handler(req, res) {
     const text = await r.text();
     const csvRows = parseCSV(text);
 
-    const rows = csvRows.map((r) => ({
-  date: r.date || r.Date || "",
+    // یک helper کوچک برای تبدیل عدد
+    const num = (v) => {
+      if (v == null || v === "") return 0;
+      const n = Number(String(v).replace(/,/g, "."));
+      return isNaN(n) ? 0 : n;
+    };
 
-  deals_added_technical: Number(r.deals_added_technical || 0),
-  total_deals_week: Number(r.total_deals_week || 0),
+    // مپ کردن هر ردیف شیت به آبجکت تمیز
+    const rows = csvRows.map((r) => {
+      const obj = {
+        date: r.date || r.Date || "",
 
-  aref: Number(r.aref || 0),
-  golsanam: Number(r.golsanam || 0),
-  vahid: Number(r.vahid || 0),
-  pouria: Number(r.pouria || 0),
+        // آمار اصلی
+        deals_added_technical: num(r.deals_added_technical),
+        total_deals_week: num(r.total_deals_week),
 
-  aref_deals_done: Number(r["aref deals done during the week"] || 0),
-  golsanam_deals_done: Number(r["golsanam deals done during the week"] || 0),
-  vahid_deals_done: Number(r["vahid deals done during the week"] || 0),
-  pouria_deals_done: Number(r["pouria deals done during the week"] || 0),
+        aref: num(r.aref),
+        golsanam: num(r.golsanam),
+        vahid: num(r.vahid),
+        pouria: num(r.pouria),
 
-  Technical_Approval_Queue: Number(r["Technical Approval Queue"] || 0),
-  remaining_queue: Number(r["Technical Approval Queue"] || 0),
+        // تعداد دیل‌های انجام‌شده در هفته برای هر نفر
+        aref_deals_done: num(
+          r["aref deals done during the week"] ||
+            r.aref_deals_done ||
+            r["aref_deals_done"]
+        ),
+        golsanam_deals_done: num(
+          r["golsanam deals done during the week"] ||
+            r.golsanam_deals_done ||
+            r["golsanam_deals_done"]
+        ),
+        vahid_deals_done: num(
+          r["vahid deals done during the week"] ||
+            r.vahid_deals_done ||
+            r["vahid_deals_done"]
+        ),
+        pouria_deals_done: num(
+          r["pouria deals done during the week"] ||
+            r.pouria_deals_done ||
+            r["pouria_deals_done"]
+        ),
 
-  waiting_installation: Number(r.waiting_installation || 0),
-  waiting_installation_ids: (r.waiting_installation_ids || "").trim(),
+        // صف فنی و صف نصب
+        remaining_queue: num(
+          r["Technical Approval Queue"] ||
+            r.technical_queue ||
+            r.remaining_queue
+        ),
 
-  // 🔹 ستون جدید: لیست نصب‌شده‌ها
-  installed_ids: (r.installed_ids_2025 || r.installed_ids || "").trim(),
+        waiting_installation: num(
+          r["Waiting for Installation"] ||
+            r.waiting_installation ||
+            r["waiting_installation"]
+        ),
 
-  promotion_trips: Number(r.promotion_trips || 0),
-  demo_shows: Number(r.demo_shows || 0),
-  internal_trainings: Number(r.internal_trainings || 0),
+        waiting_installation_ids: (
+          r.waiting_installation_ids ||
+          r["waiting_installation_ids"] ||
+          r["waiting installation ids"] ||
+          ""
+        ).trim(),
 
-  mom_link: (r.mom_link || "").trim(),
-}));
+        promotion_trips: num(r.promotion_trips),
+        demo_shows: num(r.demo_shows),
+        internal_trainings: num(r.internal_trainings),
 
+        mom_link: (r.mom_link || "").trim(),
 
-    // مرتب‌سازی براساس تاریخ
-    rows.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+        // ✅ لیست دیل‌های نصب‌شده
+        // اینجا چند اسم احتمالی برای ستون در نظر گرفتیم
+        installed_ids: (
+          r.installed_ids ||
+          r["installed_ids_2025"] ||
+          r["installed deals"] ||
+          r["installed_deals_ids"] ||
+          r["Installed deals IDs"] ||
+          ""
+        ).trim(),
+      };
+
+      return obj;
+    });
+
+    // مرتب‌سازی براساس تاریخ و گرفتن آخرین ردیف
+    rows.sort(
+      (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
+    );
     const latest = rows.length ? rows[rows.length - 1] : null;
 
     res.status(200).json({ rows, latest });
