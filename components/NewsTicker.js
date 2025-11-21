@@ -9,12 +9,11 @@ const fetcher = async (url) => {
 export default function NewsTicker() {
   const { data, error, isLoading } = useSWR("/api/news", fetcher, {
     revalidateOnFocus: false,
-    refreshInterval: 5 * 60_000, // هر ۵ دقیقه آپدیت
+    refreshInterval: 5 * 60_000,
   });
 
   const items = data?.items || [];
 
-  // اگر چیزی نداریم، اصلاً چیزی نشون نده
   if (error || isLoading || items.length === 0) return null;
 
   const line = items
@@ -33,60 +32,58 @@ export default function NewsTicker() {
       }}
     >
       <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    color: "#e5e7eb",
-    fontSize: 13,
-    paddingInline: 14,
-    whiteSpace: "nowrap",
-    direction: "ltr", // مهم
-  }}
->
-  {/* ⬅️ ابتدا ticker بیاید */}
-  <div className="ticker-wrapper" style={{ flex: 1 }}>
-    <div className="ticker-content">
-      {line}{"   •   "}{line}
-    </div>
-  </div>
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          color: "#e5e7eb",
+          fontSize: 13,
+          paddingInline: 14,
+          whiteSpace: "nowrap",
+          direction: "ltr",
+        }}
+      >
+        {/* 🔽 ticker */}
+        <div className="ticker-wrapper" style={{ flex: 1 }}>
+          <div className="ticker-content">
+            {line} • {line}
+          </div>
+        </div>
 
-  {/* ⬅️ LIVE NEWS بیاید سمت راست */}
-  <span
-    style={{
-      fontSize: 11,
-      fontWeight: 700,
-      letterSpacing: "0.12em",
-      textTransform: "uppercase",
-      color: "#38bdf8",
-      flexShrink: 0,
-    }}
-  >
-    LIVE NEWS
-  </span>
-</div>
+        {/* 🔽 label */}
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#38bdf8",
+          }}
+        >
+          LIVE NEWS
+        </span>
+      </div>
 
-<style jsx>{`
-  .ticker-wrapper {
-    overflow: hidden;
-  }
-  .ticker-content {
-    display: inline-block;
-    padding-right: 100%;
-    animation: ticker-ltr 450s linear infinite;
-    white-space: nowrap;
-  }
+      <style jsx>{`
+        .ticker-wrapper {
+          overflow: hidden;
+        }
 
-  @keyframes ticker-ltr {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(0);
-    }
-  }
-`}</style>
+        .ticker-content {
+          display: inline-block;
+          white-space: nowrap;
+          animation: ticker-move 300s linear infinite;
+        }
 
+        @keyframes ticker-move {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </div>
   );
 }
