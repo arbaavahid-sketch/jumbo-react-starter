@@ -3,6 +3,7 @@
 import Head from "next/head";
 import useSWR from "swr";
 import { PUBLIC_SHARE_MAP } from "../../lib/publicShareMap";
+import EventSlideshow from "../../components/EventSlideshow";
 
 import NewsTickerEn from "../../components/NewsTickerEn";
 import NewsTicker from "../../components/NewsTicker";
@@ -506,6 +507,16 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
           <NewsTickerEn />
         </div>
       </section>
+      <EventSlideshow />
+return (
+  <>
+    <EventSlideshow />
+    <main className="container">
+      ... داشبورد ...
+    </main>
+  </>
+);
+
     </main>
   );
 }
