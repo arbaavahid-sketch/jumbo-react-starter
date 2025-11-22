@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const AUTH_COOKIE = "dashboard_auth";
 
-export function middleware(req) {
+export function proxy(req) {
   const { pathname, search } = req.nextUrl;
 
   const isPublicPath =
