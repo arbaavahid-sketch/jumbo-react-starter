@@ -182,38 +182,57 @@ export default function GroupDashboard() {
   const { isReady, query } = useRouter();
 
   // 🔴 حالت نمایش: "dashboard" یا "events"
-  const [mode, setMode] = useState("dashboard");
+    const [mode, setMode] = useState("dashboard");
+// 👇 اضافه کن کنار بقیه SWRها
+  const { data: eventsData } = useSWR("/api/events", fetcher, {
+    revalidateOnFocus: false,
+    refreshInterval: 5 * 60_000, // هر ۵ دقیقه یک‌بار چک کنه
+  });
 
-  // ⏱ زمان‌بندی سوییچ بین داشبورد و اسلایدشو
+  const eventFiles = ensureArray(eventsData?.files);
+  const hasEvents = eventFiles.length > 0;
+
   useEffect(() => {
-    // برای تست می‌تونی این‌جا رو موقتاً کوچیک‌تر کنی
-    const DASHBOARD_DURATION = 2 * 60 * 1000; // ۱ ساعت
-    const EVENTS_DURATION = 2 * 60 * 1000; // ۱۰ دقیقه
+    // ❗ اگر هیچ عکس/فیلمی نداریم، اصلاً سوییچ به events نکن
+    if (!hasEvents) return;
+
+    // الان برای تست ۲ دقیقه گذاشتیم
+    const DASHBOARD_DURATION = 45 * 60 * 1000; // بعداً می‌کنی 60 * 60 * 1000
+    const EVENTS_DURATION = 10 * 60 * 1000;    // بعداً می‌کنی 10 * 60 * 1000
 
     const timeout = setTimeout(() => {
       setMode((prev) => (prev === "dashboard" ? "events" : "dashboard"));
     }, mode === "dashboard" ? DASHBOARD_DURATION : EVENTS_DURATION);
 
     return () => clearTimeout(timeout);
-  }, [mode]);
+  }, [mode, hasEvents]);
 
-  if (!isReady) return <div style={{ padding: 16 }}>Loading…</div>;
 
   const id = String(query.id || "1");
   const groupKey = ({ 1: "A", 2: "B", 3: "C" }[id]) || "A";
 
-  const { data: raw, error, isLoading } = useSWR("/api/data", fetcher, {
+  // ✅ useSWR همیشه اجرا می‌شود، ولی وقتی isReady نیست، URL = null است
+  const {
+    data: raw,
+    error,
+    isLoading,
+  } = useSWR(isReady ? "/api/data" : null, fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
+  
+  // ⬅️ اینجا دیگه می‌تونیم لودینگ و ارور را هندل کنیم
+  if (!isReady || isLoading || !raw) {
+    return <div style={{ padding: 16 }}>Loading…</div>;
+  }
 
-  if (error)
+  if (error) {
     return (
       <div style={{ padding: 16, color: "#d44800" }}>
         Error loading data: {String(error.message || error)}
       </div>
     );
-  if (isLoading || !raw) return <div style={{ padding: 16 }}>Loading…</div>;
+  }
 
   const groups = ensureArray(raw.groups);
   const weekly = ensureArray(raw.weekly_reports);
@@ -288,14 +307,21 @@ export default function GroupDashboard() {
     return { label: `Group ${gKey}`, value: Number(row.total_sales_eur || 0) };
   });
 
-  // 🔄 حالت "events": فقط اسلایدشو را نشان بده
-  if (mode === "events") {
+    // 🔄 حالت "events": فقط وقتی رویداد داریم
+  if (mode === "events" && hasEvents) {
     return (
-      <main className="container" style={{ padding: 24 }}>
+      <main
+        className="container"
+        style={{ padding: 0, minHeight: "100vh", background: "#020617" }}
+      >
         <Head>
           <title>{pageTitle} – Events</title>
         </Head>
-        <EventSlideshow />
+
+        <EventSlideshow
+          files={eventFiles}                 // همون لیستی که بالا از /api/events گرفتی
+          onSkip={() => setMode("dashboard")} // برای دکمه Skip اگر گذاشتی
+        />
       </main>
     );
   }

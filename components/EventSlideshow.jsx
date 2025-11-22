@@ -1,160 +1,159 @@
 // components/EventSlideshow.js
 import { useEffect, useState } from "react";
 
-function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+export default function EventSlideshow({ files = [], onSkip }) {
+  const all = Array.isArray(files) ? files : [];
 
-export default function EventSlideshow() {
-  const [files, setFiles] = useState([]);
-  const [shuffled, setShuffled] = useState([]);
-  const [mode, setMode] = useState(null); // "video" یا "image"
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const videos = all.filter((src) => /\.mp4$|\.webm$/i.test(src));
+  const images = all.filter((src) => !/\.mp4$|\.webm$/i.test(src));
 
+  const hasEvents = all.length > 0;
+  const hasVideo = videos.length > 0;
+  const hasImages = images.length > 0;
+
+  // mode: "video" یا "images"
+  const [mode, setMode] = useState(() => (hasVideo ? "video" : "images"));
+  const [currentImage, setCurrentImage] = useState(0);
+
+  // وقتی لیست مدیا عوض شد، حالت رو ری‌ست کن
   useEffect(() => {
-    fetch("/api/events")
-      .then((r) => r.json())
-      .then((d) => {
-        const all = d.files || [];
-        const s = shuffle(all);
-        setFiles(all);
-        setShuffled(s);
+    if (!hasEvents) return;
+    setMode(hasVideo ? "video" : "images");
+    setCurrentImage(0);
+  }, [hasEvents, hasVideo]);
 
-        const videos = s.filter((src) => /\.mp4$|\.webm$/i.test(src));
-        const images = s.filter((src) => !/\.mp4$|\.webm$/i.test(src));
-
-        // 👇 انتخاب حالت نمایش به صورت تصادفی
-        if (videos.length && images.length) {
-          setMode(Math.random() < 0.5 ? "video" : "image");
-        } else if (videos.length) {
-          setMode("video");
-        } else {
-          setMode("image");
-        }
-
-        setCurrentIndex(0);
-      })
-      .catch((e) => {
-        console.error("EVENT SLIDESHOW ERROR", e);
-      });
-  }, []);
-
-  // اگر عکس داریم و حالت image است، هر ۸ ثانیه عکس بعدی
+  // اسلایدشو عکس‌ها – هر ۶ ثانیه
   useEffect(() => {
-    if (mode !== "image") return;
-    const images = shuffled.filter((src) => !/\.mp4$|\.webm$/i.test(src));
-    if (images.length <= 1) return;
+    if (mode !== "images" || !hasImages) return;
 
     const id = setInterval(() => {
-      setCurrentIndex((i) => (i + 1) % images.length);
-    }, 8000); // هر ۸ ثانیه
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 6000); // ۶ ثانیه
 
     return () => clearInterval(id);
-  }, [mode, shuffled]);
+  }, [mode, hasImages, images.length]);
 
-  if (!files || files.length === 0) {
-    return (
-      <div
-        style={{
-          padding: 24,
-          textAlign: "center",
-          color: "#6b7280",
-          fontSize: 14,
-        }}
-      >
-        No event media found.
-      </div>
-    );
+  if (!hasEvents) {
+    // اگر هیچ مدیایی نیست، اصلاً چیزی رندر نکن
+    return null;
   }
 
-  const videos = shuffled.filter((src) => /\.mp4$|\.webm$/i.test(src));
-  const images = shuffled.filter((src) => !/\.mp4$|\.webm$/i.test(src));
+  const activeVideo = hasVideo ? videos[0] : null;
+  const activeImage = hasImages ? images[currentImage] : null;
 
-  const showVideo = mode === "video" && videos.length > 0;
-  const selectedVideo = showVideo ? videos[0] : null; // چون shuffled شده، همین هم رندومه
-
-  const showImages = mode === "image" && images.length > 0;
-  const currentImage =
-    showImages && images.length > 0
-      ? images[currentIndex % images.length]
-      : null;
+  // برای کپشن ساده، اسم فایل رو می‌گیریم
+  const currentSrc = mode === "video" ? activeVideo : activeImage;
+  const fileName = currentSrc ? currentSrc.split("/").pop() : "";
 
   return (
     <div
       style={{
+        position: "fixed",
+        inset: 0,
         background: "#020617",
-        borderRadius: 28,
-        padding: 24,
-        boxShadow: "0 32px 80px rgba(15,23,42,0.85)",
-        color: "#f9fafb",
-        width: "100%",
-        marginTop: 24,
+        display: "flex",
+        flexDirection: "column",
+        padding: 16,
+        zIndex: 9999,
       }}
     >
-      {/* هدر بالای اسلایدشو */}
+      {/* هدر بالا */}
       <div
         style={{
-          marginBottom: 16,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          color: "white",
           fontSize: 14,
+          marginBottom: 8,
         }}
       >
         <span style={{ fontWeight: 700 }}>Company Events</span>
-        <span style={{ fontSize: 12, opacity: 0.8 }}>
-          Auto slideshow ({showVideo ? "video" : "images"})
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 12, opacity: 0.8 }}>
+            Auto slideshow ({mode === "video" ? "video" : "images"})
+          </span>
+          <button
+            type="button"
+            onClick={onSkip}
+            style={{
+              border: "none",
+              padding: "8px 14px",
+              borderRadius: 999,
+              background: "#0f172a",
+              color: "white",
+              fontSize: 12,
+              cursor: "pointer",
+              boxShadow: "0 0 0 1px rgba(148,163,184,0.5)",
+            }}
+          >
+            Skip to Dashboard ⏩
+          </button>
+        </div>
       </div>
 
-      {/* قاب بزرگ مدیا */}
+      {/* محتوای اصلی – فول‌اسکرین، با حاشیه خیلی کم */}
       <div
         style={{
-          position: "relative",
-          borderRadius: 22,
+          flex: 1,
+          borderRadius: 20,
           overflow: "hidden",
-          width: "100%",
-          // تقریباً تمام ارتفاع مانیتور، ولی محدود:
-          height: "64vh",
-          maxHeight: 720,
-          minHeight: 360,
-          background: "#0b1120",
+          background: "black",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {showVideo && selectedVideo && (
+        {mode === "video" && activeVideo ? (
           <video
-            key={selectedVideo} // برای شروع مجدد وقتی رفرش می‌شود
-            src={selectedVideo}
-            controls={false}
-            autoPlay
-            loop
-            muted
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-        )}
+  key={activeVideo}
+  src={activeVideo}
+  autoPlay
+  loop
+  controls
+  style={{
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+    display: "block",
+  }}
+/>
 
-        {showImages && currentImage && (
-          <img
-            key={currentImage}
-            src={currentImage}
-            alt="Company event"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
+        ) : (
+          activeImage && (
+            <img
+              key={activeImage}
+              src={activeImage}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          )
+        )}
+      </div>
+
+      {/* کپشن پایین + یادآوری بی‌صدا بودن ویدیو */}
+      <div
+        style={{
+          marginTop: 8,
+          color: "#e5e7eb",
+          fontSize: 12,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span style={{ opacity: 0.85 }}>
+          {fileName ? `Now playing: ${fileName}` : ""}
+        </span>
+        {mode === "video" && (
+          <span style={{ opacity: 0.7 }}>
+            Video is muted for auto-play – subtitles / captions only
+          </span>
         )}
       </div>
     </div>
