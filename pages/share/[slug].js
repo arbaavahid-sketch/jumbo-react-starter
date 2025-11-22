@@ -23,17 +23,15 @@ import {
   FiAward,
   FiCalendar,
   FiNavigation,
-  FiLink, // 👈 برای لینک MOM
+  FiLink,
 } from "react-icons/fi";
 
-// ---------- getServerSideProps: گرفتن slug از URL ----------
+// ---------- getServerSideProps ----------
 export async function getServerSideProps(context) {
   const { slug } = context.params || {};
-
   const groupKey = PUBLIC_SHARE_MAP[slug] || null;
 
   if (!groupKey) {
-    // اگر اسلاگ توی map نبود → 404
     return { notFound: true };
   }
 
@@ -86,7 +84,7 @@ function pctDelta(curr, prev) {
   return { pct: diff, dir: diff === 0 ? 0 : diff > 0 ? 1 : -1 };
 }
 
-// ---------- DeltaBadge Component ----------
+// ---------- DeltaBadge ----------
 function DeltaBadge({ pct, dir, inf }) {
   const arrow = dir > 0 ? "▲" : dir < 0 ? "▼" : "•";
   const color = dir > 0 ? "#0a7f2e" : dir < 0 ? "#c92a2a" : "#6b7280";
@@ -111,7 +109,7 @@ function DeltaBadge({ pct, dir, inf }) {
   );
 }
 
-// ---------- StatCard Component ----------
+// ---------- StatCard ----------
 function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon }) {
   return (
     <div
@@ -175,7 +173,7 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
           </div>
         </div>
 
-        {/* اگر actionIcon نداشتیم، آیکون معمولی KPI */}
+        {/* آیکون معمولی KPI اگر actionIcon نداریم */}
         {Icon && !actionIcon && (
           <div
             style={{
@@ -194,14 +192,14 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
           </div>
         )}
 
-        {/* اگر اکشن آیکون (مثلاً لینک MOM) پاس داده شده */}
+        {/* آیکون اکشن (مثل لینک MOM) */}
         {actionIcon}
       </div>
     </div>
   );
 }
 
-// ---------- PublicGroupDashboard Component ----------
+// ---------- PublicGroupDashboard ----------
 export default function PublicGroupDashboard({ slug, groupKey }) {
   const { data: raw, error, isLoading } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
@@ -227,7 +225,6 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
     (r) => toStr(r.group).toUpperCase() === groupKey
   );
 
-  // فقط براساس key گروه را پیدا می‌کنیم
   const group =
     groups.find(
       (g) => toStr(g.key || g.code || g.slug).toUpperCase() === groupKey
@@ -243,7 +240,7 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
 
-  // 👇 momLink: اول از latest.mom، اگر خالی بود از آخرین ردیف weekly با mom
+  // پیدا کردن momLink
   let momLink = toStr(latest.mom || "").trim();
   if (!momLink) {
     const rowsWithMom = weekly
@@ -308,7 +305,7 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
         />
       </Head>
 
-      {/* هدر بالا: عنوان + لوگو + ساعت */}
+      {/* هدر بالا */}
       <div
         style={{
           display: "flex",
@@ -350,28 +347,23 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
         </div>
       </div>
 
-      <section>
-        <div style={{ marginBottom: 20 }}>
+      {/* خبر فارسی + tgju (بالا) */}
+      <section className="section news-section">
+        <div className="news-block" style={{ marginBottom: 20 }}>
           <NewsTicker />
         </div>
 
-        <div style={{ marginBottom: 20 }}>
+        <div className="news-block" style={{ marginBottom: 20 }}>
           <TgjuTickersBlock />
-        </div>
-
-        <div style={{ marginBottom: 32 }}>
-          <NewsTickerEn />
         </div>
       </section>
 
-      {/* KPI Cards + Sales Bars */}
-      <section style={{ marginTop: 8 }}>
-  {/* به‌جای استایل inline از کلاس group-grid استفاده می‌کنیم */}
-  <div className="group-grid">
-    {/* KPI Cards */}
-    <div>
-      {/* اینجا هم از کلاس kpi-grid استفاده می‌کنیم */}
-      <div className="kpi-grid">
+      {/* KPI + Sales Bars */}
+      <section className="section kpi-section" style={{ marginTop: 8 }}>
+        <div className="group-grid">
+          {/* KPI Cards */}
+          <div>
+            <div className="kpi-grid">
               <StatCard
                 label="Total Sales (2025)"
                 value={fmtEUR(latest?.total_sales_eur)}
@@ -415,7 +407,7 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
                 accent="#eab308"
               />
 
-              {/* 👇 کارت Last Group Meeting با آیکون لینک MOM */}
+              {/* Last Group Meeting + لینک MOM */}
               <StatCard
                 label="Last Group Meeting"
                 value={latest?.last_meeting || "-"}
@@ -479,9 +471,10 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
         </div>
       </section>
 
-      {/* Members chart + DealsExec table + AR List */}
-      <section style={{ marginTop: 32 }}>
+      {/* Members + DealsExec + AR */}
+      <section className="section" style={{ marginTop: 32 }}>
         <div
+          className="bottom-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
@@ -500,11 +493,19 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
         </div>
       </section>
 
+      {/* پیام CEO اگر هست */}
       {hasCeoMessage && (
-        <section style={{ marginTop: 32 }}>
+        <section className="section" style={{ marginTop: 32 }}>
           <CeoMessage text={rawCeoText} />
         </section>
       )}
+
+      {/* 🔻 Bloomberg English News پایین صفحه */}
+      <section className="section">
+        <div className="news-block" style={{ marginTop: 24 }}>
+          <NewsTickerEn />
+        </div>
+      </section>
     </main>
   );
 }

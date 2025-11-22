@@ -1,7 +1,8 @@
 export default function GroupSalesBars({ data = [] }) {
   const MAX = Math.max(...data.map((x) => x.value), 1);
+  const total = data.reduce((sum, g) => sum + Number(g.value || 0), 0);
 
-  const COLORS = ["#2563eb", "#f97316", "#22c55e"]; // A, B, C
+  const COLORS = ["#2563eb", "#f97316", "#22c55e"];
 
   return (
     <div
@@ -12,26 +13,39 @@ export default function GroupSalesBars({ data = [] }) {
         boxShadow: "0 10px 25px rgba(15,23,42,0.10)",
       }}
     >
-      <h3
+      {/* عنوان + مجموع کل */}
+      <div
         style={{
-          margin: "0 0 6px",
-          fontSize: 16,
-          color: "#111827",
-          fontWeight: 700,
+          display: "flex",
+          alignItems: "baseline",
+          gap: 8,           // 👈 فاصله‌ی کم بین عنوان و مجموع
+          marginBottom: 10,
         }}
       >
-        Total Sales (€)
-      </h3>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: 16,
+            color: "#111827",
+            fontWeight: 700,
+          }}
+        >
+          Total Sales
+        </h3>
 
-      <p
-        style={{
-          margin: "0 0 16px",
-          fontSize: 13,
-          color: "#6b7280",
-        }}
-      >
-      </p>
+        <div
+          style={{
+            fontSize: 16,     // کمی درشت‌تر از قبل
+            fontWeight: 800,
+            color: "#1e293b",
+            whiteSpace: "nowrap",
+          }}
+        >
+          = {total.toLocaleString("en-US")} €
+        </div>
+      </div>
 
+      {/* لیست نوارها */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {data.map((g, idx) => {
           const widthPercent = (g.value / MAX) * 100;
@@ -40,7 +54,6 @@ export default function GroupSalesBars({ data = [] }) {
 
           return (
             <div key={idx}>
-              {/* عنوان گروه */}
               <div
                 style={{
                   fontSize: 13,
@@ -52,7 +65,6 @@ export default function GroupSalesBars({ data = [] }) {
                 {g.label}
               </div>
 
-              {/* نوار اصلی */}
               <div
                 style={{
                   width: "100%",
@@ -63,7 +75,6 @@ export default function GroupSalesBars({ data = [] }) {
                   position: "relative",
                 }}
               >
-                {/* قسمت رنگی */}
                 <div
                   style={{
                     width: `${widthPercent}%`,
@@ -84,7 +95,6 @@ export default function GroupSalesBars({ data = [] }) {
                   {widthPercent < 20 ? "" : textValue}
                 </div>
 
-                {/* اگر خیلی کوتاه بود عدد خارج نمایش داده شود */}
                 {widthPercent < 20 && (
                   <span
                     style={{
@@ -108,8 +118,6 @@ export default function GroupSalesBars({ data = [] }) {
           );
         })}
       </div>
-
-      {/* ❌ Legend حذف شد */}
     </div>
   );
 }
