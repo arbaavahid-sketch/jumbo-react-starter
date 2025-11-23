@@ -57,7 +57,6 @@ function pctDelta(curr, prev) {
   const p = Number(prev) || 0;
   if (p === 0) {
     if (c === 0) return { pct: 0, dir: 0 };
-    // از صفر به عدد → 100٪+
     return { pct: 100, dir: 1, inf: true };
   }
   const diff = ((c - p) / Math.abs(p)) * 100;
@@ -99,11 +98,13 @@ function DeltaBadge({ delta }) {
 }
 
 export default function TechnicalDashboard() {
+  // داده فنی از /api/technical
   const { data, error, isLoading } = useSWR("/api/technical", fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
 
+  // داده کلی از /api/data (برای CEO message + technical_queue)
   const { data: mainData } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
   });
@@ -113,6 +114,16 @@ export default function TechnicalDashboard() {
     ceoMessages.TECH ||
     ceoMessages.Technical ||
     "Technical CEO message — editable in CEO Messages panel.";
+
+  // جدول Tech Queue از /api/data
+  const techQueueRaw = Array.isArray(mainData?.technical_queue)
+    ? mainData.technical_queue
+    : [];
+  const techQueue = [...techQueueRaw].sort((a, b) => {
+    const ga = (a.group || "").localeCompare(b.group || "");
+    if (ga !== 0) return ga;
+    return (a.deal || "").localeCompare(b.deal || "");
+  });
 
   let body;
 
@@ -168,7 +179,7 @@ export default function TechnicalDashboard() {
       ),
     };
 
-    // ردیف‌های Waiting for installation از متن چندخطی شیت
+    // ردیف‌های Waiting for installation
     const waitingRows = (t.waiting_installation_ids || "")
       .split(/\r?\n/)
       .map((l) => l.trim())
@@ -181,7 +192,7 @@ export default function TechnicalDashboard() {
         };
       });
 
-    // ردیف‌های Installed از متن شیت
+    // ردیف‌های Installed
     const installedRows = (t.installed_ids || "")
       .split(/\r?\n/)
       .map((l) => l.trim())
@@ -196,7 +207,6 @@ export default function TechnicalDashboard() {
 
     const installedCount = installedRows.length;
 
-    // 👇 محاسبه درصد نصب موفق: installed / (installed + waiting)
     const waitingCount = Number(
       t.waiting_installation != null
         ? t.waiting_installation
@@ -206,13 +216,12 @@ export default function TechnicalDashboard() {
     const installSuccessPct =
       totalInstall > 0 ? (installedCount / totalInstall) * 100 : 0;
 
-    // ساخت شیء delta برای کارت Installed deals
     const installedDelta =
       totalInstall > 0
         ? { pct: installSuccessPct, dir: 1, inf: false }
         : null;
 
-    // داده‌ی نمودار: Deals این هفته + Total deals برای هر نفر
+    // نمودار نفرات
     const dealsChartData = [
       {
         name: "Aref",
@@ -286,7 +295,6 @@ export default function TechnicalDashboard() {
             delta={deltas.waiting}
           />
 
-          {/* 👇 این کارت حالا درصد موفقیت نصب را هم زیر عدد نشان می‌دهد */}
           <TechCard
             icon={<FiCheckCircle />}
             label="Installed Deals at 2025"
@@ -312,7 +320,6 @@ export default function TechnicalDashboard() {
             value={t.internal_trainings}
           />
 
-          {/* کارت MOM link */}
           <TechCard
             icon={<FiLink />}
             label="MOM link"
@@ -623,6 +630,198 @@ export default function TechnicalDashboard() {
               </ResponsiveContainer>
             </div>
           </div>
+        </div>
+
+        {/* ✅ جدول Technical Queue – پایین داشبورد */}
+        <div style={{ marginTop: 36 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#4b5563",
+              marginBottom: 10,
+            }}
+          >
+            Technical Queue – Deal / Center / Subject
+          </div>
+
+          {techQueue.length === 0 ? (
+            <div
+              style={{
+                fontSize: 13,
+                padding: 10,
+                borderRadius: 12,
+                background: "rgba(148,163,184,0.1)",
+                color: "#6b7280",
+              }}
+            >
+              No items in technical queue.
+            </div>
+          ) : (
+            <div
+              style={{
+                borderRadius: 16,
+                overflow: "hidden",
+                boxShadow:
+                  "0 18px 45px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.35)",
+                background: "#ffffff",
+                maxHeight: 340,
+                overflowY: "auto",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                }}
+              >
+                <thead>
+                  <tr
+                    style={{
+                      background:
+                        "linear-gradient(135deg,rgba(59,130,246,0.15),rgba(37,99,235,0.10))",
+                    }}
+                  >
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Group
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                      }}
+                    >
+                      Deal
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                      }}
+                    >
+                      Center
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                      }}
+                    >
+                      Subject
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {techQueue.map((row, idx) => (
+                    <tr
+                      key={idx}
+                      style={{
+                        background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          fontWeight: 600,
+                          color: "#111827",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {row.group}
+                      </td>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: "#111827",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {row.deal}
+                      </td>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: "#374151",
+                        }}
+                      >
+                        {row.center || "—"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: "#374151",
+                        }}
+                      >
+                        {row.subject || "—"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: row.status ? "#111827" : "#9ca3af",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {row.status || "In process"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     );

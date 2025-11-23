@@ -65,6 +65,7 @@ function mapSheetsToPayload({
   dealsSheet = [],
   ceoSheet = [],
   arListSheet = [],
+  techQueueSheet = [], // 👈 شیت technical_Queue_Details
 }) {
   // weekly_reports
   const weekly_reports = weeklySheet
@@ -101,7 +102,7 @@ function mapSheetsToPayload({
 
         total_deals: offers + inSales,
 
-        // 👇 mom را هم از همان شیت می‌خوانیم
+        // MOM
         mom: r.mom || "",
       };
     })
@@ -123,7 +124,7 @@ function mapSheetsToPayload({
     }));
   }
 
-  // members  ✅ فقط آخرین رکورد هر نفر در هر گروه
+  // members (آخرین رکورد هر نفر)
   const members = {};
 
   for (const m of membersSheet) {
@@ -146,7 +147,7 @@ function mapSheetsToPayload({
     members[g] = Object.values(members[g]);
   });
 
-  // latest  ✅ اینجا mom را هم اضافه می‌کنیم
+  // latest
   const latest = {};
   if (latestSheet.length) {
     for (const l of latestSheet) {
@@ -163,11 +164,11 @@ function mapSheetsToPayload({
         total_deals: Number(l.total_deals || 0),
         last_meeting: l.last_meeting || "",
         weekly_trips: Number(l.weekly_trips || 0),
-        mom: l.mom || "", // 👈 اگر ستون mom در latest باشد
+        mom: l.mom || "",
       };
     }
   } else {
-    // fallback: compute from weekly (که mom را هم داریم)
+    // از weekly محاسبه کن
     const byG = {};
     for (const row of weekly_reports) {
       if (!byG[row.group]) byG[row.group] = [];
@@ -188,7 +189,7 @@ function mapSheetsToPayload({
         total_deals: last.total_deals || 0,
         last_meeting: last.last_meeting || "",
         weekly_trips: last.weekly_trips || 0,
-        mom: last.mom || "", // 👈 mom از آخرین weekly
+        mom: last.mom || "",
       };
     }
   }
@@ -239,7 +240,7 @@ function mapSheetsToPayload({
     ceo_messages[g] = row.message || "";
   }
 
-  // --------- AR LIST نرمالایز شده ---------
+  // AR list
   const ar_list = arListSheet
     .map((r) => ({
       group: String(r.group || "").toUpperCase(),
@@ -256,6 +257,26 @@ function mapSheetsToPayload({
     }))
     .filter((r) => r.group && r.deal_no);
 
+    // ✅ technical_queue: جدول دیل + مرکز + موضوع
+  const technical_queue = techQueueSheet
+    .map((r) => {
+      const group = String(r.group || r.Group || "").toUpperCase();
+      const deal = (r.deal || r.Deal || "").trim();
+      const center = (r.center || r.Center || "").trim();
+      const subject = (r.subject || r.Subject || "").trim();
+      const status = (r.status || r.Status || "").trim();
+
+      return {
+        group,
+        deal,
+        center,
+        subject,
+        status,
+      };
+    })
+    .filter((r) => r.group && r.deal);
+
+
   return {
     groups,
     weekly_reports,
@@ -265,6 +286,7 @@ function mapSheetsToPayload({
     ceo_messages,
     history,
     ar_list,
+    technical_queue,
   };
 }
 
@@ -279,6 +301,7 @@ export default async function handler(req, res) {
       SHEET_DEALS_CSV_URL,
       SHEET_CEO_MSG_CSV_URL,
       SHEET_AR_LIST_CSV_URL,
+      SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
     } = process.env;
 
     const fetchCSV = async (url) => {
@@ -294,7 +317,8 @@ export default async function handler(req, res) {
       groupsSheet = [],
       dealsSheet = [],
       ceoSheet = [],
-      arListSheet = [];
+      arListSheet = [],
+      techQueueSheet = [];
 
     try {
       weeklySheet = await fetchCSV(SHEET_WEEKLY_CSV_URL);
@@ -304,6 +328,7 @@ export default async function handler(req, res) {
       dealsSheet = await fetchCSV(SHEET_DEALS_CSV_URL);
       ceoSheet = await fetchCSV(SHEET_CEO_MSG_CSV_URL);
       arListSheet = await fetchCSV(SHEET_AR_LIST_CSV_URL);
+      techQueueSheet = await fetchCSV(SHEET_TECH_QUEUE_CSV_URL);
     } catch (e) {
       console.warn("CSV fetch failed — using sample.json", e);
 
@@ -328,6 +353,7 @@ export default async function handler(req, res) {
         message: msg,
       }));
       arListSheet = j.ar_list || [];
+      techQueueSheet = j.technical_queue || [];
     }
 
     const payload = mapSheetsToPayload({
@@ -338,6 +364,7 @@ export default async function handler(req, res) {
       dealsSheet,
       ceoSheet,
       arListSheet,
+      techQueueSheet,
     });
 
     res.status(200).json(payload);
