@@ -136,6 +136,7 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
               letterSpacing: "0.06em",
               color: "#6b7280",
               marginBottom: 6,
+                  fontWeight: 800,          // 👈 این خط رو اضافه کن برای بولد شدن
             }}
           >
             {label}

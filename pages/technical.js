@@ -16,7 +16,6 @@ import useSWR from "swr";
 import LiveClock from "../components/LiveClock";
 import CeoMessage from "../components/CeoMessage";
 
-// آیکون‌ها
 import {
   FiCalendar,
   FiPlusCircle,
@@ -72,7 +71,7 @@ function DeltaBadge({ delta }) {
   const { pct, dir, inf } = delta;
 
   const arrow = dir > 0 ? "▲" : dir < 0 ? "▼" : "•";
-  const color = dir > 0 ? "#0a7f2e" : dir < 0 ? "#c92a2a" : "#6b7280";
+  const color = dir > 0 ? "#16a34a" : dir < 0 ? "#dc2626" : "#6b7280";
   const text =
     dir === 0 ? "0.0%" : inf ? "100%+" : `${Math.abs(pct).toFixed(1)}%`;
 
@@ -86,9 +85,10 @@ function DeltaBadge({ delta }) {
         fontWeight: 600,
         color,
         background: "rgba(15,23,42,0.03)",
-        padding: "2px 8px",
+        padding: "2px 10px",
         borderRadius: 999,
         marginTop: 6,
+        border: "1px solid rgba(148,163,184,0.4)",
       }}
     >
       <span aria-hidden>{arrow}</span>
@@ -132,9 +132,11 @@ export default function TechnicalDashboard() {
       <div
         style={{
           padding: 24,
-          borderRadius: 20,
-          background: "#fee2e2",
-          color: "#991b1b",
+          borderRadius: 24,
+          background:
+            "linear-gradient(135deg,rgba(239,68,68,0.08),rgba(248,113,113,0.25))",
+          color: "#7f1d1d",
+          border: "1px solid rgba(248,113,113,0.45)",
         }}
       >
         Error loading technical data.
@@ -145,8 +147,11 @@ export default function TechnicalDashboard() {
       <div
         style={{
           padding: 24,
-          borderRadius: 20,
-          background: "#f3f4f6",
+          borderRadius: 24,
+          background:
+            "linear-gradient(135deg,rgba(0,95,158,0.05),rgba(0,184,148,0.05))",
+          border: "1px solid rgba(148,163,184,0.35)",
+          color: "#4b5563",
         }}
       >
         Loading technical data…
@@ -157,9 +162,12 @@ export default function TechnicalDashboard() {
       <div
         style={{
           padding: 24,
-          borderRadius: 20,
-          background: "linear-gradient(135deg,#f9fafb,#e5f0ff)",
-          boxShadow: "0 0 0 1px rgba(148,163,184,0.3)",
+          borderRadius: 24,
+          background:
+            "linear-gradient(135deg,rgba(0,95,158,0.08),rgba(0,184,148,0.10))",
+          boxShadow:
+            "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
+          color: "#0f172a",
         }}
       >
         No technical data yet.
@@ -248,19 +256,19 @@ export default function TechnicalDashboard() {
     body = (
       <div
         style={{
-          borderRadius: 24,
+          borderRadius: 28,
           padding: 24,
-          background: "linear-gradient(135deg,#f9fafb,#e0f2fe)",
+          background: "#f9fafb",
           boxShadow:
-            "0 24px 60px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.35)",
+            "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.3)",
         }}
       >
         {/* کارت‌ها */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
-            gap: 16,
+            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+            gap: 18,
           }}
         >
           <TechCard
@@ -277,7 +285,7 @@ export default function TechnicalDashboard() {
 
           <TechCard
             icon={<FiCheckCircle />}
-            label="Total deals done"
+            label="Total deals done (week)"
             value={t.total_deals_week}
           />
 
@@ -342,11 +350,11 @@ export default function TechnicalDashboard() {
           <div>
             <div
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 700,
-                letterSpacing: "0.06em",
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: "#4b5563",
+                color: "#6b7280",
                 marginBottom: 8,
               }}
             >
@@ -358,9 +366,10 @@ export default function TechnicalDashboard() {
                 style={{
                   fontSize: 13,
                   padding: 10,
-                  borderRadius: 12,
+                  borderRadius: 16,
                   background: "rgba(148,163,184,0.1)",
                   color: "#6b7280",
+                  border: "1px dashed rgba(148,163,184,0.6)",
                 }}
               >
                 No installed deals recorded yet.
@@ -368,10 +377,10 @@ export default function TechnicalDashboard() {
             ) : (
               <div
                 style={{
-                  borderRadius: 16,
+                  borderRadius: 20,
                   overflow: "hidden",
                   boxShadow:
-                    "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
+                    "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
                   background: "#ffffff",
                   maxHeight: 280,
                   overflowY: "auto",
@@ -388,7 +397,7 @@ export default function TechnicalDashboard() {
                     <tr
                       style={{
                         background:
-                          "linear-gradient(135deg,rgba(16,185,129,0.15),rgba(56,189,248,0.12))",
+                          "linear-gradient(135deg,rgba(16,185,129,0.12),rgba(56,189,248,0.12))",
                       }}
                     >
                       <th
@@ -397,7 +406,7 @@ export default function TechnicalDashboard() {
                           textAlign: "left",
                           fontWeight: 600,
                           color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                          borderBottom: "1px solid rgba(148,163,184,0.5)",
                           width: 80,
                         }}
                       >
@@ -409,7 +418,7 @@ export default function TechnicalDashboard() {
                           textAlign: "left",
                           fontWeight: 600,
                           color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                          borderBottom: "1px solid rgba(148,163,184,0.5)",
                         }}
                       >
                         Center / Subject
@@ -462,11 +471,11 @@ export default function TechnicalDashboard() {
           <div>
             <div
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 700,
-                letterSpacing: "0.06em",
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: "#4b5563",
+                color: "#6b7280",
                 marginBottom: 8,
               }}
             >
@@ -478,9 +487,10 @@ export default function TechnicalDashboard() {
                 style={{
                   fontSize: 13,
                   padding: 10,
-                  borderRadius: 12,
+                  borderRadius: 16,
                   background: "rgba(148,163,184,0.1)",
                   color: "#6b7280",
+                  border: "1px dashed rgba(148,163,184,0.6)",
                 }}
               >
                 No items in installation queue.
@@ -488,10 +498,10 @@ export default function TechnicalDashboard() {
             ) : (
               <div
                 style={{
-                  borderRadius: 16,
+                  borderRadius: 20,
                   overflow: "hidden",
                   boxShadow:
-                    "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
+                    "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
                   background: "#ffffff",
                 }}
               >
@@ -506,7 +516,7 @@ export default function TechnicalDashboard() {
                     <tr
                       style={{
                         background:
-                          "linear-gradient(135deg,rgba(59,130,246,0.15),rgba(56,189,248,0.12))",
+                          "linear-gradient(135deg,rgba(59,130,246,0.12),rgba(56,189,248,0.12))",
                       }}
                     >
                       <th
@@ -515,7 +525,7 @@ export default function TechnicalDashboard() {
                           textAlign: "left",
                           fontWeight: 600,
                           color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                          borderBottom: "1px solid rgba(148,163,184,0.5)",
                           width: 80,
                         }}
                       >
@@ -527,7 +537,7 @@ export default function TechnicalDashboard() {
                           textAlign: "left",
                           fontWeight: 600,
                           color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.4)",
+                          borderBottom: "1px solid rgba(148,163,184,0.5)",
                         }}
                       >
                         Center / Subject
@@ -580,11 +590,11 @@ export default function TechnicalDashboard() {
           <div>
             <div
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 700,
-                letterSpacing: "0.06em",
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: "#4b5563",
+                color: "#6b7280",
                 marginBottom: 8,
               }}
             >
@@ -593,10 +603,10 @@ export default function TechnicalDashboard() {
 
             <div
               style={{
-                borderRadius: 16,
+                borderRadius: 20,
                 overflow: "hidden",
                 boxShadow:
-                  "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
+                  "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
                 background: "#ffffff",
                 height: 260,
                 padding: "12px 16px",
@@ -607,22 +617,29 @@ export default function TechnicalDashboard() {
                   data={dealsChartData}
                   margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" stroke="#6b7280" />
+                  <YAxis allowDecimals={false} stroke="#6b7280" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid rgba(148,163,184,0.6)",
+                      borderRadius: 8,
+                      color: "#0f172a",
+                    }}
+                  />
                   <Legend />
                   <Bar
                     dataKey="weeklyDeals"
                     name="Deals this week"
-                    fill="#2563eb"
+                    fill="#38bdf8"
                     radius={[6, 6, 0, 0]}
                     barSize={38}
                   />
                   <Bar
                     dataKey="totalDeals"
                     name="Total deals"
-                    fill="#f97316"
+                    fill="#0f766e"
                     radius={[6, 6, 0, 0]}
                     barSize={38}
                   />
@@ -632,19 +649,19 @@ export default function TechnicalDashboard() {
           </div>
         </div>
 
-        {/* ✅ جدول Technical Queue – پایین داشبورد */}
+        {/* جدول Technical Queue – پایین داشبورد */}
         <div style={{ marginTop: 36 }}>
           <div
             style={{
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 700,
-              letterSpacing: "0.08em",
+              letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "#4b5563",
+              color: "#6b7280",
               marginBottom: 10,
             }}
           >
-            Technical Queue – Deal / Center / Subject
+Technical Approval Queue
           </div>
 
           {techQueue.length === 0 ? (
@@ -652,9 +669,10 @@ export default function TechnicalDashboard() {
               style={{
                 fontSize: 13,
                 padding: 10,
-                borderRadius: 12,
+                borderRadius: 16,
                 background: "rgba(148,163,184,0.1)",
                 color: "#6b7280",
+                border: "1px dashed rgba(148,163,184,0.6)",
               }}
             >
               No items in technical queue.
@@ -662,10 +680,10 @@ export default function TechnicalDashboard() {
           ) : (
             <div
               style={{
-                borderRadius: 16,
+                borderRadius: 20,
                 overflow: "hidden",
                 boxShadow:
-                  "0 18px 45px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.35)",
+                  "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
                 background: "#ffffff",
                 maxHeight: 340,
                 overflowY: "auto",
@@ -682,7 +700,7 @@ export default function TechnicalDashboard() {
                   <tr
                     style={{
                       background:
-                        "linear-gradient(135deg,rgba(59,130,246,0.15),rgba(37,99,235,0.10))",
+                        "linear-gradient(135deg,rgba(0,95,158,0.12),rgba(0,184,148,0.12))",
                     }}
                   >
                     <th
@@ -691,7 +709,7 @@ export default function TechnicalDashboard() {
                         textAlign: "left",
                         fontWeight: 600,
                         color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -703,7 +721,7 @@ export default function TechnicalDashboard() {
                         textAlign: "left",
                         fontWeight: 600,
                         color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
                       }}
                     >
                       Deal
@@ -714,7 +732,7 @@ export default function TechnicalDashboard() {
                         textAlign: "left",
                         fontWeight: 600,
                         color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
                       }}
                     >
                       Center
@@ -725,7 +743,7 @@ export default function TechnicalDashboard() {
                         textAlign: "left",
                         fontWeight: 600,
                         color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
                       }}
                     >
                       Subject
@@ -736,7 +754,7 @@ export default function TechnicalDashboard() {
                         textAlign: "left",
                         fontWeight: 600,
                         color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.4)",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -810,7 +828,7 @@ export default function TechnicalDashboard() {
                             idx === techQueue.length - 1
                               ? "none"
                               : "1px solid rgba(226,232,240,0.9)",
-                          color: row.status ? "#111827" : "#9ca3af",
+                          color: row.status ? "#0f766e" : "#9ca3af",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -828,71 +846,140 @@ export default function TechnicalDashboard() {
   }
 
   return (
-    <main style={{ padding: 24 }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        padding: "24px 24px 40px",
+        background: "#f3f6fb",
+        color: "#0f172a",
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+      }}
+    >
       <Head>
         <title>Technical Dashboard</title>
       </Head>
 
-      {/* هدر */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: 16,
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0 }}>Technical Dashboard</h1>
-        </div>
+      <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+        {/* هدر */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: 20,
+            gap: 16,
+          }}
+        >
+          <div>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 26,
+                fontWeight: 800,
+                letterSpacing: "0.10em",
+                textTransform: "uppercase",
+                color: "#005F9E",
+              }}
+            >
+              Technical Dashboard
+            </h1>
+            <p
+              style={{
+                marginTop: 6,
+                fontSize: 13,
+                color: "#6b7280",
+              }}
+            >
+            </p>
+          </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <img
-            src="/company-logo.svg"
-            style={{ width: 160, height: 90, objectFit: "contain" }}
-          />
           <div
             style={{
-              fontSize: 12,
-              padding: "4px 12px",
-              borderRadius: 999,
-              background: "rgba(148,163,184,0.15)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              alignItems: "flex-end",
             }}
           >
-            <LiveClock />
+            <div
+              style={{
+                padding: 10,
+                borderRadius: 18,
+                background: "#ffffff",
+                border: "1px solid rgba(148,163,184,0.35)",
+                boxShadow: "0 10px 25px rgba(15,23,42,0.08)",
+              }}
+            >
+              <img
+                src="/company-logo.svg"
+                style={{ width: 150, height: 70, objectFit: "contain" }}
+                alt="Company logo"
+              />
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                padding: "4px 14px",
+                borderRadius: 999,
+                background: "#ffffff",
+                border: "1px solid rgba(148,163,184,0.4)",
+                boxShadow: "0 8px 20px rgba(15,23,42,0.06)",
+                color: "#005F9E",
+              }}
+            >
+              <LiveClock />
+            </div>
           </div>
         </div>
+
+        {/* پیام CEO */}
+        <div
+          style={{
+            marginBottom: 18,
+            borderRadius: 20,
+            background:
+              "linear-gradient(135deg,rgba(0,95,158,0.06),rgba(0,184,148,0.06))",
+            padding: 16,
+            boxShadow:
+              "0 14px 30px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.25)",
+          }}
+        >
+          <CeoMessage text={ceoText} />
+        </div>
+
+        {body}
       </div>
-
-      <CeoMessage text={ceoText} />
-
-      {body}
     </main>
   );
 }
 
 /* --- کارت‌ها با آیکون --- */
-
 function TechCard({ icon, label, value, link, delta }) {
   const hasLink = !!link;
 
   return (
     <div
       style={{
-        borderRadius: 18,
+        borderRadius: 20,
         padding: 16,
-        background: "#ffffff",
+        background:
+          "linear-gradient(135deg,rgba(0,95,158,0.08),rgba(0,184,148,0.06))",
         boxShadow:
-          "0 12px 30px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.2)",
+          "0 12px 30px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.3)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        minHeight: 110,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 20, color: "#0ea5e9" }}>{icon}</span>
+        <span style={{ fontSize: 22, color: "#005F9E" }}>{icon}</span>
         <span
           style={{
-            fontSize: 12,
+            fontSize: 11,
             color: "#6b7280",
-            letterSpacing: "0.05em",
+            letterSpacing: "0.16em",
             textTransform: "uppercase",
           }}
         >
@@ -906,10 +993,16 @@ function TechCard({ icon, label, value, link, delta }) {
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-start",
-          gap: 2,
+          gap: 4,
         }}
       >
-        <span style={{ fontSize: 22, fontWeight: 700 }}>
+        <span
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: "#0f172a",
+          }}
+        >
           {hasLink ? (
             link ? (
               <a
@@ -917,9 +1010,14 @@ function TechCard({ icon, label, value, link, delta }) {
                 target="_blank"
                 rel="noreferrer"
                 style={{
-                  color: "#2563eb",
-                  textDecoration: "underline",
-                  fontSize: 16,
+                  color: "#ffffff",
+                  textDecoration: "none",
+                  fontSize: 14,
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                  border: "1px solid #005F9E",
+                  background: "linear-gradient(135deg,#005F9E,#00B894)",
+                  boxShadow: "0 8px 18px rgba(15,23,42,0.2)",
                 }}
               >
                 {value || "Open"}
