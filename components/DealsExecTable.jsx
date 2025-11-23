@@ -36,9 +36,9 @@ export default function DealsExecTable({ rows = [] }) {
         if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) {
           el.scrollTop = 0;
         } else {
-          el.scrollTop += 1; // 🐢 اسکرول بسیار آرام
+          el.scrollTop += 1; // 🐢 اسکرول آرام
         }
-      }, 150); // سرعت (اگر خواستی کندتر هم می‌تونم بکنم)
+      }, 130);
     };
 
     startAutoScroll();
@@ -71,7 +71,7 @@ export default function DealsExecTable({ rows = [] }) {
   return (
     <div
       style={{
-        marginTop: 22, // 👈 فاصله از باکس بالا
+        // ❌ marginTop حذف شد تا با چارت کنار خودش هم‌سطح بشه
         background: "linear-gradient(135deg, #e3f2ff, #f8fafc)",
         borderRadius: 18,
         padding: 1,

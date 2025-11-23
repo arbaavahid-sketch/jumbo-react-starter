@@ -1,4 +1,13 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 export default function DealsChart({ data, groupName }) {
   return (
@@ -24,51 +33,28 @@ export default function DealsChart({ data, groupName }) {
       </div>
 
       <ResponsiveContainer width="100%" height="88%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="4 4" stroke="#dbe3f0" />
+  <LineChart data={data} key={Date.now()}>
+    <CartesianGrid strokeDasharray="4 4" stroke="#dbe3f0" />
+    <XAxis dataKey="week" axisLine={false} tickLine={false} />
+    <YAxis axisLine={false} tickLine={false} />
+    <Tooltip />
+    <Legend />
 
-          <XAxis
-            dataKey="week"
-            tick={{ fill: "#475569", fontWeight: 600 }}
-            axisLine={false}
-            tickLine={false}
-          />
+    <Line
+      type="monotone"
+      dataKey="deals"
+      stroke="#3b82f6"
+      strokeWidth={4}
+      dot={{ r: 5 }}
+      activeDot={{ r: 7 }}
+      isAnimationActive={true}
+      animationDuration={1500}
+      animationEasing="ease-in-out"
+      animationBegin={300}
+    />
+  </LineChart>
+</ResponsiveContainer>
 
-          <YAxis
-            tick={{ fill: "#475569", fontWeight: 600 }}
-            axisLine={false}
-            tickLine={false}
-          />
-
-          <Tooltip
-            contentStyle={{
-              background: "#ffffff",
-              borderRadius: 12,
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          />
-
-          <Legend
-            verticalAlign="bottom"
-            height={32}
-            wrapperStyle={{ fontSize: 13, fontWeight: 700 }}
-          />
-
-          {/* 🔹 خط اصلی با رنگ اصلی + گرادیان شیک */}
-          <Line
-            type="monotone"
-            dataKey="deals"
-            name="Deals"
-            stroke="#3b82f6"
-            strokeWidth={4}
-            dot={{ r: 5, fill: "#3b82f6", strokeWidth: 2, stroke: "#1d4ed8" }}
-            activeDot={{ r: 7, strokeWidth: 2, stroke: "#1d4ed8" }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
     </div>
   );
 }

@@ -174,7 +174,6 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
           </div>
         </div>
 
-        {/* آیکون معمولی KPI اگر actionIcon نداریم */}
         {Icon && !actionIcon && (
           <div
             style={{
@@ -193,7 +192,6 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
           </div>
         )}
 
-        {/* آیکون اکشن (مثل لینک MOM) */}
         {actionIcon}
       </div>
     </div>
@@ -241,7 +239,6 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
 
-  // پیدا کردن momLink
   let momLink = toStr(latest.mom || "").trim();
   if (!momLink) {
     const rowsWithMom = weekly
@@ -297,226 +294,216 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
   });
 
   return (
-    <main className="container" style={{ padding: 24 }}>
-      <Head>
-        <title>{pageTitle}</title>
-        <meta
-          name="description"
-          content={`KPIs, members and weekly deals for group ${groupKey}.`}
-        />
-      </Head>
+    <>
+      {/* اگر خواستی این رو برداری، فقط همین خط EventSlideshow رو حذف کن */}
+      <EventSlideshow />
 
-      {/* هدر بالا */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 16,
-          marginBottom: 12,
-        }}
-      >
-        <h1 style={{ margin: 0 }}>{pageTitle}</h1>
+      <main className="container" style={{ padding: 24 }}>
+        <Head>
+          <title>{pageTitle}</title>
+          <meta
+            name="description"
+            content={`KPIs, members and weekly deals for group ${groupKey}.`}
+          />
+        </Head>
+
+        {/* هدر بالا */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: 6,
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 16,
+            marginBottom: 12,
           }}
         >
-          <img
-            src="/company-logo.svg"
-            alt="company logo"
-            style={{
-              width: 160,
-              height: 80,
-              objectFit: "contain",
-              display: "block",
-            }}
-          />
+          <h1 style={{ margin: 0 }}>{pageTitle}</h1>
           <div
             style={{
-              fontSize: 12,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#4b5563",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: 6,
             }}
           >
-            <LiveClock />
-          </div>
-        </div>
-      </div>
-
-      {/* خبر فارسی + tgju (بالا) */}
-      <section className="section news-section">
-        <div className="news-block" style={{ marginBottom: 20 }}>
-          <NewsTicker />
-        </div>
-
-        <div className="news-block" style={{ marginBottom: 20 }}>
-          <TgjuTickersBlock />
-        </div>
-      </section>
-
-      {/* KPI + Sales Bars */}
-      <section className="section kpi-section" style={{ marginTop: 8 }}>
-        <div className="group-grid">
-          {/* KPI Cards */}
-          <div>
-            <div className="kpi-grid">
-              <StatCard
-                label="Total Sales (2025)"
-                value={fmtEUR(latest?.total_sales_eur)}
-                delta={deltas.total_sales_eur}
-                Icon={FiTrendingUp}
-                accent="#0ea5e9"
-              />
-              <StatCard
-                label="Offers Sent"
-                value={latest?.offers_sent ?? 0}
-                delta={deltas.offers_sent}
-                Icon={FiSend}
-                accent="#6366f1"
-              />
-              <StatCard
-                label="Total Deals in Sales process"
-                value={curr?.in_sales_process ?? 0}
-                delta={deltas.in_sales_process}
-                Icon={FiShoppingBag}
-                accent="#f97316"
-              />
-              <StatCard
-                label="Deals in Supply process"
-                value={curr?.in_supply ?? 0}
-                delta={deltas.in_supply}
-                Icon={FiTruck}
-                accent="#22c55e"
-              />
-              <StatCard
-                label="Deals in Technical process"
-                value={curr?.in_technical ?? 0}
-                delta={deltas.in_technical}
-                Icon={FiActivity}
-                accent="#ec4899"
-              />
-              <StatCard
-                label="Mega Projects"
-                value={latest?.mega_deals ?? 0}
-                delta={deltas.mega_deals}
-                Icon={FiAward}
-                accent="#eab308"
-              />
-
-              {/* Last Group Meeting + لینک MOM */}
-              <StatCard
-                label="Last Group Meeting"
-                value={latest?.last_meeting || "-"}
-                accent="#3b82f6"
-                actionIcon={
-                  momLink ? (
-                    <a
-                      href={momLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="مشاهده لینک جلسه (MOM)"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 999,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "rgba(59,130,246,0.12)",
-                        color: "#3b82f6",
-                        boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-                        textDecoration: "none",
-                      }}
-                    >
-                      <FiLink size={16} />
-                    </a>
-                  ) : (
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 999,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "rgba(15,23,42,0.06)",
-                        color: "#3b82f6",
-                        boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-                      }}
-                    >
-                      <FiCalendar size={16} />
-                    </div>
-                  )
-                }
-              />
-
-              <StatCard
-                label="Weekly Trips"
-                value={latest?.weekly_trips ?? 0}
-                delta={deltas.weekly_trips}
-                Icon={FiNavigation}
-                accent="#0d9488"
-              />
+            <img
+              src="/company-logo.svg"
+              alt="company logo"
+              style={{
+                width: 160,
+                height: 80,
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+            <div
+              style={{
+                fontSize: 12,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "#4b5563",
+              }}
+            >
+              <LiveClock />
             </div>
           </div>
-
-          {/* Sales Bars */}
-          <div>
-            <GroupSalesBars data={salesBarData} />
-          </div>
         </div>
-      </section>
 
-      {/* Members + DealsExec + AR */}
-      <section className="section" style={{ marginTop: 32 }}>
-        <div
-          className="bottom-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: 16,
-            alignItems: "flex-start",
-          }}
-        >
-          <div>
-            <MembersHistoryChart rows={members[groupKey] || []} />
+        {/* خبر فارسی + tgju (بالا) */}
+        <section className="section news-section">
+          <div className="news-block" style={{ marginBottom: 20 }}>
+            <NewsTicker />
           </div>
 
-          <div>
-            <DealsExecTable rows={dealsForGroup} />
-            <ARListTable rows={arForGroup} />
+          <div className="news-block" style={{ marginBottom: 20 }}>
+            <TgjuTickersBlock />
           </div>
-        </div>
-      </section>
-
-      {/* پیام CEO اگر هست */}
-      {hasCeoMessage && (
-        <section className="section" style={{ marginTop: 32 }}>
-          <CeoMessage text={rawCeoText} />
         </section>
-      )}
 
-      {/* 🔻 Bloomberg English News پایین صفحه */}
-      <section className="section">
-        <div className="news-block" style={{ marginTop: 24 }}>
-          <NewsTickerEn />
-        </div>
-      </section>
-      <EventSlideshow />
-return (
-  <>
-    <EventSlideshow />
-    <main className="container">
-      ... داشبورد ...
-    </main>
-  </>
-);
+        {/* KPI + Sales Bars */}
+        <section className="section kpi-section" style={{ marginTop: 8 }}>
+          <div className="group-grid">
+            <div>
+              <div className="kpi-grid">
+                <StatCard
+                  label="Total Sales (2025)"
+                  value={fmtEUR(latest?.total_sales_eur)}
+                  delta={deltas.total_sales_eur}
+                  Icon={FiTrendingUp}
+                  accent="#0ea5e9"
+                />
+                <StatCard
+                  label="Offers Sent"
+                  value={latest?.offers_sent ?? 0}
+                  delta={deltas.offers_sent}
+                  Icon={FiSend}
+                  accent="#6366f1"
+                />
+                <StatCard
+                  label="Total Deals in Sales process"
+                  value={curr?.in_sales_process ?? 0}
+                  delta={deltas.in_sales_process}
+                  Icon={FiShoppingBag}
+                  accent="#f97316"
+                />
+                <StatCard
+                  label="Deals in Supply process"
+                  value={curr?.in_supply ?? 0}
+                  delta={deltas.in_supply}
+                  Icon={FiTruck}
+                  accent="#22c55e"
+                />
+                <StatCard
+                  label="Deals in Technical process"
+                  value={curr?.in_technical ?? 0}
+                  delta={deltas.in_technical}
+                  Icon={FiActivity}
+                  accent="#ec4899"
+                />
+                <StatCard
+                  label="Mega Projects"
+                  value={latest?.mega_deals ?? 0}
+                  delta={deltas.mega_deals}
+                  Icon={FiAward}
+                  accent="#eab308"
+                />
 
-    </main>
+                <StatCard
+                  label="Last Group Meeting"
+                  value={latest?.last_meeting || "-"}
+                  accent="#3b82f6"
+                  actionIcon={
+                    momLink ? (
+                      <a
+                        href={momLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="مشاهده لینک جلسه (MOM)"
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 999,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "rgba(59,130,246,0.12)",
+                          color: "#3b82f6",
+                          boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <FiLink size={16} />
+                      </a>
+                    ) : (
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 999,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "rgba(15,23,42,0.06)",
+                          color: "#3b82f6",
+                          boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                        }}
+                      >
+                        <FiCalendar size={16} />
+                      </div>
+                    )
+                  }
+                />
+
+                <StatCard
+                  label="Weekly Trips"
+                  value={latest?.weekly_trips ?? 0}
+                  delta={deltas.weekly_trips}
+                  Icon={FiNavigation}
+                  accent="#0d9488"
+                />
+              </div>
+            </div>
+
+            <div>
+              <GroupSalesBars data={salesBarData} />
+            </div>
+          </div>
+        </section>
+
+        {/* Members + DealsExec + AR */}
+        <section className="section" style={{ marginTop: 32 }}>
+          <div
+            className="bottom-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 16,
+              alignItems: "flex-start",
+            }}
+          >
+            <div>
+              <MembersHistoryChart rows={members[groupKey] || []} />
+            </div>
+
+            <div>
+              <DealsExecTable rows={dealsForGroup} />
+              <ARListTable rows={arForGroup} />
+            </div>
+          </div>
+        </section>
+
+        {hasCeoMessage && (
+          <section className="section" style={{ marginTop: 32 }}>
+            <CeoMessage text={rawCeoText} />
+          </section>
+        )}
+
+        <section className="section">
+          <div className="news-block" style={{ marginTop: 24 }}>
+            <NewsTickerEn />
+          </div>
+        </section>
+      </main>
+    </>
   );
 }

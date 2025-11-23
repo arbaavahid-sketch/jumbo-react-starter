@@ -58,7 +58,7 @@ body {
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
     sans-serif;
-  direction: ltr; /* مهم: LTR */
+  direction: ltr;
 }
 
 /* کانتینر عمومی صفحات */
@@ -69,7 +69,7 @@ body {
   padding: 0 24px;
 }
 
-/* گرید عمومی و کارت‌های ساده (برای جاهای دیگه) */
+/* گرید عمومی */
 .grid {
   display: grid;
   gap: 16px;
@@ -147,81 +147,27 @@ body {
   margin-top: 24px;
 }
 
-/* برای جاهایی که کلاس گذاشتی: بخش خبر و پایین صفحه */
+/* بخش خبر */
 .news-section .news-block {
-  /* فعلاً چیزی خاص لازم نیست؛ پایین در مانیتور بزرگ تنظیم می‌کنیم */
+  margin-bottom: 20px;
 }
 
+/* پایین صفحه: چارت اعضا + جدول‌ها */
 .bottom-grid {
-  /* روی دسکتاپ معمولی همان استایلی که تو JSX دادی کار می‌کند.
-     برای مانیتور بزرگ پایین override می‌کنیم. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
 }
 
-/* ========== نمای مخصوص مانیتورهای بزرگ (تلویزیون / 27 اینچ به بالا) ========== */
+/* نماهای خیلی بزرگ فقط spacing رو یکم بهتر می‌کنن، بدون zoom */
 @media (min-width: 1600px) {
-  /* کل صفحه کمی زوم بشه → خواناتر */
-  body {
-    zoom: 1.2;
-  }
-
-  /* داشبورد تا 1600px پهن بشه و دو طرف خیلی خالی نماند */
   .container {
     max-width: 1600px;
-    margin: 24px auto;
-    padding: 0 40px;
-  }
-
-  /* فاصله عمودی بین سکشن‌ها بیشتر و مرتب‌تر */
-  .section {
-    margin-top: 32px;
-  }
-
-  /* بلاک‌های خبر کمی فشرده‌تر، برای جا دادن بقیه محتوا */
-  .news-section .news-block {
-    margin-bottom: 12px !important;
-  }
-
-  /* چیدمان KPI + ستون راست (نمودار فروش) روی مانیتور */
-  .group-grid {
-    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.3fr);
-    gap: 26px;
-  }
-
-  /* KPI ها روی مانیتور کمی جمع‌وجور اما خواناتر */
-  .kpi-grid {
-    gap: 22px;
-  }
-
-  /* پایین صفحه: چارت اعضا + جدول دیل + AR */
-  .bottom-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
-    gap: 24px;
   }
 }
 
-/* ========== نمای مخصوص مانیتورهای خیلی بزرگ (۴K / 55 اینچ و ...) ========== */
 @media (min-width: 2000px) {
-  /* زوم بیشتر برای خوانایی از دور */
-  body {
-    zoom: 1.35;
-  }
-
-  /* کانتینر عریض‌تر، ولی همچنان کمی حاشیه از دو طرف */
   .container {
     max-width: 1900px;
-    padding: 0 60px;
-  }
-
-  .group-grid {
-    gap: 30px;
-  }
-
-  .kpi-grid {
-    gap: 26px;
-  }
-
-  .bottom-grid {
-    gap: 30px;
   }
 }
