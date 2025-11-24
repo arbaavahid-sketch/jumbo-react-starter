@@ -679,23 +679,25 @@ Technical Approval Queue
             </div>
           ) : (
             <div
-              style={{
-                borderRadius: 20,
-                overflow: "hidden",
-                boxShadow:
-                  "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-                background: "#ffffff",
-                maxHeight: 340,
-                overflowY: "auto",
-              }}
-            >
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: 13,
-                }}
-              >
+  style={{
+    borderRadius: 20,
+    boxShadow:
+      "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+    background: "#ffffff",
+    maxHeight: 340,
+    overflowY: "auto",   // اسکرول عمودی
+    overflowX: "auto",   // اسکرول افقی (برای موبایل خیلی مهمه)
+  }}
+>
+  <table
+    style={{
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 13,
+      minWidth: 600,      // که جدول مجبور باشه افقی اسکرول بشه
+    }}
+  >
+
                 <thead>
                   <tr
                     style={{
