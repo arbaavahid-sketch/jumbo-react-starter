@@ -28,7 +28,7 @@ export default function CeoMessage({ text }) {
         }}
       >
         <Image
-          src="/ceo-avatar.svg" // یا هر عکسی که گذاشتی
+          src="/ceo.png" // یا هر عکسی که گذاشتی
           alt="CEO"
           width={72}
           height={72}

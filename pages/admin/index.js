@@ -210,7 +210,7 @@ export default function Admin() {
             }}
           >
             <img
-              src="/company-logo.svg"
+              src="/company-logo.png"
               alt="Company Logo"
               style={{
                 width: "100%",

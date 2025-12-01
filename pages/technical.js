@@ -914,7 +914,7 @@ Technical Approval Queue
               }}
             >
               <img
-                src="/company-logo.svg"
+                src="/company-logo.png"
                 style={{ width: 150, height: 70, objectFit: "contain" }}
                 alt="Company logo"
               />
