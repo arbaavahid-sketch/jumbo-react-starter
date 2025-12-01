@@ -72,7 +72,7 @@ export default function LoginPage() {
           }}
         >
           <img
-            src="/company-logo.svg"
+            src="/company-logo.png"
             alt="Artin Azma"
             style={{ height: 46, objectFit: "contain" }}
           />

@@ -105,20 +105,19 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
         padding: 16,
         boxShadow:
           "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
-        overflow: "hidden",
-        transition: "transform 160ms ease, box-shadow 160ms ease",
+        overflow: "visible",
+        transition: "box-shadow 160ms ease",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-2px)";
         e.currentTarget.style.boxShadow =
           "0 20px 55px rgba(15,23,42,0.14), 0 0 0 1px rgba(148,163,184,0.3)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
         e.currentTarget.style.boxShadow =
           "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)";
       }}
     >
+
       <div
         style={{
           position: "relative",
@@ -245,6 +244,10 @@ export default function GroupDashboard() {
   const arForGroup = arAll.filter(
     (r) => toStr(r.group).toUpperCase() === groupKey
   );
+  const megaDealsAll = ensureArray(raw.mega_deals_details || raw.mega_deals); // هر کدوم تو API هست
+  const megaDealsForGroup = megaDealsAll.filter(
+    (r) => toStr(r.group).toUpperCase() === groupKey
+  );
 
   const group =
     groups.find((g) => toStr(g.id) === id) ||
@@ -358,7 +361,7 @@ export default function GroupDashboard() {
           }}
         >
           <img
-            src="/company-logo.svg"
+            src="/company-logo.png"
             alt="company logo"
             style={{
               width: 160,
@@ -439,14 +442,14 @@ export default function GroupDashboard() {
                 Icon={FiActivity}
                 accent="#ec4899"
               />
-              <StatCard
-                label="Mega Projects"
-                value={latest?.mega_deals ?? 0}
-                delta={deltas.mega_deals}
-                Icon={FiAward}
-                accent="#eab308"
+               <StatCard
+               label="Mega Projects"
+               value={latest?.mega_deals ?? 0}
+               delta={deltas.mega_deals}
+               accent="#eab308"
+               actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
               />
-
+               
               {/* Last Group Meeting + لینک MOM */}
               <StatCard
                 label="Last Group Meeting"
@@ -532,5 +535,140 @@ export default function GroupDashboard() {
         </div>
       </section>
     </main>
+  );
+}
+// ---------- MegaDealsIcon (آیکون + پنل ثابت گوشه صفحه) ----------
+function MegaDealsIcon({ deals }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* آیکون کوچک روی کارت */}
+      <div style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          title="نمایش Mega Deals"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 999,
+            border: "1px solid rgba(148,163,184,0.6)",
+            background: "rgba(250,250,250,0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <FiAward size={16} color="#eab308" />
+        </button>
+      </div>
+
+      {/* اگر باز بود → پنل گوشه صفحه */}
+      {open && (
+        <>
+          {/* لایه برای بستن با کلیک بیرون */}
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "transparent",
+              zIndex: 9998,
+            }}
+          />
+
+          {/* پنل ثابت */}
+          <div
+            style={{
+              position: "fixed",
+              top: 90,
+              right: 40,
+              minWidth: 360,
+              maxHeight: 320,
+              background: "#ffffff",
+              borderRadius: 16,
+              boxShadow:
+                "0 20px 60px rgba(15,23,42,0.25), 0 0 0 1px rgba(148,163,184,0.45)",
+              padding: 14,
+              zIndex: 9999,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                Mega Deals
+              </div>
+
+              <button
+                onClick={() => setOpen(false)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: 20,
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {!deals || deals.length === 0 ? (
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                No Mega Deals
+              </div>
+            ) : (
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  maxHeight: 260,
+                  overflowY: "auto",
+                }}
+              >
+                {deals.map((d, i) => (
+                  <li
+                    key={i}
+                    style={{
+                      padding: "6px 4px",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>
+                      {i + 1}. {d.project_name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b7280",
+                        display: "flex",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <span>ID: {d.mega_deal_id}</span>
+                      <span>Owner: {d.owner}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </>
   );
 }

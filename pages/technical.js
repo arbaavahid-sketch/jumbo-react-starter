@@ -715,7 +715,7 @@ Technical Approval Queue
                         whiteSpace: "nowrap",
                       }}
                     >
-                      Group
+                      Owner
                     </th>
                     <th
                       style={{

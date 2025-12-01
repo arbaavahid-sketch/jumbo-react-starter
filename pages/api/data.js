@@ -66,6 +66,8 @@ function mapSheetsToPayload({
   ceoSheet = [],
   arListSheet = [],
   techQueueSheet = [], // 👈 شیت technical_Queue_Details
+  megaDealsSheet = [],      // 👈 این
+
 }) {
   // weekly_reports
   const weekly_reports = weeklySheet
@@ -275,6 +277,16 @@ function mapSheetsToPayload({
       };
     })
     .filter((r) => r.group && r.deal);
+  // ✅ mega_deals_details: از شیت mega_deals (date, group, mega_deal_id, project_name, owner)
+  const mega_deals_details = megaDealsSheet
+    .map((r) => ({
+      date: r.date || "",
+      group: String(r.group || "").toUpperCase(),
+      mega_deal_id: r.mega_deal_id || r.mega_deal_id || "",
+      project_name: r.project_name || "",
+      owner: r.owner || "",
+    }))
+    .filter((r) => r.group && r.mega_deal_id);
 
 
   return {
@@ -287,6 +299,8 @@ function mapSheetsToPayload({
     history,
     ar_list,
     technical_queue,
+    mega_deals_details,   // 👈 این
+
   };
 }
 
@@ -302,6 +316,7 @@ export default async function handler(req, res) {
       SHEET_CEO_MSG_CSV_URL,
       SHEET_AR_LIST_CSV_URL,
       SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
+      SHEET_MEGA_DEALS_CSV_URL
     } = process.env;
 
     const fetchCSV = async (url) => {
@@ -311,14 +326,15 @@ export default async function handler(req, res) {
       return parseCSV(await r.text());
     };
 
-    let weeklySheet = [],
+        let weeklySheet = [],
       membersSheet = [],
       latestSheet = [],
       groupsSheet = [],
       dealsSheet = [],
       ceoSheet = [],
       arListSheet = [],
-      techQueueSheet = [];
+      techQueueSheet = [],
+      megaDealsSheet = [];   // ✅ اینجا همون‌جا تعریف می‌شه
 
     try {
       weeklySheet = await fetchCSV(SHEET_WEEKLY_CSV_URL);
@@ -329,6 +345,8 @@ export default async function handler(req, res) {
       ceoSheet = await fetchCSV(SHEET_CEO_MSG_CSV_URL);
       arListSheet = await fetchCSV(SHEET_AR_LIST_CSV_URL);
       techQueueSheet = await fetchCSV(SHEET_TECH_QUEUE_CSV_URL);
+      megaDealsSheet = await fetchCSV(SHEET_MEGA_DEALS_CSV_URL); // 👈 این
+
     } catch (e) {
       console.warn("CSV fetch failed — using sample.json", e);
 
@@ -365,6 +383,7 @@ export default async function handler(req, res) {
       ceoSheet,
       arListSheet,
       techQueueSheet,
+       megaDealsSheet,   // 👈 جدید
     });
 
     res.status(200).json(payload);
