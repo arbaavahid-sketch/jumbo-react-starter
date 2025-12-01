@@ -110,10 +110,11 @@ export default function TechnicalDashboard() {
   });
 
   const ceoMessages = mainData?.ceo_messages || {};
-  const ceoText =
-    ceoMessages.TECH ||
-    ceoMessages.Technical ||
-    "Technical CEO message — editable in CEO Messages panel.";
+const ceoText =
+  ceoMessages.TECH ||
+  ceoMessages.TECHNICAL ||
+  "Technical CEO message — editable in CEO Messages panel.";
+
 
   // جدول Tech Queue از /api/data
   const techQueueRaw = Array.isArray(mainData?.technical_queue)

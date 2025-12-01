@@ -81,13 +81,13 @@ export default function TechnicalQueueTable({ rows = [] }) {
               <th style={thStyle}>Center</th>
               <th style={thStyle}>Subject</th>
               <th style={thStyle}>Status</th>
-              <th style={thStyle}>Group</th>
+              <th style={thStyle}>owner</th>
             </tr>
           </thead>
           <tbody>
             {data.map((r, idx) => (
               <tr
-                key={`${r.group}-${r.deal}-${idx}`}
+                key={`${r.owner}-${r.deal}-${idx}`}
                 style={{
                   borderBottom: "1px solid #e5e7eb",
                   background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
@@ -100,7 +100,7 @@ export default function TechnicalQueueTable({ rows = [] }) {
                 <td style={tdStyle}>{r.center || "-"}</td>
                 <td style={tdStyle}>{r.subject || "-"}</td>
                 <td style={tdStyle}>{r.status || "-"}</td>
-                <td style={tdStyle}>{r.group || "-"}</td>
+                <td style={tdStyle}>{r.owner || "-"}</td>
               </tr>
             ))}
           </tbody>

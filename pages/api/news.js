@@ -7,29 +7,34 @@ const SOURCES = [
     url: "https://www.bbc.co.uk/persian/index.xml",
   },
   {
-    id: "mehr",
-    name: "Mehr News",
-    url: "https://www.mehrnews.com/rss",
+    id: "shana-oil",
+    name: "Shana - نفت",
+    url: "https://www.shana.ir/rss/tp/4",
   },
   {
-    id: "tasnim",
-    name: "Tasnim News",
-    url: "https://www.tasnimnews.com/fa/rss/feed/0/News",
+    id: "shana-gas",
+    name: "Shana - گاز",
+    url: "https://www.shana.ir/rss/tp/13",
   },
   {
-    id: "eghtesadonline",
-    name: "Eghtesad Online",
-    url: "https://www.eghtesadonline.com/rss",
+    id: "shana-refining",
+    name: "Shana - پالایش",
+    url: "https://www.shana.ir/rss/tp/18",
   },
   {
-    id: "isna",
-    name: "ISNA",
-    url: "https://www.isna.ir/rss",
+    id: "shana-petrochem",
+    name: "Shana - پتروشیمی",
+    url: "https://www.shana.ir/rss/tp/14",
   },
   {
     id: "euronews-fa",
     name: "Euronews Farsi",
     url: "https://fa.euronews.com/rss?level=theme&name=news",
+  },
+  {
+    id: "shana-all",
+    name: "Shana - کل اخبار",
+    url: "https://www.shana.ir/rss",
   },
   // هر منبع دیگه‌ای خواستی اینجا اضافه کن
 ];

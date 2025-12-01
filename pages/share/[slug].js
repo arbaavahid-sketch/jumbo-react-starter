@@ -26,6 +26,7 @@ import {
   FiNavigation,
   FiLink,
 } from "react-icons/fi";
+import React from "react";
 
 // ---------- getServerSideProps ----------
 export async function getServerSideProps(context) {
@@ -223,18 +224,28 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
   const arForGroup = arAll.filter(
     (r) => toStr(r.group).toUpperCase() === groupKey
   );
+    // ✅ Mega Deals
+  const megaDealsAll = ensureArray(
+    raw.mega_deals_details || raw.mega_deals
+  );
 
-  const group =
-    groups.find(
-      (g) => toStr(g.key || g.code || g.slug).toUpperCase() === groupKey
-    ) || null;
+  // نرمال کردن group (مثلاً "Group A" → "A")
+  const normalizeGroup = (v) =>
+    toStr(v)
+      .replace(/group/gi, "")
+      .trim()
+      .toUpperCase();
 
-  if (!group)
-    return (
-      <main style={{ padding: 24 }}>
-        <h1>Group not found</h1>
-      </main>
-    );
+  // اول سعی می‌کنیم فقط دیل‌های همین گروه را بگیریم
+  let megaDealsForGroup = megaDealsAll.filter(
+    (r) => normalizeGroup(r.group) === groupKey
+  );
+
+  // اگر به هر دلیلی خالی شد، همه مگا دیل‌ها را نشان بده
+  if (!megaDealsForGroup.length) {
+    megaDealsForGroup = megaDealsAll;
+  }
+
 
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
@@ -327,7 +338,7 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
             }}
           >
             <img
-              src="/company-logo.svg"
+              src="/company-logo.png"
               alt="company logo"
               style={{
                 width: 160,
@@ -401,12 +412,14 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
                   accent="#ec4899"
                 />
                 <StatCard
-                  label="Mega Projects"
-                  value={latest?.mega_deals ?? 0}
-                  delta={deltas.mega_deals}
-                  Icon={FiAward}
-                  accent="#eab308"
-                />
+  label="Mega Projects"
+  value={latest?.mega_deals ?? 0}
+  delta={deltas.mega_deals}
+  accent="#eab308"
+  actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
+/>
+
+
 
                 <StatCard
                   label="Last Group Meeting"
@@ -504,6 +517,141 @@ export default function PublicGroupDashboard({ slug, groupKey }) {
           </div>
         </section>
       </main>
+    </>
+  );
+}
+// ---------- MegaDealsIcon (آیکون + پنل ثابت گوشه صفحه) ----------
+function MegaDealsIcon({ deals }) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <>
+      {/* آیکون کوچک روی کارت */}
+      <div style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          title="نمایش Mega Deals"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 999,
+            border: "1px solid rgba(148,163,184,0.6)",
+            background: "rgba(250,250,250,0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <FiAward size={16} color="#eab308" />
+        </button>
+      </div>
+
+      {open && (
+        <>
+          {/* کلیک بیرون → بسته شود */}
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "transparent",
+              zIndex: 9998,
+            }}
+          />
+
+          {/* پنل لیست مگا دیل‌ها */}
+          <div
+            style={{
+              position: "fixed",
+              top: 90,
+              right: 40,
+              minWidth: 360,
+              maxHeight: 320,
+              background: "#ffffff",
+              borderRadius: 16,
+              boxShadow:
+                "0 20px 60px rgba(15,23,42,0.25), 0 0 0 1px rgba(148,163,184,0.45)",
+              padding: 14,
+              zIndex: 9999,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                Mega Deals
+              </div>
+
+              <button
+                onClick={() => setOpen(false)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: 20,
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {!deals || deals.length === 0 ? (
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                No Mega Deals
+              </div>
+            ) : (
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  maxHeight: 260,
+                  overflowY: "auto",
+                }}
+              >
+                {deals.map((d, i) => (
+                  <li
+                    key={i}
+                    style={{
+                      padding: "6px 4px",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>
+                      {i + 1}. {d.project_name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b7280",
+                        display: "flex",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <span>ID: {d.mega_deal_id}</span>
+                      <span>Owner: {d.owner}</span>
+                      <span>Date: {d.date || "-"}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
     </>
   );
 }

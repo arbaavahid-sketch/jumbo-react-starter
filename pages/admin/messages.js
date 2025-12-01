@@ -1,5 +1,6 @@
 // pages/admin/messages.js — پنل مدیریت پیام‌ها برای گروه‌ها + Technical
 
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 
 const fetcher = (url) =>
@@ -26,6 +27,22 @@ export default function AdminMessages() {
     refreshInterval: 60_000,
   });
 
+  const messages = data?.ceo_messages || {};
+
+  // ❗ استیت لوکال برای متن هر کارت
+  const [localMessages, setLocalMessages] = useState({});
+
+  // وقتی دیتا از سرور می‌آید، استیت لوکال را سینک کن
+  useEffect(() => {
+    const initial = {};
+    Object.entries(messages).forEach(([k, v]) => {
+      initial[k] = v || "";
+    });
+    // اگر ردیف TECH در شیت هست ولی خالیه
+    if (!initial.TECH) initial.TECH = "";
+    setLocalMessages(initial);
+  }, [messages]);
+
   if (error)
     return (
       <div style={{ padding: 24, color: "#b91c1c" }}>
@@ -34,15 +51,37 @@ export default function AdminMessages() {
     );
   if (isLoading || !data) return <div style={{ padding: 24 }}>Loading…</div>;
 
-  const messages = data.ceo_messages || {};
+  // پیام فعلی برای نمایش
+  const getCurrentMessage = (key) => {
+    if (key === "TECH") {
+      // اول از استیت لوکال بخوان
+      if (localMessages.TECH !== undefined) return localMessages.TECH;
+      // فالس‌ بک روی داده‌ی خام
+      return (
+        messages.TECH ||
+        messages.TECHNICAL ||
+        messages.Technical ||
+        ""
+      );
+    }
+    return localMessages[key] ?? messages[key] ?? "";
+  };
 
-  const saveMessage = async (group, message) => {
+  // ذخیره روی وبهوک
+  const saveMessage = async (groupKey) => {
+    const value = getCurrentMessage(groupKey);
+
+    // گروهی که برای Apps Script می‌فرستیم
+    const groupToSend = groupKey; // چون تو شیت دقیقا "TECH" نوشته‌ای
+
     await fetch("/api/ceo-message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ group, message }),
+      body: JSON.stringify({ group: groupToSend, message: value }),
     });
-    mutate(); // بعد از ذخیره، دیتا را رفرش کن
+
+    // بعد از ذخیره، داده‌ها را از سرور رفرش کن
+    mutate();
   };
 
   return (
@@ -76,8 +115,7 @@ export default function AdminMessages() {
               color: "#4b5563",
               lineHeight: 1.7,
             }}
-          >
-          </p>
+          ></p>
         </header>
 
         <section
@@ -88,7 +126,7 @@ export default function AdminMessages() {
           }}
         >
           {GROUPS.map((g) => {
-            const current = messages[g.key] || "";
+            const current = getCurrentMessage(g.key);
             return (
               <article
                 key={g.key}
@@ -163,10 +201,13 @@ export default function AdminMessages() {
 
                 {/* textarea پیام */}
                 <textarea
-                  defaultValue={current}
-                  onBlur={async (e) => {
-                    await saveMessage(g.key, e.target.value);
-                  }}
+                  value={current}
+                  onChange={(e) =>
+                    setLocalMessages((prev) => ({
+                      ...prev,
+                      [g.key]: e.target.value,
+                    }))
+                  }
                   placeholder="پیام مدیریت برای این بخش…"
                   style={{
                     position: "relative",
@@ -191,9 +232,31 @@ export default function AdminMessages() {
                     fontSize: 11,
                     opacity: 0.8,
                     position: "relative",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 8,
                   }}
                 >
-                  تغییرات بعد از خروج از باکس (کلیک بیرون) ذخیره می‌شوند.
+                  <span>بعد از ویرایش، روی دکمه Save بزن.</span>
+
+                  <button
+                    type="button"
+                    onClick={() => saveMessage(g.key)}
+                    style={{
+                      padding: "4px 14px",
+                      borderRadius: 999,
+                      border: "1px solid rgba(96,165,250,0.9)",
+                      background:
+                        "linear-gradient(135deg,rgba(59,130,246,0.9),rgba(56,189,248,0.9))",
+                      color: "#f9fafb",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save
+                  </button>
                 </div>
               </article>
             );

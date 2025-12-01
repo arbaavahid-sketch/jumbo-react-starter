@@ -259,24 +259,28 @@ function mapSheetsToPayload({
     }))
     .filter((r) => r.group && r.deal_no);
 
-    // ✅ technical_queue: جدول دیل + مرکز + موضوع
+    // ✅ technical_queue: Owner + deal + center + subject + status
   const technical_queue = techQueueSheet
     .map((r) => {
-      const group = String(r.group || r.Group || "").toUpperCase();
+      // تو شیت ستون اسمش Owner است، اینجا به عنوان group استفاده می‌کنیم
+      const group = String(
+        r.group || r.Group || r.Owner || r.owner || ""
+      ).trim();
+
       const deal = (r.deal || r.Deal || "").trim();
       const center = (r.center || r.Center || "").trim();
       const subject = (r.subject || r.Subject || "").trim();
       const status = (r.status || r.Status || "").trim();
 
       return {
-        group,
+        group,   // در UI به عنوان Owner نمایش داده می‌شود
         deal,
         center,
         subject,
-        status,
-      };
+        status,      };
     })
-    .filter((r) => r.group && r.deal);
+    // فقط مطمئن شو شماره دیل خالی نباشه
+    .filter((r) => r.deal);
   // ✅ mega_deals_details: از شیت mega_deals (date, group, mega_deal_id, project_name, owner)
   const mega_deals_details = megaDealsSheet
     .map((r) => ({
