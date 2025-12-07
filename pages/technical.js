@@ -15,6 +15,7 @@ import Head from "next/head";
 import useSWR from "swr";
 import LiveClock from "../components/LiveClock";
 import CeoMessage from "../components/CeoMessage";
+import { useEffect, useRef } from "react";
 
 import {
   FiCalendar,
@@ -110,11 +111,10 @@ export default function TechnicalDashboard() {
   });
 
   const ceoMessages = mainData?.ceo_messages || {};
-const ceoText =
-  ceoMessages.TECH ||
-  ceoMessages.TECHNICAL ||
-  "Technical CEO message — editable in CEO Messages panel.";
-
+  const ceoText =
+    ceoMessages.TECH ||
+    ceoMessages.TECHNICAL ||
+    "Technical CEO message — editable in CEO Messages panel.";
 
   // جدول Tech Queue از /api/data
   const techQueueRaw = Array.isArray(mainData?.technical_queue)
@@ -293,7 +293,7 @@ const ceoText =
           <TechCard
             icon={<FiList />}
             label="Technical Approval Queue"
-            value={t.remaining_queue}
+            value={techQueue.length}
             delta={deltas.queue}
           />
 
@@ -347,7 +347,7 @@ const ceoText =
             alignItems: "flex-start",
           }}
         >
-          {/* Installed Deals at 2025 */}
+          {/* Installed Deals at 2025 — اسکرول اتوماتیک + هدر ثابت */}
           <div>
             <div
               style={{
@@ -376,15 +376,14 @@ const ceoText =
                 No installed deals recorded yet.
               </div>
             ) : (
-              <div
-                style={{
+              <AutoScrollContainer
+                height={180} // حدوداً چهار ردیف
+                speed={1}
+                containerStyle={{
                   borderRadius: 20,
-                  overflow: "hidden",
                   boxShadow:
                     "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
                   background: "#ffffff",
-                  maxHeight: 280,
-                  overflowY: "auto",
                 }}
               >
                 <table
@@ -394,7 +393,13 @@ const ceoText =
                     fontSize: 13,
                   }}
                 >
-                  <thead>
+                  <thead
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
                     <tr
                       style={{
                         background:
@@ -408,6 +413,7 @@ const ceoText =
                           fontWeight: 600,
                           color: "#0f172a",
                           borderBottom: "1px solid rgba(148,163,184,0.5)",
+                          background: "#e0f2fe", // آبی کمرنگ
                           width: 80,
                         }}
                       >
@@ -420,6 +426,7 @@ const ceoText =
                           fontWeight: 600,
                           color: "#0f172a",
                           borderBottom: "1px solid rgba(148,163,184,0.5)",
+                          background: "#e0f2fe", // آبی کمرنگ
                         }}
                       >
                         Center / Subject
@@ -464,11 +471,11 @@ const ceoText =
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </AutoScrollContainer>
             )}
           </div>
 
-          {/* Waiting installation table */}
+          {/* Waiting installation table — بدون اسکرول اتوماتیک */}
           <div>
             <div
               style={{
@@ -650,7 +657,7 @@ const ceoText =
           </div>
         </div>
 
-        {/* جدول Technical Queue – پایین داشبورد */}
+        {/* جدول Technical Queue – پایین داشبورد با اسکرول اتوماتیک + هدر ثابت */}
         <div style={{ marginTop: 36 }}>
           <div
             style={{
@@ -662,7 +669,7 @@ const ceoText =
               marginBottom: 10,
             }}
           >
-Technical Approval Queue
+            Technical Approval Queue
           </div>
 
           {techQueue.length === 0 ? (
@@ -679,27 +686,31 @@ Technical Approval Queue
               No items in technical queue.
             </div>
           ) : (
-            <div
-  style={{
-    borderRadius: 20,
-    boxShadow:
-      "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-    background: "#ffffff",
-    maxHeight: 340,
-    overflowY: "auto",   // اسکرول عمودی
-    overflowX: "auto",   // اسکرول افقی (برای موبایل خیلی مهمه)
-  }}
->
-  <table
-    style={{
-      width: "100%",
-      borderCollapse: "collapse",
-      fontSize: 13,
-      minWidth: 600,      // که جدول مجبور باشه افقی اسکرول بشه
-    }}
-  >
-
-                <thead>
+            <AutoScrollContainer
+              height={180} // حدوداً چهار ردیف
+              speed={1}
+              containerStyle={{
+                borderRadius: 20,
+                boxShadow:
+                  "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+                background: "#ffffff",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                  minWidth: 600,
+                }}
+              >
+                <thead
+                  style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 10,
+                  }}
+                >
                   <tr
                     style={{
                       background:
@@ -713,6 +724,7 @@ Technical Approval Queue
                         fontWeight: 600,
                         color: "#0f172a",
                         borderBottom: "1px solid rgba(148,163,184,0.6)",
+                        background: "#e0f2fe", // آبی کمرنگ
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -725,6 +737,7 @@ Technical Approval Queue
                         fontWeight: 600,
                         color: "#0f172a",
                         borderBottom: "1px solid rgba(148,163,184,0.6)",
+                        background: "#e0f2fe", // آبی کمرنگ
                       }}
                     >
                       Deal
@@ -736,6 +749,7 @@ Technical Approval Queue
                         fontWeight: 600,
                         color: "#0f172a",
                         borderBottom: "1px solid rgba(148,163,184,0.6)",
+                        background: "#e0f2fe", // آبی کمرنگ
                       }}
                     >
                       Center
@@ -747,6 +761,7 @@ Technical Approval Queue
                         fontWeight: 600,
                         color: "#0f172a",
                         borderBottom: "1px solid rgba(148,163,184,0.6)",
+                        background: "#e0f2fe", // آبی کمرنگ
                       }}
                     >
                       Subject
@@ -758,6 +773,7 @@ Technical Approval Queue
                         fontWeight: 600,
                         color: "#0f172a",
                         borderBottom: "1px solid rgba(148,163,184,0.6)",
+                        background: "#e0f2fe", // آبی کمرنگ
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -841,7 +857,7 @@ Technical Approval Queue
                   ))}
                 </tbody>
               </table>
-            </div>
+            </AutoScrollContainer>
           )}
         </div>
       </div>
@@ -893,8 +909,7 @@ Technical Approval Queue
                 fontSize: 13,
                 color: "#6b7280",
               }}
-            >
-            </p>
+            ></p>
           </div>
 
           <div
@@ -954,6 +969,54 @@ Technical Approval Queue
         {body}
       </div>
     </main>
+  );
+}
+
+// کانتینر اسکرول اتومات — نسخه ساده با setInterval
+function AutoScrollContainer({
+  children,
+  height = 280,
+  speed = 1, // پیکسل در هر 100ms
+  containerStyle = {},
+}) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const interval = setInterval(() => {
+      if (!el) return;
+
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      if (maxScroll <= 0) {
+        // محتوا کوتاهه، نیازی به اسکرول نیست
+        return;
+      }
+
+      if (el.scrollTop >= maxScroll - 1) {
+        // رسید به انتها → برگرد بالا
+        el.scrollTop = 0;
+      } else {
+        el.scrollTop += speed;
+      }
+    }, 100); // هر 100ms
+
+    return () => clearInterval(interval);
+  }, [speed]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        height,
+        overflowY: "auto",
+        overflowX: "auto",
+        ...containerStyle,
+      }}
+    >
+      {children}
+    </div>
   );
 }
 
