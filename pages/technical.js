@@ -19,14 +19,15 @@ import { useEffect, useRef } from "react";
 
 import {
   FiCalendar,
-  FiPlusCircle,
-  FiCheckCircle,
-  FiList,
-  FiTruck,
-  FiBriefcase,
-  FiCamera,
+  FiTrendingUp,
+  FiPieChart,
+  FiLayers,
+  FiClock,
+  FiMapPin,
+  FiMonitor,
   FiBookOpen,
   FiLink,
+  FiCheckSquare,
 } from "react-icons/fi";
 
 const fetcher = async (url) => {
@@ -258,97 +259,187 @@ export default function TechnicalDashboard() {
       <div
         style={{
           borderRadius: 28,
-          padding: 24,
+          padding: 20,
           background: "#f9fafb",
           boxShadow:
-            "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.3)",
+            "0 20px 50px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
         }}
       >
-        {/* کارت‌ها */}
+        {/* بالای داشبورد: کارت‌ها + نمودار کنار هم */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-            gap: 18,
+            gridTemplateColumns: "minmax(0,2.1fr) minmax(0,1.5fr)",
+            gap: 20,
+            alignItems: "flex-start", 
           }}
         >
-          <TechCard
-            icon={<FiCalendar />}
-            label="Date of Publish"
-            value={t.date}
-          />
+          {/* کارت‌ها */}
+          <div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                gap: 12,
+              }}
+            >
+              <TechCard
+                icon={<FiCalendar />}
+                label="DATE OF PUBLISH"
+                value={t.date}
+              />
 
-          <TechCard
-            icon={<FiPlusCircle />}
-            label="Deals added this week"
-            value={t.deals_added_technical}
-          />
+              <TechCard
+                icon={<FiTrendingUp />}
+                label="DEALS ADDED THIS WEEK"
+                value={t.deals_added_technical}
+              />
 
-          <TechCard
-            icon={<FiCheckCircle />}
-            label="Total deals done (week)"
-            value={t.total_deals_week}
-          />
+              <TechCard
+                icon={<FiPieChart />}
+                label="TOTAL DEALS DONE (WEEK)"
+                value={t.total_deals_week}
+              />
 
-          <TechCard
-            icon={<FiList />}
-            label="Technical Approval Queue"
-            value={techQueue.length}
-            delta={deltas.queue}
-          />
+              <TechCard
+                icon={<FiLayers />}
+                label="TECHNICAL APPROVAL QUEUE"
+                value={techQueue.length}
+                delta={deltas.queue}
+              />
 
-          <TechCard
-            icon={<FiTruck />}
-            label="Waiting for Installation"
-            value={t.waiting_installation}
-            delta={deltas.waiting}
-          />
+              <TechCard
+                icon={<FiClock />}
+                label="WAITING FOR INSTALLATION"
+                value={t.waiting_installation}
+                delta={deltas.waiting}
+              />
 
-          <TechCard
-            icon={<FiCheckCircle />}
-            label="Installed Deals at 2025"
-            value={installedCount}
-            delta={installedDelta}
-          />
+              <TechCard
+                icon={<FiCheckSquare />}
+                label="INSTALLED DEALS AT 2025"
+                value={installedCount}
+                delta={installedDelta}
+              />
 
-          <TechCard
-            icon={<FiBriefcase />}
-            label="Promotion trips / meetings"
-            value={t.promotion_trips}
-          />
+              <TechCard
+                icon={<FiMapPin />}
+                label="PROMOTION TRIPS / MEETINGS"
+                value={t.promotion_trips}
+              />
 
-          <TechCard
-            icon={<FiCamera />}
-            label="Demo shows (quarterly)"
-            value={t.demo_shows}
-          />
+              <TechCard
+                icon={<FiMonitor />}
+                label="DEMO SHOWS (QUARTERLY)"
+                value={t.demo_shows}
+              />
 
-          <TechCard
-            icon={<FiBookOpen />}
-            label="Internal trainings (quarterly)"
-            value={t.internal_trainings}
-          />
+              <TechCard
+                icon={<FiBookOpen />}
+                label="INTERNAL TRAININGS (QUARTERLY)"
+                value={t.internal_trainings}
+              />
 
-          <TechCard
-            icon={<FiLink />}
-            label="MOM link"
-            value="Open"
-            link={t.mom_link}
-          />
+              <TechCard
+                icon={<FiLink />}
+                label="MOM LINK"
+                value="Open"
+                link={t.mom_link}
+              />
+            </div>
+          </div>
+
+          {/* نمودار کنار کارت‌ها - کوتاه‌تر شده */}
+          <div
+            style={{
+              borderRadius: 20,
+              overflow: "hidden",
+              boxShadow:
+                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+              background: "#ffffff",
+              padding: "12px 16px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 800,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#0f172a",
+                marginBottom: 4,
+              }}
+            >
+              DEALS DONE DURING THE WEEK BY PERSON
+            </div>
+
+            <div style={{ height: 220, marginTop: 4 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={dealsChartData}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" stroke="#6b7280" />
+                  <YAxis
+                    allowDecimals={false}
+                    stroke="#6b7280"
+                    domain={[0, "dataMax + 2"]}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid rgba(148,163,184,0.6)",
+                      borderRadius: 8,
+                      color: "#0f172a",
+                    }}
+                  />
+                  <Legend />
+                  <Bar
+                    dataKey="weeklyDeals"
+                    name="Deals this week"
+                    fill="#38bdf8"
+                    radius={[6, 6, 0, 0]}
+                    barSize={30}
+                  />
+                  <Bar
+                    dataKey="totalDeals"
+                    name="Total deals"
+                    fill="#0f766e"
+                    radius={[6, 6, 0, 0]}
+                    barSize={30}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
-        {/* سه بخش پایین: Installed + Waiting + Chart */}
+        {/* سه جدول در یک ردیف، هم‌اندازه و شیک */}
         <div
           style={{
-            marginTop: 32,
+            marginTop: 24,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-            gap: 24,
-            alignItems: "flex-start",
+            gridTemplateColumns: "1.1fr 1.1fr 1fr",
+            gap: 20,
+            alignItems: "stretch",
           }}
         >
-          {/* Installed Deals at 2025 — اسکرول اتوماتیک + هدر ثابت */}
-          <div>
+          {/* Installed deals — اسکرول اتوماتیک + هدر آبی */}
+          <div
+            style={{
+              borderRadius: 20,
+              background: "#ffffff",
+              boxShadow:
+                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+              padding: 12,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 260,
+            }}
+          >
             <div
               style={{
                 fontSize: 12,
@@ -359,7 +450,7 @@ export default function TechnicalDashboard() {
                 marginBottom: 8,
               }}
             >
-              Installed deals
+              INSTALLED DEALS
             </div>
 
             {installedRows.length === 0 ? (
@@ -371,19 +462,19 @@ export default function TechnicalDashboard() {
                   background: "rgba(148,163,184,0.1)",
                   color: "#6b7280",
                   border: "1px dashed rgba(148,163,184,0.6)",
+                  flex: 1,
                 }}
               >
                 No installed deals recorded yet.
               </div>
             ) : (
               <AutoScrollContainer
-                height={180} // حدوداً چهار ردیف
+                height={210}
                 speed={1}
                 containerStyle={{
-                  borderRadius: 20,
-                  boxShadow:
-                    "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+                  borderRadius: 16,
                   background: "#ffffff",
+                  boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
                 }}
               >
                 <table
@@ -400,20 +491,16 @@ export default function TechnicalDashboard() {
                       zIndex: 10,
                     }}
                   >
-                    <tr
-                      style={{
-                        background:
-                          "linear-gradient(135deg,rgba(16,185,129,0.12),rgba(56,189,248,0.12))",
-                      }}
-                    >
+                    <tr>
                       <th
                         style={{
-                          padding: "8px 12px",
+                          padding: "8px 10px",
                           textAlign: "left",
-                          fontWeight: 600,
+                          fontWeight: 700,
                           color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.5)",
-                          background: "#e0f2fe", // آبی کمرنگ
+                          borderBottom:
+                            "1px solid rgba(148,163,184,0.6)",
+                          background: "#e0f2fe",
                           width: 80,
                         }}
                       >
@@ -421,12 +508,13 @@ export default function TechnicalDashboard() {
                       </th>
                       <th
                         style={{
-                          padding: "8px 12px",
+                          padding: "8px 10px",
                           textAlign: "left",
-                          fontWeight: 600,
+                          fontWeight: 700,
                           color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.5)",
-                          background: "#e0f2fe", // آبی کمرنگ
+                          borderBottom:
+                            "1px solid rgba(148,163,184,0.6)",
+                          background: "#e0f2fe",
                         }}
                       >
                         Center / Subject
@@ -438,12 +526,13 @@ export default function TechnicalDashboard() {
                       <tr
                         key={idx}
                         style={{
-                          background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                          background:
+                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
                         }}
                       >
                         <td
                           style={{
-                            padding: "7px 12px",
+                            padding: "7px 10px",
                             borderBottom:
                               idx === installedRows.length - 1
                                 ? "none"
@@ -457,7 +546,7 @@ export default function TechnicalDashboard() {
                         </td>
                         <td
                           style={{
-                            padding: "7px 12px",
+                            padding: "7px 10px",
                             borderBottom:
                               idx === installedRows.length - 1
                                 ? "none"
@@ -475,8 +564,19 @@ export default function TechnicalDashboard() {
             )}
           </div>
 
-          {/* Waiting installation table — بدون اسکرول اتوماتیک */}
-          <div>
+          {/* Waiting installation — جدول وسطی */}
+          <div
+            style={{
+              borderRadius: 20,
+              background: "#ffffff",
+              boxShadow:
+                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+              padding: 12,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 260,
+            }}
+          >
             <div
               style={{
                 fontSize: 12,
@@ -487,7 +587,7 @@ export default function TechnicalDashboard() {
                 marginBottom: 8,
               }}
             >
-              Waiting installation details
+              WAITING INSTALLATION DETAILS
             </div>
 
             {waitingRows.length === 0 ? (
@@ -499,6 +599,7 @@ export default function TechnicalDashboard() {
                   background: "rgba(148,163,184,0.1)",
                   color: "#6b7280",
                   border: "1px dashed rgba(148,163,184,0.6)",
+                  flex: 1,
                 }}
               >
                 No items in installation queue.
@@ -506,11 +607,10 @@ export default function TechnicalDashboard() {
             ) : (
               <div
                 style={{
-                  borderRadius: 20,
-                  overflow: "hidden",
-                  boxShadow:
-                    "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-                  background: "#ffffff",
+                  borderRadius: 16,
+                  overflow: "auto",
+                  boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
+                  flex: 1,
                 }}
               >
                 <table
@@ -520,49 +620,54 @@ export default function TechnicalDashboard() {
                     fontSize: 13,
                   }}
                 >
-                  <thead>
-                    <tr
-                      style={{
-                        background:
-                          "linear-gradient(135deg,rgba(59,130,246,0.12),rgba(56,189,248,0.12))",
-                      }}
-                    >
-                      <th
-                        style={{
-                          padding: "8px 12px",
-                          textAlign: "left",
-                          fontWeight: 600,
-                          color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.5)",
-                          width: 80,
-                        }}
-                      >
-                        ID
-                      </th>
-                      <th
-                        style={{
-                          padding: "8px 12px",
-                          textAlign: "left",
-                          fontWeight: 600,
-                          color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.5)",
-                        }}
-                      >
-                        Center / Subject
-                      </th>
-                    </tr>
-                  </thead>
+                  <thead
+  style={{
+    position: "sticky",
+    top: 0,
+    zIndex: 10,
+  }}
+>
+  <tr>
+    <th
+      style={{
+        padding: "8px 12px",
+        textAlign: "left",
+        fontWeight: 600,
+        color: "#0f172a",
+        borderBottom: "1px solid rgba(148,163,184,0.5)",
+        background: "#e0f2fe",   // 👈 آبی کمرنگ مثل بقیه
+        width: 80,
+      }}
+    >
+      ID
+    </th>
+    <th
+      style={{
+        padding: "8px 12px",
+        textAlign: "left",
+        fontWeight: 600,
+        color: "#0f172a",
+        borderBottom: "1px solid rgba(148,163,184,0.5)",
+        background: "#e0f2fe",   // 👈 یکسان‌سازی
+      }}
+    >
+      Center / Subject
+    </th>
+  </tr>
+</thead>
+
                   <tbody>
                     {waitingRows.map((row, idx) => (
                       <tr
                         key={idx}
                         style={{
-                          background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                          background:
+                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
                         }}
                       >
                         <td
                           style={{
-                            padding: "7px 12px",
+                            padding: "7px 10px",
                             borderBottom:
                               idx === waitingRows.length - 1
                                 ? "none"
@@ -576,7 +681,7 @@ export default function TechnicalDashboard() {
                         </td>
                         <td
                           style={{
-                            padding: "7px 12px",
+                            padding: "7px 10px",
                             borderBottom:
                               idx === waitingRows.length - 1
                                 ? "none"
@@ -594,8 +699,19 @@ export default function TechnicalDashboard() {
             )}
           </div>
 
-          {/* Chart */}
-          <div>
+          {/* Technical Approval Queue — اسکرول اتوماتیک */}
+          <div
+            style={{
+              borderRadius: 20,
+              background: "#ffffff",
+              boxShadow:
+                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+              padding: 12,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 260,
+            }}
+          >
             <div
               style={{
                 fontSize: 12,
@@ -606,259 +722,198 @@ export default function TechnicalDashboard() {
                 marginBottom: 8,
               }}
             >
-              Deals done during the week by person
+              TECHNICAL APPROVAL QUEUE
             </div>
 
-            <div
-              style={{
-                borderRadius: 20,
-                overflow: "hidden",
-                boxShadow:
-                  "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-                background: "#ffffff",
-                height: 260,
-                padding: "12px 16px",
-              }}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={dealsChartData}
-                  margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" stroke="#6b7280" />
-                  <YAxis allowDecimals={false} stroke="#6b7280" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#ffffff",
-                      border: "1px solid rgba(148,163,184,0.6)",
-                      borderRadius: 8,
-                      color: "#0f172a",
-                    }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="weeklyDeals"
-                    name="Deals this week"
-                    fill="#38bdf8"
-                    radius={[6, 6, 0, 0]}
-                    barSize={38}
-                  />
-                  <Bar
-                    dataKey="totalDeals"
-                    name="Total deals"
-                    fill="#0f766e"
-                    radius={[6, 6, 0, 0]}
-                    barSize={38}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* جدول Technical Queue – پایین داشبورد با اسکرول اتوماتیک + هدر ثابت */}
-        <div style={{ marginTop: 36 }}>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              color: "#6b7280",
-              marginBottom: 10,
-            }}
-          >
-            Technical Approval Queue
-          </div>
-
-          {techQueue.length === 0 ? (
-            <div
-              style={{
-                fontSize: 13,
-                padding: 10,
-                borderRadius: 16,
-                background: "rgba(148,163,184,0.1)",
-                color: "#6b7280",
-                border: "1px dashed rgba(148,163,184,0.6)",
-              }}
-            >
-              No items in technical queue.
-            </div>
-          ) : (
-            <AutoScrollContainer
-              height={180} // حدوداً چهار ردیف
-              speed={1}
-              containerStyle={{
-                borderRadius: 20,
-                boxShadow:
-                  "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-                background: "#ffffff",
-              }}
-            >
-              <table
+            {techQueue.length === 0 ? (
+              <div
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
                   fontSize: 13,
-                  minWidth: 600,
+                  padding: 10,
+                  borderRadius: 16,
+                  background: "rgba(148,163,184,0.1)",
+                  color: "#6b7280",
+                  border: "1px dashed rgba(148,163,184,0.6)",
+                  flex: 1,
                 }}
               >
-                <thead
+                No items in technical queue.
+              </div>
+            ) : (
+              <AutoScrollContainer
+                height={210}
+                speed={1}
+                containerStyle={{
+                  borderRadius: 16,
+                  background: "#ffffff",
+                  boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
+                }}
+              >
+                <table
                   style={{
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 10,
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: 13,
+                    minWidth: 600,
                   }}
                 >
-                  <tr
+                  <thead
                     style={{
-                      background:
-                        "linear-gradient(135deg,rgba(0,95,158,0.12),rgba(0,184,148,0.12))",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
                     }}
                   >
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.6)",
-                        background: "#e0f2fe", // آبی کمرنگ
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Owner
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.6)",
-                        background: "#e0f2fe", // آبی کمرنگ
-                      }}
-                    >
-                      Deal
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.6)",
-                        background: "#e0f2fe", // آبی کمرنگ
-                      }}
-                    >
-                      Center
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.6)",
-                        background: "#e0f2fe", // آبی کمرنگ
-                      }}
-                    >
-                      Subject
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        color: "#0f172a",
-                        borderBottom: "1px solid rgba(148,163,184,0.6)",
-                        background: "#e0f2fe", // آبی کمرنگ
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {techQueue.map((row, idx) => (
-                    <tr
-                      key={idx}
-                      style={{
-                        background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
-                      }}
-                    >
-                      <td
+                    <tr>
+                      <th
                         style={{
-                          padding: "7px 10px",
+                          padding: "8px 10px",
+                          textAlign: "left",
+                          fontWeight: 700,
+                          color: "#0f172a",
                           borderBottom:
-                            idx === techQueue.length - 1
-                              ? "none"
-                              : "1px solid rgba(226,232,240,0.9)",
-                          fontWeight: 600,
-                          color: "#111827",
+                            "1px solid rgba(148,163,184,0.6)",
+                          background: "#e0f2fe",
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {row.group}
-                      </td>
-                      <td
+                        Owner
+                      </th>
+                      <th
                         style={{
-                          padding: "7px 10px",
+                          padding: "8px 10px",
+                          textAlign: "left",
+                          fontWeight: 700,
+                          color: "#0f172a",
                           borderBottom:
-                            idx === techQueue.length - 1
-                              ? "none"
-                              : "1px solid rgba(226,232,240,0.9)",
-                          color: "#111827",
-                          fontWeight: 500,
+                            "1px solid rgba(148,163,184,0.6)",
+                          background: "#e0f2fe",
                         }}
                       >
-                        {row.deal}
-                      </td>
-                      <td
+                        Deal
+                      </th>
+                      <th
                         style={{
-                          padding: "7px 10px",
+                          padding: "8px 10px",
+                          textAlign: "left",
+                          fontWeight: 700,
+                          color: "#0f172a",
                           borderBottom:
-                            idx === techQueue.length - 1
-                              ? "none"
-                              : "1px solid rgba(226,232,240,0.9)",
-                          color: "#374151",
+                            "1px solid rgba(148,163,184,0.6)",
+                          background: "#e0f2fe",
                         }}
                       >
-                        {row.center || "—"}
-                      </td>
-                      <td
+                        Center
+                      </th>
+                      <th
                         style={{
-                          padding: "7px 10px",
+                          padding: "8px 10px",
+                          textAlign: "left",
+                          fontWeight: 700,
+                          color: "#0f172a",
                           borderBottom:
-                            idx === techQueue.length - 1
-                              ? "none"
-                              : "1px solid rgba(226,232,240,0.9)",
-                          color: "#374151",
+                            "1px solid rgba(148,163,184,0.6)",
+                          background: "#e0f2fe",
                         }}
                       >
-                        {row.subject || "—"}
-                      </td>
-                      <td
+                        Subject
+                      </th>
+                      <th
                         style={{
-                          padding: "7px 10px",
+                          padding: "8px 10px",
+                          textAlign: "left",
+                          fontWeight: 700,
+                          color: "#0f172a",
                           borderBottom:
-                            idx === techQueue.length - 1
-                              ? "none"
-                              : "1px solid rgba(226,232,240,0.9)",
-                          color: row.status ? "#0f766e" : "#9ca3af",
+                            "1px solid rgba(148,163,184,0.6)",
+                          background: "#e0f2fe",
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {row.status || "In process"}
-                      </td>
+                        Status
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </AutoScrollContainer>
-          )}
+                  </thead>
+                  <tbody>
+                    {techQueue.map((row, idx) => (
+                      <tr
+                        key={idx}
+                        style={{
+                          background:
+                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                        }}
+                      >
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            borderBottom:
+                              idx === techQueue.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            fontWeight: 600,
+                            color: "#111827",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {row.group}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            borderBottom:
+                              idx === techQueue.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            color: "#111827",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {row.deal}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            borderBottom:
+                              idx === techQueue.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            color: "#374151",
+                          }}
+                        >
+                          {row.center || "—"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            borderBottom:
+                              idx === techQueue.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            color: "#374151",
+                          }}
+                        >
+                          {row.subject || "—"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            borderBottom:
+                              idx === techQueue.length - 1
+                                ? "none"
+                                : "1px solid rgba(226,232,240,0.9)",
+                            color: row.status ? "#0f766e" : "#9ca3af",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {row.status || "In process"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </AutoScrollContainer>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -1000,7 +1055,7 @@ function AutoScrollContainer({
       } else {
         el.scrollTop += speed;
       }
-    }, 100); // هر 100ms
+    }, 100);
 
     return () => clearInterval(interval);
   }, [speed]);
@@ -1020,31 +1075,48 @@ function AutoScrollContainer({
   );
 }
 
-/* --- کارت‌ها با آیکون --- */
+/* --- کارت‌ها با آیکون (نسخه جمع‌وجور و شیک‌تر) --- */
 function TechCard({ icon, label, value, link, delta }) {
   const hasLink = !!link;
 
   return (
     <div
       style={{
-        borderRadius: 20,
-        padding: 16,
+        borderRadius: 18,
+        padding: 12,
         background:
-          "linear-gradient(135deg,rgba(0,95,158,0.08),rgba(0,184,148,0.06))",
+          "linear-gradient(135deg,rgba(0,95,158,0.06),rgba(0,184,148,0.05))",
         boxShadow:
-          "0 12px 30px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.3)",
+          "0 10px 24px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.25)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        minHeight: 110,
+        minHeight: 90,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 22, color: "#005F9E" }}>{icon}</span>
+        {/* آیکون داخل دایره شیک */}
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 999,
+            background: "rgba(59,130,246,0.12)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 0 0 1px rgba(59,130,246,0.35)",
+          }}
+        >
+          <span style={{ fontSize: 18, color: "#005F9E" }}>{icon}</span>
+        </div>
+
+        {/* لیبل کارت بولدتر */}
         <span
           style={{
             fontSize: 11,
-            color: "#6b7280",
+            color: "#374151",
+            fontWeight: 800,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
           }}
@@ -1055,7 +1127,7 @@ function TechCard({ icon, label, value, link, delta }) {
 
       <div
         style={{
-          marginTop: 10,
+          marginTop: 8,
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-start",
@@ -1064,8 +1136,8 @@ function TechCard({ icon, label, value, link, delta }) {
       >
         <span
           style={{
-            fontSize: 22,
-            fontWeight: 700,
+            fontSize: 20,
+            fontWeight: 800,
             color: "#0f172a",
           }}
         >
@@ -1078,12 +1150,12 @@ function TechCard({ icon, label, value, link, delta }) {
                 style={{
                   color: "#ffffff",
                   textDecoration: "none",
-                  fontSize: 14,
-                  padding: "6px 14px",
+                  fontSize: 13,
+                  padding: "5px 12px",
                   borderRadius: 999,
                   border: "1px solid #005F9E",
                   background: "linear-gradient(135deg,#005F9E,#00B894)",
-                  boxShadow: "0 8px 18px rgba(15,23,42,0.2)",
+                  boxShadow: "0 6px 14px rgba(15,23,42,0.2)",
                 }}
               >
                 {value || "Open"}
