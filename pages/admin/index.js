@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useEffect, useRef } from "react";
 
 const fetcher = async (url) => {
   const r = await fetch(url);
@@ -88,6 +89,7 @@ export default function Admin() {
   const waitingInstallList = parseTechList(
     techLatest?.waiting_installation_ids || ""
   );
+  const techQueue = ensureArray(data.technical_queue);
 
   // ---------- Total Deals و Total Sales هر گروه بر اساس آخرین هفته ----------
   const totalsByGroup = groups.map((g) => {
@@ -625,12 +627,7 @@ export default function Admin() {
             overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              maxHeight: 420,
-              overflow: "auto",
-            }}
-          >
+          <AutoScrollContainer height={200} speed={1}>
             <table
               style={{
                 width: "100%",
@@ -749,7 +746,7 @@ export default function Admin() {
                 )}
               </tbody>
             </table>
-          </div>
+          </AutoScrollContainer>
         </div>
       </section>
 
@@ -766,12 +763,7 @@ export default function Admin() {
             overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              maxHeight: 420,
-              overflow: "auto",
-            }}
-          >
+          <AutoScrollContainer height={200} speed={1}>
             <table
               style={{
                 width: "100%",
@@ -886,13 +878,21 @@ export default function Admin() {
                 )}
               </tbody>
             </table>
-          </div>
+          </AutoScrollContainer>
         </div>
       </section>
 
-      {/* ---------- لیست نصب‌شده‌ها و لیست در انتظار نصب (Technical) ---------- */}
+      {/* ---------- سه جدول تکنیکال با اسکرول اتوماتیک ---------- */}
       <section style={{ marginTop: 32 }}>
-        <h2 style={{ fontSize: 18, marginBottom: 12 }}>
+        <h2
+          style={{
+            fontSize: 16,
+            marginBottom: 12,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#475569",
+          }}
+        >
           Technical – Installation Deals
         </h2>
 
@@ -926,12 +926,8 @@ export default function Admin() {
             >
               Installed Deals ({installedList.length})
             </div>
-            <div
-              style={{
-                maxHeight: 320,
-                overflow: "auto",
-              }}
-            >
+
+            <AutoScrollContainer height={180} speed={1}>
               <table
                 style={{
                   width: "100%",
@@ -942,7 +938,7 @@ export default function Admin() {
                 <thead
                   style={{
                     background:
-                      "linear-gradient(135deg,rgba(16,185,129,0.12),rgba(56,189,248,0.10))",
+                      "linear-gradient(135deg,rgba(59,130,246,0.15),rgba(56,189,248,0.12))",
                     color: "#0f172a",
                   }}
                 >
@@ -1015,7 +1011,7 @@ export default function Admin() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </AutoScrollContainer>
           </div>
 
           {/* Waiting for installation */}
@@ -1041,12 +1037,8 @@ export default function Admin() {
             >
               Waiting for Installation ({waitingInstallList.length})
             </div>
-            <div
-              style={{
-                maxHeight: 320,
-                overflow: "auto",
-              }}
-            >
+
+            <AutoScrollContainer height={180} speed={1}>
               <table
                 style={{
                   width: "100%",
@@ -1130,10 +1122,223 @@ export default function Admin() {
                   )}
                 </tbody>
               </table>
+            </AutoScrollContainer>
+          </div>
+
+          {/* Technical Approval Queue */}
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 18,
+              boxShadow:
+                "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "10px 14px",
+                borderBottom: "1px solid #e5e7eb",
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "#0f766e",
+              }}
+            >
+              Technical Approval Queue ({techQueue.length})
             </div>
+
+            <AutoScrollContainer height={180} speed={1}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                }}
+              >
+                <thead
+                  style={{
+                    background:
+                      "linear-gradient(135deg,rgba(59,130,246,0.15),rgba(56,189,248,0.12))",
+                    color: "#0f172a",
+                  }}
+                >
+                  <tr>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      Owner
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      Deal
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      Center
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      Subject
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    >
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {techQueue.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        style={{
+                          padding: 14,
+                          textAlign: "center",
+                          color: "#6b7280",
+                        }}
+                      >
+                        No items in technical queue.
+                      </td>
+                    </tr>
+                  ) : (
+                    techQueue.map((row, idx) => (
+                      <tr
+                        key={`queue-${idx}`}
+                        style={{
+                          backgroundColor:
+                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                        }}
+                      >
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            fontWeight: 600,
+                            color: "#111827",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {row.group}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            color: "#111827",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {row.deal}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            color: "#374151",
+                          }}
+                        >
+                          {row.center || "—"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            color: "#374151",
+                          }}
+                        >
+                          {row.subject || "—"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "7px 10px",
+                            color: row.status ? "#0f766e" : "#9ca3af",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {row.status || "In process"}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </AutoScrollContainer>
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+// کانتینر اسکرول اتومات — ارتفاع حدوداً ۴ ردیف
+function AutoScrollContainer({
+  children,
+  height = 180,
+  speed = 1, // پیکسل در هر 100ms
+}) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const interval = setInterval(() => {
+      if (!el) return;
+
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      if (maxScroll <= 0) {
+        // محتوا کوتاهه، نیازی به اسکرول نیست
+        return;
+      }
+
+      if (el.scrollTop >= maxScroll - 1) {
+        // رسید به انتها → برگرد بالا
+        el.scrollTop = 0;
+      } else {
+        el.scrollTop += speed;
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [speed]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        maxHeight: height,
+        overflowY: "auto",
+        overflowX: "hidden",
+      }}
+    >
+      {children}
     </div>
   );
 }
