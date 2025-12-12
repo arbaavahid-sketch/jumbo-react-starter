@@ -341,11 +341,12 @@ export default function TechnicalDashboard() {
               />
 
               <TechCard
-                icon={<FiLink />}
-                label="MOM LINK"
-                value="Open"
-                link={t.mom_link}
-              />
+  icon={<FiLink />}
+  label="LAST MEETING"
+  value={t.last_meeting || "-"}
+  iconLink={t.mom_link}
+/>
+
             </div>
           </div>
 
@@ -1076,8 +1077,22 @@ function AutoScrollContainer({
 }
 
 /* --- کارت‌ها با آیکون (نسخه جمع‌وجور و شیک‌تر) --- */
-function TechCard({ icon, label, value, link, delta }) {
+function TechCard({ icon, label, value, link, delta, iconLink }) {
   const hasLink = !!link;
+  const IconWrap = ({ children }) =>
+    iconLink ? (
+      <a
+        href={iconLink}
+        target="_blank"
+        rel="noreferrer"
+        title="Open MOM"
+        style={{ display: "inline-flex" }}
+      >
+        {children}
+      </a>
+    ) : (
+      children
+    );
 
   return (
     <div
@@ -1096,20 +1111,24 @@ function TechCard({ icon, label, value, link, delta }) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         {/* آیکون داخل دایره شیک */}
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 999,
-            background: "rgba(59,130,246,0.12)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 0 0 1px rgba(59,130,246,0.35)",
-          }}
-        >
-          <span style={{ fontSize: 18, color: "#005F9E" }}>{icon}</span>
-        </div>
+        <IconWrap>
+  <div
+    style={{
+      width: 32,
+      height: 32,
+      borderRadius: 999,
+      background: "rgba(59,130,246,0.12)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      boxShadow: "0 0 0 1px rgba(59,130,246,0.35)",
+      cursor: iconLink ? "pointer" : "default",
+    }}
+  >
+    <span style={{ fontSize: 18, color: "#005F9E" }}>{icon}</span>
+  </div>
+</IconWrap>
+
 
         {/* لیبل کارت بولدتر */}
         <span

@@ -138,7 +138,14 @@ export default async function handler(req, res) {
         internal_trainings: num(r.internal_trainings),
 
         mom_link: (r.mom_link || "").trim(),
-
+last_meeting: (
+  r.last_meeting ||
+  r["last_meeting"] ||
+  r["Last Meeting"] ||
+  r["LAST MEETING"] ||
+  r["last meeting"] ||
+  ""
+).trim(),
         // ✅ لیست دیل‌های نصب‌شده
         // اینجا چند اسم احتمالی برای ستون در نظر گرفتیم
         installed_ids: (
