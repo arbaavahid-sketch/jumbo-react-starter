@@ -17,7 +17,6 @@ import LiveClock from "../components/LiveClock";
 import CeoMessage from "../components/CeoMessage";
 import { useEffect, useRef, useState } from "react";
 
-
 import {
   FiCalendar,
   FiTrendingUp,
@@ -37,7 +36,7 @@ const fetcher = async (url) => {
   return r.json();
 };
 
-// ✅ Responsive helper (mobile breakpoint)
+// ✅ Responsive helper
 function useIsMobile(breakpoint = 900) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -75,10 +74,7 @@ function pctDelta(curr, prev) {
     return { pct: 100, dir: 1, inf: true };
   }
   const diff = ((c - p) / Math.abs(p)) * 100;
-  return {
-    pct: diff,
-    dir: diff === 0 ? 0 : diff > 0 ? 1 : -1,
-  };
+  return { pct: diff, dir: diff === 0 ? 0 : diff > 0 ? 1 : -1 };
 }
 
 // Badge کوچک زیر عدد کارت
@@ -88,8 +84,7 @@ function DeltaBadge({ delta }) {
 
   const arrow = dir > 0 ? "▲" : dir < 0 ? "▼" : "•";
   const color = dir > 0 ? "#16a34a" : dir < 0 ? "#dc2626" : "#6b7280";
-  const text =
-    dir === 0 ? "0.0%" : inf ? "100%+" : `${Math.abs(pct).toFixed(1)}%`;
+  const text = dir === 0 ? "0.0%" : inf ? "100%+" : `${Math.abs(pct).toFixed(1)}%`;
 
   return (
     <span
@@ -114,15 +109,7 @@ function DeltaBadge({ delta }) {
 }
 
 export default function TechnicalDashboard() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 768);
-    onResize();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
+  const isMobile = useIsMobile(900);
 
   // داده فنی از /api/technical
   const { data, error, isLoading } = useSWR("/api/technical", fetcher, {
@@ -210,30 +197,22 @@ export default function TechnicalDashboard() {
       waiting: pctDelta(curr?.waiting_installation, prev?.waiting_installation),
     };
 
-    // ردیف‌های Waiting for installation
     const waitingRows = (t.waiting_installation_ids || "")
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter(Boolean)
       .map((line) => {
         const [idPart, ...rest] = line.split("-");
-        return {
-          id: idPart.trim(),
-          description: rest.join("-").trim(),
-        };
+        return { id: idPart.trim(), description: rest.join("-").trim() };
       });
 
-    // ردیف‌های Installed
     const installedRows = (t.installed_ids || "")
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter(Boolean)
       .map((line) => {
         const [idPart, ...rest] = line.split("-");
-        return {
-          id: idPart.trim(),
-          description: rest.join("-").trim(),
-        };
+        return { id: idPart.trim(), description: rest.join("-").trim() };
       });
 
     const installedCount = installedRows.length;
@@ -241,6 +220,7 @@ export default function TechnicalDashboard() {
     const waitingCount = Number(
       t.waiting_installation != null ? t.waiting_installation : waitingRows.length
     );
+
     const totalInstall = installedCount + (waitingCount || 0);
     const installSuccessPct =
       totalInstall > 0 ? (installedCount / totalInstall) * 100 : 0;
@@ -248,28 +228,11 @@ export default function TechnicalDashboard() {
     const installedDelta =
       totalInstall > 0 ? { pct: installSuccessPct, dir: 1, inf: false } : null;
 
-    // نمودار نفرات
     const dealsChartData = [
-      {
-        name: "Aref",
-        weeklyDeals: t.aref_deals_done ?? 0,
-        totalDeals: t.aref ?? 0,
-      },
-      {
-        name: "Golsanam",
-        weeklyDeals: t.golsanam_deals_done ?? 0,
-        totalDeals: t.golsanam ?? 0,
-      },
-      {
-        name: "Vahid",
-        weeklyDeals: t.vahid_deals_done ?? 0,
-        totalDeals: t.vahid ?? 0,
-      },
-      {
-        name: "Pouria",
-        weeklyDeals: t.pouria_deals_done ?? 0,
-        totalDeals: t.pouria ?? 0,
-      },
+      { name: "Aref", weeklyDeals: t.aref_deals_done ?? 0, totalDeals: t.aref ?? 0 },
+      { name: "Golsanam", weeklyDeals: t.golsanam_deals_done ?? 0, totalDeals: t.golsanam ?? 0 },
+      { name: "Vahid", weeklyDeals: t.vahid_deals_done ?? 0, totalDeals: t.vahid ?? 0 },
+      { name: "Pouria", weeklyDeals: t.pouria_deals_done ?? 0, totalDeals: t.pouria ?? 0 },
     ];
 
     const tableHeight = isMobile ? 260 : 210;
@@ -278,20 +241,20 @@ export default function TechnicalDashboard() {
       <div
         style={{
           borderRadius: 28,
-          padding: 20,
+          padding: isMobile ? 14 : 20,
           background: "#f9fafb",
           boxShadow:
             "0 20px 50px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
         }}
       >
-        {/* بالای داشبورد: کارت‌ها + نمودار کنار هم (✅ موبایل: زیر هم) */}
+        {/* کارت‌ها + نمودار */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: isMobile
               ? "1fr"
               : "minmax(0,2.1fr) minmax(0,1.5fr)",
-            gap: 20,
+            gap: isMobile ? 14 : 20,
             alignItems: "flex-start",
           }}
         >
@@ -300,76 +263,31 @@ export default function TechnicalDashboard() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile
-                  ? "1fr"
-                  : "repeat(auto-fit,minmax(220px,1fr))",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit,minmax(220px,1fr))",
                 gap: 12,
               }}
             >
               <TechCard icon={<FiCalendar />} label="DATE OF PUBLISH" value={t.date} isMobile={isMobile} />
-
-
-              <TechCard
-                icon={<FiTrendingUp />}
-                label="DEALS ADDED THIS WEEK"
-                value={t.deals_added_technical}
-              />
-
-              <TechCard
-                icon={<FiPieChart />}
-                label="TOTAL DEALS DONE (WEEK)"
-                value={t.total_deals_week}
-              />
-
-              <TechCard
-                icon={<FiLayers />}
-                label="TECHNICAL APPROVAL QUEUE"
-                value={techQueue.length}
-                delta={deltas.queue}
-              />
-
-              <TechCard
-                icon={<FiClock />}
-                label="WAITING FOR INSTALLATION"
-                value={t.waiting_installation}
-                delta={deltas.waiting}
-              />
-
-              <TechCard
-                icon={<FiCheckSquare />}
-                label="INSTALLED DEALS AT 2025"
-                value={installedCount}
-                delta={installedDelta}
-              />
-
-              <TechCard
-                icon={<FiMapPin />}
-                label="PROMOTION TRIPS / MEETINGS"
-                value={t.promotion_trips}
-              />
-
-              <TechCard
-                icon={<FiMonitor />}
-                label="DEMO SHOWS (QUARTERLY)"
-                value={t.demo_shows}
-              />
-
-              <TechCard
-                icon={<FiBookOpen />}
-                label="INTERNAL TRAININGS (QUARTERLY)"
-                value={t.internal_trainings}
-              />
+              <TechCard icon={<FiTrendingUp />} label="DEALS ADDED THIS WEEK" value={t.deals_added_technical} isMobile={isMobile} />
+              <TechCard icon={<FiPieChart />} label="TOTAL DEALS DONE (WEEK)" value={t.total_deals_week} isMobile={isMobile} />
+              <TechCard icon={<FiLayers />} label="TECHNICAL APPROVAL QUEUE" value={techQueue.length} delta={deltas.queue} isMobile={isMobile} />
+              <TechCard icon={<FiClock />} label="WAITING FOR INSTALLATION" value={t.waiting_installation} delta={deltas.waiting} isMobile={isMobile} />
+              <TechCard icon={<FiCheckSquare />} label="INSTALLED DEALS AT 2025" value={installedCount} delta={installedDelta} isMobile={isMobile} />
+              <TechCard icon={<FiMapPin />} label="PROMOTION TRIPS / MEETINGS" value={t.promotion_trips} isMobile={isMobile} />
+              <TechCard icon={<FiMonitor />} label="DEMO SHOWS (QUARTERLY)" value={t.demo_shows} isMobile={isMobile} />
+              <TechCard icon={<FiBookOpen />} label="INTERNAL TRAININGS (QUARTERLY)" value={t.internal_trainings} isMobile={isMobile} />
 
               <TechCard
                 icon={<FiLink />}
                 label="LAST MEETING"
                 value={t.last_meeting || "-"}
                 iconLink={t.mom_link}
+                isMobile={isMobile}
               />
             </div>
           </div>
 
-          {/* نمودار کنار کارت‌ها (✅ موبایل: میاد زیر کارت‌ها و ارتفاع بیشتر) */}
+          {/* نمودار */}
           <div
             style={{
               borderRadius: 20,
@@ -418,7 +336,7 @@ export default function TechnicalDashboard() {
           </div>
         </div>
 
-        {/* سه جدول (✅ موبایل: زیر هم) */}
+        {/* جدول‌ها */}
         <div
           style={{
             marginTop: 24,
@@ -428,46 +346,10 @@ export default function TechnicalDashboard() {
             alignItems: "stretch",
           }}
         >
-          {/* Installed deals */}
-          <div
-            style={{
-              borderRadius: 20,
-              background: "#ffffff",
-              boxShadow:
-                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-              padding: 12,
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 260,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                color: "#6b7280",
-                marginBottom: 8,
-              }}
-            >
-              INSTALLED DEALS
-            </div>
-
+          {/* Installed */}
+          <TableCard title="INSTALLED DEALS" height={tableHeight}>
             {installedRows.length === 0 ? (
-              <div
-                style={{
-                  fontSize: 13,
-                  padding: 10,
-                  borderRadius: 16,
-                  background: "rgba(148,163,184,0.1)",
-                  color: "#6b7280",
-                  border: "1px dashed rgba(148,163,184,0.6)",
-                  flex: 1,
-                }}
-              >
-                No installed deals recorded yet.
-              </div>
+              <EmptyBox text="No installed deals recorded yet." />
             ) : (
               <AutoScrollContainer
                 height={tableHeight}
@@ -478,113 +360,15 @@ export default function TechnicalDashboard() {
                   boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
                 }}
               >
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                  <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                    <tr>
-                      <th
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "left",
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.6)",
-                          background: "#e0f2fe",
-                          width: 80,
-                        }}
-                      >
-                        ID
-                      </th>
-                      <th
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "left",
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.6)",
-                          background: "#e0f2fe",
-                        }}
-                      >
-                        Center / Subject
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {installedRows.map((row, idx) => (
-                      <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === installedRows.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            whiteSpace: "nowrap",
-                            color: "#111827",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {row.id}
-                        </td>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === installedRows.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            color: "#374151",
-                          }}
-                        >
-                          {row.description}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <SimpleTable rows={installedRows} />
               </AutoScrollContainer>
             )}
-          </div>
+          </TableCard>
 
-          {/* Waiting installation */}
-          <div
-            style={{
-              borderRadius: 20,
-              background: "#ffffff",
-              boxShadow:
-                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-              padding: 12,
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 260,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                color: "#6b7280",
-                marginBottom: 8,
-              }}
-            >
-              WAITING INSTALLATION DETAILS
-            </div>
-
+          {/* Waiting */}
+          <TableCard title="WAITING INSTALLATION DETAILS" height={tableHeight}>
             {waitingRows.length === 0 ? (
-              <div
-                style={{
-                  fontSize: 13,
-                  padding: 10,
-                  borderRadius: 16,
-                  background: "rgba(148,163,184,0.1)",
-                  color: "#6b7280",
-                  border: "1px dashed rgba(148,163,184,0.6)",
-                  flex: 1,
-                }}
-              >
-                No items in installation queue.
-              </div>
+              <EmptyBox text="No items in installation queue." />
             ) : (
               <div
                 style={{
@@ -595,114 +379,15 @@ export default function TechnicalDashboard() {
                   maxHeight: tableHeight,
                 }}
               >
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                  <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                    <tr>
-                      <th
-                        style={{
-                          padding: "8px 12px",
-                          textAlign: "left",
-                          fontWeight: 600,
-                          color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.5)",
-                          background: "#e0f2fe",
-                          width: 80,
-                        }}
-                      >
-                        ID
-                      </th>
-                      <th
-                        style={{
-                          padding: "8px 12px",
-                          textAlign: "left",
-                          fontWeight: 600,
-                          color: "#0f172a",
-                          borderBottom: "1px solid rgba(148,163,184,0.5)",
-                          background: "#e0f2fe",
-                        }}
-                      >
-                        Center / Subject
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {waitingRows.map((row, idx) => (
-                      <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === waitingRows.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            whiteSpace: "nowrap",
-                            color: "#111827",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {row.id}
-                        </td>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === waitingRows.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            color: "#374151",
-                          }}
-                        >
-                          {row.description}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <SimpleTable rows={waitingRows} />
               </div>
             )}
-          </div>
+          </TableCard>
 
-          {/* Technical Approval Queue */}
-          <div
-            style={{
-              borderRadius: 20,
-              background: "#ffffff",
-              boxShadow:
-                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-              padding: 12,
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 260,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                color: "#6b7280",
-                marginBottom: 8,
-              }}
-            >
-              TECHNICAL APPROVAL QUEUE
-            </div>
-
+          {/* Queue */}
+          <TableCard title="TECHNICAL APPROVAL QUEUE" height={tableHeight}>
             {techQueue.length === 0 ? (
-              <div
-                style={{
-                  fontSize: 13,
-                  padding: 10,
-                  borderRadius: 16,
-                  background: "rgba(148,163,184,0.1)",
-                  color: "#6b7280",
-                  border: "1px dashed rgba(148,163,184,0.6)",
-                  flex: 1,
-                }}
-              >
-                No items in technical queue.
-              </div>
+              <EmptyBox text="No items in technical queue." />
             ) : (
               <AutoScrollContainer
                 height={tableHeight}
@@ -718,7 +403,7 @@ export default function TechnicalDashboard() {
                     width: "100%",
                     borderCollapse: "collapse",
                     fontSize: 13,
-                    minWidth: isMobile ? 520 : 600, // ✅ موبایل کمی کمتر
+                    minWidth: isMobile ? 520 : 600,
                   }}
                 >
                   <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
@@ -744,68 +429,11 @@ export default function TechnicalDashboard() {
                   <tbody>
                     {techQueue.map((row, idx) => (
                       <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === techQueue.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            fontWeight: 600,
-                            color: "#111827",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {row.group}
-                        </td>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === techQueue.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            color: "#111827",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {row.deal}
-                        </td>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === techQueue.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            color: "#374151",
-                          }}
-                        >
-                          {row.center || "—"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === techQueue.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            color: "#374151",
-                          }}
-                        >
-                          {row.subject || "—"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "7px 10px",
-                            borderBottom:
-                              idx === techQueue.length - 1
-                                ? "none"
-                                : "1px solid rgba(226,232,240,0.9)",
-                            color: row.status ? "#0f766e" : "#9ca3af",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
+                        <td style={tdBase({ strong: true })}>{row.group}</td>
+                        <td style={tdBase()}>{row.deal}</td>
+                        <td style={tdBase({ muted: true })}>{row.center || "—"}</td>
+                        <td style={tdBase({ muted: true })}>{row.subject || "—"}</td>
+                        <td style={{ ...tdBase(), whiteSpace: "nowrap", color: row.status ? "#0f766e" : "#9ca3af" }}>
                           {row.status || "In process"}
                         </td>
                       </tr>
@@ -814,7 +442,7 @@ export default function TechnicalDashboard() {
                 </table>
               </AutoScrollContainer>
             )}
-          </div>
+          </TableCard>
         </div>
       </div>
     );
@@ -827,8 +455,7 @@ export default function TechnicalDashboard() {
         padding: isMobile ? "14px 14px 26px" : "24px 24px 40px",
         background: "#f3f6fb",
         color: "#0f172a",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
       }}
     >
       <Head>
@@ -836,27 +463,25 @@ export default function TechnicalDashboard() {
       </Head>
 
       <div
-  style={{
-    maxWidth: isMobile ? "100%" : 1400,
-    margin: "0 auto",
-    paddingLeft: isMobile ? 6 : 0,
-    paddingRight: isMobile ? 6 : 0,
-  }}
->
-
-        {/* هدر */}
+        style={{
+          maxWidth: isMobile ? "100%" : 1400,
+          margin: "0 auto",
+          paddingLeft: isMobile ? 6 : 0,
+          paddingRight: isMobile ? 6 : 0,
+        }}
+      >
+        {/* Header */}
         <div
-  style={{
-    display: "flex",
-    justifyContent: isMobile ? "center" : "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    gap: 16,
-    flexDirection: isMobile ? "column" : "row",
-    textAlign: isMobile ? "center" : "left",
-  }}
->
-
+          style={{
+            display: "flex",
+            justifyContent: isMobile ? "center" : "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+            gap: 16,
+            flexDirection: isMobile ? "column" : "row",
+            textAlign: isMobile ? "center" : "left",
+          }}
+        >
           <div>
             <h1
               style={{
@@ -870,17 +495,9 @@ export default function TechnicalDashboard() {
             >
               Technical Dashboard
             </h1>
-            <p style={{ marginTop: 6, fontSize: 13, color: "#6b7280" }}></p>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              alignItems: "flex-end",
-            }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
             <div
               style={{
                 padding: 10,
@@ -896,6 +513,7 @@ export default function TechnicalDashboard() {
                 alt="Company logo"
               />
             </div>
+
             <div
               style={{
                 fontSize: 12,
@@ -912,16 +530,14 @@ export default function TechnicalDashboard() {
           </div>
         </div>
 
-        {/* پیام CEO */}
+        {/* CEO message */}
         <div
           style={{
             marginBottom: 18,
             borderRadius: 20,
-            background:
-              "linear-gradient(135deg,rgba(0,95,158,0.06),rgba(0,184,148,0.06))",
+            background: "linear-gradient(135deg,rgba(0,95,158,0.06),rgba(0,184,148,0.06))",
             padding: 16,
-            boxShadow:
-              "0 14px 30px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.25)",
+            boxShadow: "0 14px 30px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.25)",
           }}
         >
           <CeoMessage text={ceoText} />
@@ -933,13 +549,115 @@ export default function TechnicalDashboard() {
   );
 }
 
-// کانتینر اسکرول اتومات — نسخه ساده با setInterval
-function AutoScrollContainer({
-  children,
-  height = 280,
-  speed = 1, // پیکسل در هر 100ms
-  containerStyle = {},
-}) {
+// ---------------- Helpers UI ----------------
+
+function tdBase({ strong = false, muted = false } = {}) {
+  return {
+    padding: "7px 10px",
+    borderBottom: "1px solid rgba(226,232,240,0.9)",
+    color: muted ? "#374151" : "#111827",
+    fontWeight: strong ? 600 : 500,
+  };
+}
+
+function EmptyBox({ text }) {
+  return (
+    <div
+      style={{
+        fontSize: 13,
+        padding: 10,
+        borderRadius: 16,
+        background: "rgba(148,163,184,0.1)",
+        color: "#6b7280",
+        border: "1px dashed rgba(148,163,184,0.6)",
+        flex: 1,
+      }}
+    >
+      {text}
+    </div>
+  );
+}
+
+function TableCard({ title, children }) {
+  return (
+    <div
+      style={{
+        borderRadius: 20,
+        background: "#ffffff",
+        boxShadow: "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+        padding: 12,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 260,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          color: "#6b7280",
+          marginBottom: 8,
+        }}
+      >
+        {title}
+      </div>
+
+      {children}
+    </div>
+  );
+}
+
+function SimpleTable({ rows }) {
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+      <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
+        <tr>
+          <th
+            style={{
+              padding: "8px 10px",
+              textAlign: "left",
+              fontWeight: 700,
+              color: "#0f172a",
+              borderBottom: "1px solid rgba(148,163,184,0.6)",
+              background: "#e0f2fe",
+              width: 80,
+              whiteSpace: "nowrap",
+            }}
+          >
+            ID
+          </th>
+          <th
+            style={{
+              padding: "8px 10px",
+              textAlign: "left",
+              fontWeight: 700,
+              color: "#0f172a",
+              borderBottom: "1px solid rgba(148,163,184,0.6)",
+              background: "#e0f2fe",
+            }}
+          >
+            Center / Subject
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, idx) => (
+          <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
+            <td style={{ padding: "7px 10px", whiteSpace: "nowrap", color: "#111827", fontWeight: 600 }}>
+              {row.id}
+            </td>
+            <td style={{ padding: "7px 10px", color: "#374151" }}>{row.description}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// کانتینر اسکرول اتومات
+function AutoScrollContainer({ children, height = 280, speed = 1, containerStyle = {} }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -947,8 +665,6 @@ function AutoScrollContainer({
     if (!el) return;
 
     const interval = setInterval(() => {
-      if (!el) return;
-
       const maxScroll = el.scrollHeight - el.clientHeight;
       if (maxScroll <= 0) return;
 
@@ -974,9 +690,8 @@ function AutoScrollContainer({
   );
 }
 
-/* --- کارت‌ها با آیکون --- */
+// کارت‌ها
 function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
-
   const hasLink = !!link;
 
   const IconWrap = ({ children }) =>
@@ -999,16 +714,13 @@ function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
       style={{
         borderRadius: 18,
         padding: 12,
-        background:
-          "linear-gradient(135deg,rgba(0,95,158,0.06),rgba(0,184,148,0.05))",
-        boxShadow:
-          "0 10px 24px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.25)",
+        background: "linear-gradient(135deg,rgba(0,95,158,0.06),rgba(0,184,148,0.05))",
+        boxShadow: "0 10px 24px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.25)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
         minHeight: 90,
         width: isMobile ? "100%" : "auto",
-
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1043,15 +755,7 @@ function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
         </span>
       </div>
 
-      <div
-        style={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 4,
-        }}
-      >
+      <div style={{ marginTop: 8, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
         <span style={{ fontSize: 20, fontWeight: 800, color: "#0f172a" }}>
           {hasLink ? (
             link ? (

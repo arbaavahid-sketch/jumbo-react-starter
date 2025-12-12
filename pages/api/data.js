@@ -226,7 +226,7 @@ const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
   }
 
   // deals_exec
-  const CLOSED_WORDS = ["delivered", "closed", "done", "completed", "بسته"];
+  const CLOSED_WORDS = ["delivered", "closed", "done", "بسته"]; // ✅ completed حذف شد
   const deals_exec = dealsSheet
     .map((r) => ({
       group: String(r.group || "").toUpperCase(),

@@ -679,10 +679,48 @@ function MegaDealsIcon({ deals }) {
 }
 function WeeklyTripsIcon({ trips }) {
   const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // --- helpers ---
+  const toDateMs = (s) => {
+    if (!s) return 0;
+    // پشتیبانی از yyyy/mm/dd یا yyyy-mm-dd
+    const norm = String(s).trim().replace(/\//g, "-");
+    const t = Date.parse(norm);
+    return Number.isFinite(t) ? t : 0;
+  };
+
+  const list = Array.isArray(trips) ? trips : [];
+
+  // ✅ فقط آخرین تاریخ گروه
+  const latestDate =
+    list.length === 0
+      ? ""
+      : list
+          .slice()
+          .sort((a, b) => toDateMs(b.date) - toDateMs(a.date))[0]?.date || "";
+
+  const latestTrips = latestDate
+    ? list.filter((t) => String(t.date || "").trim() === String(latestDate).trim())
+    : list;
+
+  // مرتب‌سازی شیک‌تر
+  const sortedTrips = latestTrips.slice().sort((a, b) => {
+    const ac = String(a.company_name || "").localeCompare(String(b.company_name || ""));
+    if (ac !== 0) return ac;
+    return String(a.owner || "").localeCompare(String(b.owner || ""));
+  });
 
   return (
     <>
-      {/* آیکون کوچک روی کارت */}
+      {/* آیکون روی کارت */}
       <div style={{ position: "relative" }}>
         <button
           type="button"
@@ -712,20 +750,23 @@ function WeeklyTripsIcon({ trips }) {
             style={{
               position: "fixed",
               inset: 0,
-              background: "transparent",
+              background: "rgba(2,6,23,0.10)",
               zIndex: 9998,
             }}
           />
 
-          {/* پنل ثابت */}
+          {/* پنل (✅ ریسپانسیو کامل موبایل) */}
           <div
             style={{
               position: "fixed",
-              top: 90,
-              right: 40,
-              minWidth: 420,
-              maxWidth: 520,
-              maxHeight: 360,
+              top: isMobile ? 70 : 90,
+              left: isMobile ? 12 : "auto",
+              right: isMobile ? 12 : 40,
+
+              width: isMobile ? "auto" : 420,
+              maxWidth: isMobile ? "calc(100vw - 24px)" : 520,
+
+              maxHeight: isMobile ? "70vh" : 360,
               background: "#ffffff",
               borderRadius: 16,
               boxShadow:
@@ -735,15 +776,25 @@ function WeeklyTripsIcon({ trips }) {
               overflow: "hidden",
             }}
           >
+            {/* Header */}
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
+                alignItems: "center",
                 marginBottom: 10,
+                gap: 12,
               }}
             >
-              <div style={{ fontSize: 13, fontWeight: 700 }}>
-                Weekly Trips Details
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <div style={{ fontSize: 13, fontWeight: 800 }}>
+                  Weekly Trips Details
+                </div>
+                {latestDate ? (
+                  <div style={{ fontSize: 11, color: "#64748b" }}>
+                    
+                  </div>
+                ) : null}
               </div>
 
               <button
@@ -753,46 +804,59 @@ function WeeklyTripsIcon({ trips }) {
                   background: "transparent",
                   fontSize: 20,
                   cursor: "pointer",
+                  lineHeight: 1,
                 }}
+                aria-label="Close"
               >
                 ×
               </button>
             </div>
 
-            {!trips || trips.length === 0 ? (
+            {/* Content */}
+            {sortedTrips.length === 0 ? (
               <div style={{ fontSize: 12, color: "#6b7280" }}>
                 No trips recorded
               </div>
             ) : (
-              <ul
+              <div
                 style={{
-                  margin: 0,
-                  padding: 0,
-                  listStyle: "none",
-                  maxHeight: 300,
-                  overflowY: "auto",
+                  borderRadius: 12,
+                  overflow: "auto",
+                  maxHeight: isMobile ? "calc(70vh - 70px)" : 300,
+                  boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
                 }}
               >
-                {trips.map((t, i) => (
-                  <li
-                    key={i}
-                    style={{
-                      padding: "8px 6px",
-                      borderBottom: "1px solid #e5e7eb",
-                    }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>
-                      {i + 1}. {t.company_name || "Company"}
+                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                  {sortedTrips.map((t, i) => (
+                    <li
+                      key={i}
+                      style={{
+                        padding: "10px 10px",
+                        borderBottom: "1px solid #e5e7eb",
+                      }}
+                    >
+                      {/* ✅ به جای Trip: اسم کمپانی */}
+                      <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a" }}>
+                        {i + 1}. {t.company_name || "—"}
+                      </div>
 
-                    </div>
-                    <div style={{ fontSize: 11, color: "#6b7280", display: "flex", gap: 10, flexWrap: "wrap" }}>
-  {t.date ? <span>Date: {t.date}</span> : null}
-  {t.owner ? <span>Owner: {t.owner}</span> : null}
-</div>
-
-                  </li>
-                ))}
-              </ul>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#6b7280",
+                          display: "flex",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginTop: 4,
+                        }}
+                      >
+                        {t.date ? <span>Date: {t.date}</span> : null}
+                        {t.owner ? <span>Owner: {t.owner}</span> : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </>
@@ -800,3 +864,4 @@ function WeeklyTripsIcon({ trips }) {
     </>
   );
 }
+
