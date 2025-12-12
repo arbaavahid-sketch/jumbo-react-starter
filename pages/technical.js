@@ -17,6 +17,7 @@ import LiveClock from "../components/LiveClock";
 import CeoMessage from "../components/CeoMessage";
 import { useEffect, useRef, useState } from "react";
 
+
 import {
   FiCalendar,
   FiTrendingUp,
@@ -113,7 +114,15 @@ function DeltaBadge({ delta }) {
 }
 
 export default function TechnicalDashboard() {
-  const isMobile = useIsMobile(900);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
 
   // داده فنی از /api/technical
   const { data, error, isLoading } = useSWR("/api/technical", fetcher, {
@@ -297,7 +306,8 @@ export default function TechnicalDashboard() {
                 gap: 12,
               }}
             >
-              <TechCard icon={<FiCalendar />} label="DATE OF PUBLISH" value={t.date} />
+              <TechCard icon={<FiCalendar />} label="DATE OF PUBLISH" value={t.date} isMobile={isMobile} />
+
 
               <TechCard
                 icon={<FiTrendingUp />}
@@ -965,7 +975,8 @@ function AutoScrollContainer({
 }
 
 /* --- کارت‌ها با آیکون --- */
-function TechCard({ icon, label, value, link, delta, iconLink }) {
+function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
+
   const hasLink = !!link;
 
   const IconWrap = ({ children }) =>
