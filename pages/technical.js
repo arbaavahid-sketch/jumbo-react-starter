@@ -825,18 +825,28 @@ export default function TechnicalDashboard() {
         <title>Technical Dashboard</title>
       </Head>
 
-      <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+      <div
+  style={{
+    maxWidth: isMobile ? "100%" : 1400,
+    margin: "0 auto",
+    paddingLeft: isMobile ? 6 : 0,
+    paddingRight: isMobile ? 6 : 0,
+  }}
+>
+
         {/* هدر */}
         <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: 20,
-            gap: 16,
-            flexWrap: isMobile ? "wrap" : "nowrap",
-          }}
-        >
+  style={{
+    display: "flex",
+    justifyContent: isMobile ? "center" : "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    gap: 16,
+    flexDirection: isMobile ? "column" : "row",
+    textAlign: isMobile ? "center" : "left",
+  }}
+>
+
           <div>
             <h1
               style={{
@@ -986,6 +996,8 @@ function TechCard({ icon, label, value, link, delta, iconLink }) {
         flexDirection: "column",
         justifyContent: "space-between",
         minHeight: 90,
+        width: isMobile ? "100%" : "auto",
+
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
