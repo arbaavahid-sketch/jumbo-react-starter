@@ -1,4 +1,4 @@
-// pages/technical.js — داشبورد Technical
+// pages/technical.js — داشبورد Technical (Responsive)
 
 import {
   ResponsiveContainer,
@@ -15,7 +15,7 @@ import Head from "next/head";
 import useSWR from "swr";
 import LiveClock from "../components/LiveClock";
 import CeoMessage from "../components/CeoMessage";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   FiCalendar,
@@ -36,8 +36,21 @@ const fetcher = async (url) => {
   return r.json();
 };
 
-// --- helpers برای درصد تغییرات ---
+// ✅ Responsive helper (mobile breakpoint)
+function useIsMobile(breakpoint = 900) {
+  const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < breakpoint);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
+// --- helpers برای درصد تغییرات ---
 function lastTwo(rows) {
   if (!Array.isArray(rows) || rows.length === 0) {
     return { curr: null, prev: null };
@@ -100,6 +113,8 @@ function DeltaBadge({ delta }) {
 }
 
 export default function TechnicalDashboard() {
+  const isMobile = useIsMobile(900);
+
   // داده فنی از /api/technical
   const { data, error, isLoading } = useSWR("/api/technical", fetcher, {
     revalidateOnFocus: false,
@@ -183,10 +198,7 @@ export default function TechnicalDashboard() {
 
     const deltas = {
       queue: pctDelta(curr?.remaining_queue, prev?.remaining_queue),
-      waiting: pctDelta(
-        curr?.waiting_installation,
-        prev?.waiting_installation
-      ),
+      waiting: pctDelta(curr?.waiting_installation, prev?.waiting_installation),
     };
 
     // ردیف‌های Waiting for installation
@@ -218,18 +230,14 @@ export default function TechnicalDashboard() {
     const installedCount = installedRows.length;
 
     const waitingCount = Number(
-      t.waiting_installation != null
-        ? t.waiting_installation
-        : waitingRows.length
+      t.waiting_installation != null ? t.waiting_installation : waitingRows.length
     );
     const totalInstall = installedCount + (waitingCount || 0);
     const installSuccessPct =
       totalInstall > 0 ? (installedCount / totalInstall) * 100 : 0;
 
     const installedDelta =
-      totalInstall > 0
-        ? { pct: installSuccessPct, dir: 1, inf: false }
-        : null;
+      totalInstall > 0 ? { pct: installSuccessPct, dir: 1, inf: false } : null;
 
     // نمودار نفرات
     const dealsChartData = [
@@ -255,6 +263,8 @@ export default function TechnicalDashboard() {
       },
     ];
 
+    const tableHeight = isMobile ? 260 : 210;
+
     body = (
       <div
         style={{
@@ -265,13 +275,15 @@ export default function TechnicalDashboard() {
             "0 20px 50px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
         }}
       >
-        {/* بالای داشبورد: کارت‌ها + نمودار کنار هم */}
+        {/* بالای داشبورد: کارت‌ها + نمودار کنار هم (✅ موبایل: زیر هم) */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0,2.1fr) minmax(0,1.5fr)",
+            gridTemplateColumns: isMobile
+              ? "1fr"
+              : "minmax(0,2.1fr) minmax(0,1.5fr)",
             gap: 20,
-            alignItems: "flex-start", 
+            alignItems: "flex-start",
           }}
         >
           {/* کارت‌ها */}
@@ -279,15 +291,13 @@ export default function TechnicalDashboard() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                gridTemplateColumns: isMobile
+                  ? "1fr"
+                  : "repeat(auto-fit,minmax(220px,1fr))",
                 gap: 12,
               }}
             >
-              <TechCard
-                icon={<FiCalendar />}
-                label="DATE OF PUBLISH"
-                value={t.date}
-              />
+              <TechCard icon={<FiCalendar />} label="DATE OF PUBLISH" value={t.date} />
 
               <TechCard
                 icon={<FiTrendingUp />}
@@ -341,16 +351,15 @@ export default function TechnicalDashboard() {
               />
 
               <TechCard
-  icon={<FiLink />}
-  label="LAST MEETING"
-  value={t.last_meeting || "-"}
-  iconLink={t.mom_link}
-/>
-
+                icon={<FiLink />}
+                label="LAST MEETING"
+                value={t.last_meeting || "-"}
+                iconLink={t.mom_link}
+              />
             </div>
           </div>
 
-          {/* نمودار کنار کارت‌ها - کوتاه‌تر شده */}
+          {/* نمودار کنار کارت‌ها (✅ موبایل: میاد زیر کارت‌ها و ارتفاع بیشتر) */}
           <div
             style={{
               borderRadius: 20,
@@ -376,19 +385,12 @@ export default function TechnicalDashboard() {
               DEALS DONE DURING THE WEEK BY PERSON
             </div>
 
-            <div style={{ height: 220, marginTop: 4 }}>
+            <div style={{ height: isMobile ? 260 : 220, marginTop: 4 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={dealsChartData}
-                  margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
-                >
+                <BarChart data={dealsChartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="name" stroke="#6b7280" />
-                  <YAxis
-                    allowDecimals={false}
-                    stroke="#6b7280"
-                    domain={[0, "dataMax + 2"]}
-                  />
+                  <YAxis allowDecimals={false} stroke="#6b7280" domain={[0, "dataMax + 2"]} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#ffffff",
@@ -398,37 +400,25 @@ export default function TechnicalDashboard() {
                     }}
                   />
                   <Legend />
-                  <Bar
-                    dataKey="weeklyDeals"
-                    name="Deals this week"
-                    fill="#38bdf8"
-                    radius={[6, 6, 0, 0]}
-                    barSize={30}
-                  />
-                  <Bar
-                    dataKey="totalDeals"
-                    name="Total deals"
-                    fill="#0f766e"
-                    radius={[6, 6, 0, 0]}
-                    barSize={30}
-                  />
+                  <Bar dataKey="weeklyDeals" name="Deals this week" fill="#38bdf8" radius={[6, 6, 0, 0]} barSize={30} />
+                  <Bar dataKey="totalDeals" name="Total deals" fill="#0f766e" radius={[6, 6, 0, 0]} barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        {/* سه جدول در یک ردیف، هم‌اندازه و شیک */}
+        {/* سه جدول (✅ موبایل: زیر هم) */}
         <div
           style={{
             marginTop: 24,
             display: "grid",
-            gridTemplateColumns: "1.1fr 1.1fr 1fr",
+            gridTemplateColumns: isMobile ? "1fr" : "1.1fr 1.1fr 1fr",
             gap: 20,
             alignItems: "stretch",
           }}
         >
-          {/* Installed deals — اسکرول اتوماتیک + هدر آبی */}
+          {/* Installed deals */}
           <div
             style={{
               borderRadius: 20,
@@ -470,7 +460,7 @@ export default function TechnicalDashboard() {
               </div>
             ) : (
               <AutoScrollContainer
-                height={210}
+                height={tableHeight}
                 speed={1}
                 containerStyle={{
                   borderRadius: 16,
@@ -478,20 +468,8 @@ export default function TechnicalDashboard() {
                   boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
                 }}
               >
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: 13,
-                  }}
-                >
-                  <thead
-                    style={{
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                  <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
                     <tr>
                       <th
                         style={{
@@ -499,8 +477,7 @@ export default function TechnicalDashboard() {
                           textAlign: "left",
                           fontWeight: 700,
                           color: "#0f172a",
-                          borderBottom:
-                            "1px solid rgba(148,163,184,0.6)",
+                          borderBottom: "1px solid rgba(148,163,184,0.6)",
                           background: "#e0f2fe",
                           width: 80,
                         }}
@@ -513,8 +490,7 @@ export default function TechnicalDashboard() {
                           textAlign: "left",
                           fontWeight: 700,
                           color: "#0f172a",
-                          borderBottom:
-                            "1px solid rgba(148,163,184,0.6)",
+                          borderBottom: "1px solid rgba(148,163,184,0.6)",
                           background: "#e0f2fe",
                         }}
                       >
@@ -524,13 +500,7 @@ export default function TechnicalDashboard() {
                   </thead>
                   <tbody>
                     {installedRows.map((row, idx) => (
-                      <tr
-                        key={idx}
-                        style={{
-                          background:
-                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
-                        }}
-                      >
+                      <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
                         <td
                           style={{
                             padding: "7px 10px",
@@ -565,7 +535,7 @@ export default function TechnicalDashboard() {
             )}
           </div>
 
-          {/* Waiting installation — جدول وسطی */}
+          {/* Waiting installation */}
           <div
             style={{
               borderRadius: 20,
@@ -612,60 +582,43 @@ export default function TechnicalDashboard() {
                   overflow: "auto",
                   boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
                   flex: 1,
+                  maxHeight: tableHeight,
                 }}
               >
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: 13,
-                  }}
-                >
-                  <thead
-  style={{
-    position: "sticky",
-    top: 0,
-    zIndex: 10,
-  }}
->
-  <tr>
-    <th
-      style={{
-        padding: "8px 12px",
-        textAlign: "left",
-        fontWeight: 600,
-        color: "#0f172a",
-        borderBottom: "1px solid rgba(148,163,184,0.5)",
-        background: "#e0f2fe",   // 👈 آبی کمرنگ مثل بقیه
-        width: 80,
-      }}
-    >
-      ID
-    </th>
-    <th
-      style={{
-        padding: "8px 12px",
-        textAlign: "left",
-        fontWeight: 600,
-        color: "#0f172a",
-        borderBottom: "1px solid rgba(148,163,184,0.5)",
-        background: "#e0f2fe",   // 👈 یکسان‌سازی
-      }}
-    >
-      Center / Subject
-    </th>
-  </tr>
-</thead>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                  <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    <tr>
+                      <th
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          borderBottom: "1px solid rgba(148,163,184,0.5)",
+                          background: "#e0f2fe",
+                          width: 80,
+                        }}
+                      >
+                        ID
+                      </th>
+                      <th
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          borderBottom: "1px solid rgba(148,163,184,0.5)",
+                          background: "#e0f2fe",
+                        }}
+                      >
+                        Center / Subject
+                      </th>
+                    </tr>
+                  </thead>
 
                   <tbody>
                     {waitingRows.map((row, idx) => (
-                      <tr
-                        key={idx}
-                        style={{
-                          background:
-                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
-                        }}
-                      >
+                      <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
                         <td
                           style={{
                             padding: "7px 10px",
@@ -700,7 +653,7 @@ export default function TechnicalDashboard() {
             )}
           </div>
 
-          {/* Technical Approval Queue — اسکرول اتوماتیک */}
+          {/* Technical Approval Queue */}
           <div
             style={{
               borderRadius: 20,
@@ -742,7 +695,7 @@ export default function TechnicalDashboard() {
               </div>
             ) : (
               <AutoScrollContainer
-                height={210}
+                height={tableHeight}
                 speed={1}
                 containerStyle={{
                   borderRadius: 16,
@@ -755,95 +708,32 @@ export default function TechnicalDashboard() {
                     width: "100%",
                     borderCollapse: "collapse",
                     fontSize: 13,
-                    minWidth: 600,
+                    minWidth: isMobile ? 520 : 600, // ✅ موبایل کمی کمتر
                   }}
                 >
-                  <thead
-                    style={{
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
+                  <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
                     <tr>
-                      <th
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "left",
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          borderBottom:
-                            "1px solid rgba(148,163,184,0.6)",
-                          background: "#e0f2fe",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Owner
-                      </th>
-                      <th
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "left",
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          borderBottom:
-                            "1px solid rgba(148,163,184,0.6)",
-                          background: "#e0f2fe",
-                        }}
-                      >
-                        Deal
-                      </th>
-                      <th
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "left",
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          borderBottom:
-                            "1px solid rgba(148,163,184,0.6)",
-                          background: "#e0f2fe",
-                        }}
-                      >
-                        Center
-                      </th>
-                      <th
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "left",
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          borderBottom:
-                            "1px solid rgba(148,163,184,0.6)",
-                          background: "#e0f2fe",
-                        }}
-                      >
-                        Subject
-                      </th>
-                      <th
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "left",
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          borderBottom:
-                            "1px solid rgba(148,163,184,0.6)",
-                          background: "#e0f2fe",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Status
-                      </th>
+                      {["Owner", "Deal", "Center", "Subject", "Status"].map((h) => (
+                        <th
+                          key={h}
+                          style={{
+                            padding: "8px 10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#0f172a",
+                            borderBottom: "1px solid rgba(148,163,184,0.6)",
+                            background: "#e0f2fe",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {techQueue.map((row, idx) => (
-                      <tr
-                        key={idx}
-                        style={{
-                          background:
-                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
-                        }}
-                      >
+                      <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
                         <td
                           style={{
                             padding: "7px 10px",
@@ -924,7 +814,7 @@ export default function TechnicalDashboard() {
     <main
       style={{
         minHeight: "100vh",
-        padding: "24px 24px 40px",
+        padding: isMobile ? "14px 14px 26px" : "24px 24px 40px",
         background: "#f3f6fb",
         color: "#0f172a",
         fontFamily:
@@ -944,13 +834,14 @@ export default function TechnicalDashboard() {
             alignItems: "flex-start",
             marginBottom: 20,
             gap: 16,
+            flexWrap: isMobile ? "wrap" : "nowrap",
           }}
         >
           <div>
             <h1
               style={{
                 margin: 0,
-                fontSize: 26,
+                fontSize: isMobile ? 20 : 26,
                 fontWeight: 800,
                 letterSpacing: "0.10em",
                 textTransform: "uppercase",
@@ -959,13 +850,7 @@ export default function TechnicalDashboard() {
             >
               Technical Dashboard
             </h1>
-            <p
-              style={{
-                marginTop: 6,
-                fontSize: 13,
-                color: "#6b7280",
-              }}
-            ></p>
+            <p style={{ marginTop: 6, fontSize: 13, color: "#6b7280" }}></p>
           </div>
 
           <div
@@ -987,7 +872,7 @@ export default function TechnicalDashboard() {
             >
               <img
                 src="/company-logo.png"
-                style={{ width: 150, height: 70, objectFit: "contain" }}
+                style={{ width: isMobile ? 120 : 150, height: 70, objectFit: "contain" }}
                 alt="Company logo"
               />
             </div>
@@ -1045,17 +930,10 @@ function AutoScrollContainer({
       if (!el) return;
 
       const maxScroll = el.scrollHeight - el.clientHeight;
-      if (maxScroll <= 0) {
-        // محتوا کوتاهه، نیازی به اسکرول نیست
-        return;
-      }
+      if (maxScroll <= 0) return;
 
-      if (el.scrollTop >= maxScroll - 1) {
-        // رسید به انتها → برگرد بالا
-        el.scrollTop = 0;
-      } else {
-        el.scrollTop += speed;
-      }
+      if (el.scrollTop >= maxScroll - 1) el.scrollTop = 0;
+      else el.scrollTop += speed;
     }, 100);
 
     return () => clearInterval(interval);
@@ -1076,9 +954,10 @@ function AutoScrollContainer({
   );
 }
 
-/* --- کارت‌ها با آیکون (نسخه جمع‌وجور و شیک‌تر) --- */
+/* --- کارت‌ها با آیکون --- */
 function TechCard({ icon, label, value, link, delta, iconLink }) {
   const hasLink = !!link;
+
   const IconWrap = ({ children }) =>
     iconLink ? (
       <a
@@ -1110,27 +989,24 @@ function TechCard({ icon, label, value, link, delta, iconLink }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        {/* آیکون داخل دایره شیک */}
         <IconWrap>
-  <div
-    style={{
-      width: 32,
-      height: 32,
-      borderRadius: 999,
-      background: "rgba(59,130,246,0.12)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "0 0 0 1px rgba(59,130,246,0.35)",
-      cursor: iconLink ? "pointer" : "default",
-    }}
-  >
-    <span style={{ fontSize: 18, color: "#005F9E" }}>{icon}</span>
-  </div>
-</IconWrap>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 999,
+              background: "rgba(59,130,246,0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 0 0 1px rgba(59,130,246,0.35)",
+              cursor: iconLink ? "pointer" : "default",
+            }}
+          >
+            <span style={{ fontSize: 18, color: "#005F9E" }}>{icon}</span>
+          </div>
+        </IconWrap>
 
-
-        {/* لیبل کارت بولدتر */}
         <span
           style={{
             fontSize: 11,
@@ -1153,13 +1029,7 @@ function TechCard({ icon, label, value, link, delta, iconLink }) {
           gap: 4,
         }}
       >
-        <span
-          style={{
-            fontSize: 20,
-            fontWeight: 800,
-            color: "#0f172a",
-          }}
-        >
+        <span style={{ fontSize: 20, fontWeight: 800, color: "#0f172a" }}>
           {hasLink ? (
             link ? (
               <a
