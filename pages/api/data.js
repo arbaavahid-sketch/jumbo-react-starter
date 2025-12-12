@@ -65,10 +65,39 @@ function mapSheetsToPayload({
   dealsSheet = [],
   ceoSheet = [],
   arListSheet = [],
-  techQueueSheet = [], // 👈 شیت technical_Queue_Details
-  megaDealsSheet = [],      // 👈 این
-
+  techQueueSheet = [],
+  megaDealsSheet = [],
+  weeklyTripsSheet = [], // ✅ اضافه شد
 }) {
+  // ✅ weekly_trips_details: فقط آخرین تاریخ برای هر گروه
+const weekly_trips_details = weeklyTripsSheet
+  .map((r) => ({
+    date: (r.date || r.Date || "").trim(),
+    group: String(r.group || r.Group || "").toUpperCase().trim(),
+    company_name: (r.company_name || r.Company_Name || r.company || r.Company || "").trim(),
+    owner: (r.owner || r.Owner || "").trim(),
+  }))
+  .filter((r) => r.group && r.date);
+
+// ✅ انتخاب آخرین تاریخ برای هر گروه
+const tripsByGroup = {};
+for (const row of weekly_trips_details) {
+  if (!tripsByGroup[row.group]) tripsByGroup[row.group] = [];
+  tripsByGroup[row.group].push(row);
+}
+
+const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
+  ([g, arr]) => {
+    // مرتب‌سازی بر اساس تاریخ (بهتره تاریخ‌ها YYYY/MM/DD یا YYYY-MM-DD باشن)
+    arr.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const lastDate = arr[arr.length - 1]?.date;
+
+    // فقط ردیف‌های همان آخرین تاریخ را نگه دار
+    return arr.filter((x) => x.date === lastDate);
+  }
+);
+
+
   // weekly_reports
   const weekly_reports = weeklySheet
     .map((r) => {
@@ -304,6 +333,7 @@ function mapSheetsToPayload({
     ar_list,
     technical_queue,
     mega_deals_details,   // 👈 این
+    weekly_trips_details: weekly_trips_details_latest,
 
   };
 }
@@ -312,6 +342,7 @@ function mapSheetsToPayload({
 export default async function handler(req, res) {
   try {
     const {
+      SHEET_WEEKLY_TRIPS_CSV_URL,
       SHEET_WEEKLY_CSV_URL,
       SHEET_MEMBERS_CSV_URL,
       SHEET_LATEST_CSV_URL,
@@ -321,6 +352,7 @@ export default async function handler(req, res) {
       SHEET_AR_LIST_CSV_URL,
       SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
       SHEET_MEGA_DEALS_CSV_URL
+      
     } = process.env;
 
     const fetchCSV = async (url) => {
@@ -331,14 +363,16 @@ export default async function handler(req, res) {
     };
 
         let weeklySheet = [],
-      membersSheet = [],
-      latestSheet = [],
-      groupsSheet = [],
-      dealsSheet = [],
-      ceoSheet = [],
-      arListSheet = [],
-      techQueueSheet = [],
-      megaDealsSheet = [];   // ✅ اینجا همون‌جا تعریف می‌شه
+  membersSheet = [],
+  latestSheet = [],
+  groupsSheet = [],
+  dealsSheet = [],
+  ceoSheet = [],
+  arListSheet = [],
+  techQueueSheet = [],
+  megaDealsSheet = [],
+  weeklyTripsSheet = []; // ✅ اضافه شد
+
 
     try {
       weeklySheet = await fetchCSV(SHEET_WEEKLY_CSV_URL);
@@ -350,6 +384,7 @@ export default async function handler(req, res) {
       arListSheet = await fetchCSV(SHEET_AR_LIST_CSV_URL);
       techQueueSheet = await fetchCSV(SHEET_TECH_QUEUE_CSV_URL);
       megaDealsSheet = await fetchCSV(SHEET_MEGA_DEALS_CSV_URL); // 👈 این
+      weeklyTripsSheet = await fetchCSV(SHEET_WEEKLY_TRIPS_CSV_URL);
 
     } catch (e) {
       console.warn("CSV fetch failed — using sample.json", e);
@@ -379,16 +414,17 @@ export default async function handler(req, res) {
     }
 
     const payload = mapSheetsToPayload({
-      weeklySheet,
-      membersSheet,
-      latestSheet,
-      groupsSheet,
-      dealsSheet,
-      ceoSheet,
-      arListSheet,
-      techQueueSheet,
-       megaDealsSheet,   // 👈 جدید
-    });
+  weeklySheet,
+  membersSheet,
+  latestSheet,
+  groupsSheet,
+  dealsSheet,
+  ceoSheet,
+  arListSheet,
+  techQueueSheet,
+  megaDealsSheet,
+  weeklyTripsSheet, // ✅ اضافه شد
+});
 
     res.status(200).json(payload);
   } catch (err) {

@@ -248,6 +248,10 @@ export default function GroupDashboard() {
   const megaDealsForGroup = megaDealsAll.filter(
     (r) => toStr(r.group).toUpperCase() === groupKey
   );
+const tripsAll = ensureArray(raw.weekly_trips_details);
+const weeklyTripsForGroup = tripsAll.filter(
+  (r) => toStr(r.group).toUpperCase() === groupKey
+);
 
   const group =
     groups.find((g) => toStr(g.id) === id) ||
@@ -498,12 +502,13 @@ export default function GroupDashboard() {
               />
 
               <StatCard
-                label="Weekly Trips"
-                value={latest?.weekly_trips ?? 0}
-                delta={deltas.weekly_trips}
-                Icon={FiNavigation}
-                accent="#0d9488"
-              />
+  label="Weekly Trips"
+  value={latest?.weekly_trips ?? 0}
+  delta={deltas.weekly_trips}
+  accent="#0d9488"
+  actionIcon={<WeeklyTripsIcon trips={weeklyTripsForGroup} />}
+/>
+
             </div>
           </div>
 
@@ -662,6 +667,129 @@ function MegaDealsIcon({ deals }) {
                       <span>ID: {d.mega_deal_id}</span>
                       <span>Owner: {d.owner}</span>
                     </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+function WeeklyTripsIcon({ trips }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* آیکون کوچک روی کارت */}
+      <div style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          title="Weekly Trips Details"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 999,
+            border: "1px solid rgba(148,163,184,0.6)",
+            background: "rgba(250,250,250,0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <FiNavigation size={16} color="#0d9488" />
+        </button>
+      </div>
+
+      {open && (
+        <>
+          {/* کلیک بیرون = بستن */}
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "transparent",
+              zIndex: 9998,
+            }}
+          />
+
+          {/* پنل ثابت */}
+          <div
+            style={{
+              position: "fixed",
+              top: 90,
+              right: 40,
+              minWidth: 420,
+              maxWidth: 520,
+              maxHeight: 360,
+              background: "#ffffff",
+              borderRadius: 16,
+              boxShadow:
+                "0 20px 60px rgba(15,23,42,0.25), 0 0 0 1px rgba(148,163,184,0.45)",
+              padding: 14,
+              zIndex: 9999,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700 }}>
+                Weekly Trips Details
+              </div>
+
+              <button
+                onClick={() => setOpen(false)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: 20,
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {!trips || trips.length === 0 ? (
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                No trips recorded
+              </div>
+            ) : (
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  maxHeight: 300,
+                  overflowY: "auto",
+                }}
+              >
+                {trips.map((t, i) => (
+                  <li
+                    key={i}
+                    style={{
+                      padding: "8px 6px",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>
+                      {i + 1}. {t.company_name || "Company"}
+
+                    </div>
+                    <div style={{ fontSize: 11, color: "#6b7280", display: "flex", gap: 10, flexWrap: "wrap" }}>
+  {t.date ? <span>Date: {t.date}</span> : null}
+  {t.owner ? <span>Owner: {t.owner}</span> : null}
+</div>
+
                   </li>
                 ))}
               </ul>
