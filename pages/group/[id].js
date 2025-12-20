@@ -269,6 +269,17 @@ const weeklyTripsForGroup = tripsAll.filter(
 
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
+const normDate = (s) => String(s || "").trim().replace(/\//g, "-");
+
+const currTrips = (() => {
+  const currTripsCount = Number(curr?.weekly_trips || 0);
+  if (!curr || currTripsCount <= 0) return [];
+
+  const currDate = normDate(curr?.date);
+  if (!currDate) return [];
+
+  return weeklyTripsForGroup.filter((t) => normDate(t?.date) === currDate);
+})();
 
   // momLink: اول از latest.mom، اگر خالی بود از آخرین ردیف weekly که mom دارد
   let momLink = toStr(latest.mom || "").trim();
@@ -506,8 +517,9 @@ const weeklyTripsForGroup = tripsAll.filter(
   value={latest?.weekly_trips ?? 0}
   delta={deltas.weekly_trips}
   accent="#0d9488"
-  actionIcon={<WeeklyTripsIcon trips={weeklyTripsForGroup} />}
+  actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
 />
+
 
             </div>
           </div>
@@ -677,7 +689,7 @@ function MegaDealsIcon({ deals }) {
     </>
   );
 }
-function WeeklyTripsIcon({ trips }) {
+function WeeklyTripsIcon({ trips, currDate }) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -699,20 +711,10 @@ function WeeklyTripsIcon({ trips }) {
 
   const list = Array.isArray(trips) ? trips : [];
 
-  // ✅ فقط آخرین تاریخ گروه
-  const latestDate =
-    list.length === 0
-      ? ""
-      : list
-          .slice()
-          .sort((a, b) => toDateMs(b.date) - toDateMs(a.date))[0]?.date || "";
-
-  const latestTrips = latestDate
-    ? list.filter((t) => String(t.date || "").trim() === String(latestDate).trim())
-    : list;
+  
 
   // مرتب‌سازی شیک‌تر
-  const sortedTrips = latestTrips.slice().sort((a, b) => {
+const sortedTrips = list.slice().sort((a, b) => {
     const ac = String(a.company_name || "").localeCompare(String(b.company_name || ""));
     if (ac !== 0) return ac;
     return String(a.owner || "").localeCompare(String(b.owner || ""));
@@ -790,11 +792,12 @@ function WeeklyTripsIcon({ trips }) {
                 <div style={{ fontSize: 13, fontWeight: 800 }}>
                   Weekly Trips Details
                 </div>
-                {latestDate ? (
-                  <div style={{ fontSize: 11, color: "#64748b" }}>
-                    
-                  </div>
-                ) : null}
+                {currDate ? (
+  <div style={{ fontSize: 11, color: "#64748b" }}>
+    Week Date: {currDate}
+  </div>
+) : null}
+
               </div>
 
               <button
