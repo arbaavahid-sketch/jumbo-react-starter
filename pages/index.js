@@ -27,8 +27,7 @@ export default function Home() {
         }}
       >
         <h1 style={{ marginTop: 0, marginBottom: 8 }}>Group Dashboard Portal</h1>
-        <p style={{ marginTop: 0, marginBottom: 24, fontSize: 14 }}>
-        </p>
+        <p style={{ marginTop: 0, marginBottom: 24, fontSize: 14 }}></p>
 
         <div
           style={{
@@ -42,16 +41,14 @@ export default function Home() {
               style={{
                 padding: 14,
                 borderRadius: 18,
-                background:
-                  "linear-gradient(135deg,#0f172a,#1e293b,#020617)",
+                background: "linear-gradient(135deg,#0f172a,#1e293b,#020617)",
                 color: "#e5e7eb",
                 boxShadow:
                   "0 16px 40px rgba(15,23,42,0.7), 0 0 0 1px rgba(15,23,42,0.9)",
               }}
             >
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Admin Panel</div>
-              <div style={{ fontSize: 13, opacity: 0.8 }}>
-              </div>
+              <div style={{ fontSize: 13, opacity: 0.8 }}></div>
             </div>
           </Link>
 
@@ -60,8 +57,7 @@ export default function Home() {
               style={{
                 padding: 14,
                 borderRadius: 18,
-                background:
-                  "linear-gradient(135deg,#0369a1,#0ea5e9,#e0f2fe)",
+                background: "linear-gradient(135deg,#0369a1,#0ea5e9,#e0f2fe)",
                 color: "#0f172a",
                 boxShadow:
                   "0 16px 40px rgba(15,23,42,0.4), 0 0 0 1px rgba(56,189,248,0.6)",
@@ -70,8 +66,7 @@ export default function Home() {
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
                 Technical Dashboard
               </div>
-              <div style={{ fontSize: 13, opacity: 0.8 }}>
-              </div>
+              <div style={{ fontSize: 13, opacity: 0.8 }}></div>
             </div>
           </Link>
 
@@ -80,17 +75,34 @@ export default function Home() {
               style={{
                 padding: 14,
                 borderRadius: 18,
-                background:
-                  "linear-gradient(135deg,#6b21a8,#9333ea,#e9d5ff)",
+                background: "linear-gradient(135deg,#6b21a8,#9333ea,#e9d5ff)",
                 color: "#f9fafb",
                 boxShadow:
                   "0 16px 40px rgba(88,28,135,0.6), 0 0 0 1px rgba(147,51,234,0.7)",
               }}
             >
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>CEO Messages</div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
+            </div>
+          </Link>
+
+          {/* ✅ کارت جدید: Weekly History (هم‌استایل بقیه) */}
+          <Link href="/admin/weekly-history" style={{ textDecoration: "none" }}>
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 18,
+                background: "linear-gradient(135deg,#10b981,#34d399,#ecfeff)",
+                color: "#022c22",
+                boxShadow:
+                  "0 16px 40px rgba(16,185,129,0.35), 0 0 0 1px rgba(52,211,153,0.7)",
+              }}
+            >
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                CEO Messages
+                📊 Weekly History
               </div>
               <div style={{ fontSize: 13, opacity: 0.9 }}>
+                
               </div>
             </div>
           </Link>
@@ -100,8 +112,7 @@ export default function Home() {
               style={{
                 padding: 14,
                 borderRadius: 18,
-                background:
-                  "linear-gradient(135deg,#16a34a,#4ade80,#dcfce7)",
+                background: "linear-gradient(135deg,#16a34a,#4ade80,#dcfce7)",
                 color: "#022c22",
                 boxShadow:
                   "0 16px 40px rgba(22,163,74,0.4), 0 0 0 1px rgba(74,222,128,0.7)",
@@ -110,8 +121,7 @@ export default function Home() {
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
                 Group A Dashboard
               </div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}>
-              </div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
             </div>
           </Link>
 
@@ -120,8 +130,7 @@ export default function Home() {
               style={{
                 padding: 14,
                 borderRadius: 18,
-                background:
-                  "linear-gradient(135deg,#f97316,#fdba74,#fff7ed)",
+                background: "linear-gradient(135deg,#f97316,#fdba74,#fff7ed)",
                 color: "#451a03",
                 boxShadow:
                   "0 16px 40px rgba(234,88,12,0.4), 0 0 0 1px rgba(249,115,22,0.7)",
@@ -130,8 +139,7 @@ export default function Home() {
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
                 Group B Dashboard
               </div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}>
-              </div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
             </div>
           </Link>
 
@@ -140,8 +148,7 @@ export default function Home() {
               style={{
                 padding: 14,
                 borderRadius: 18,
-                background:
-                  "linear-gradient(135deg,#0ea5e9,#38bdf8,#e0f2fe)",
+                background: "linear-gradient(135deg,#0ea5e9,#38bdf8,#e0f2fe)",
                 color: "#0f172a",
                 boxShadow:
                   "0 16px 40px rgba(14,165,233,0.4), 0 0 0 1px rgba(56,189,248,0.7)",
@@ -150,8 +157,7 @@ export default function Home() {
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
                 Group C Dashboard
               </div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}>
-              </div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
             </div>
           </Link>
         </div>
