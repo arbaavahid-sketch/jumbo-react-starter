@@ -271,15 +271,35 @@ const weeklyTripsForGroup = tripsAll.filter(
   const { prev, curr } = lastTwo(weekly, groupKey);
 const normDate = (s) => String(s || "").trim().replace(/\//g, "-");
 
+// ...existing code...
 const currTrips = (() => {
   const currTripsCount = Number(curr?.weekly_trips || 0);
   if (!curr || currTripsCount <= 0) return [];
 
-  const currDate = normDate(curr?.date);
-  if (!currDate) return [];
+  const currDateRaw = curr?.date || "";
+  const currDate = normDate(currDateRaw);
 
-  return weeklyTripsForGroup.filter((t) => normDate(t?.date) === currDate);
+  // آخرین تاریخ موجود در weeklyTripsForGroup (نرمالایز شده)
+  const tripDates = weeklyTripsForGroup
+    .map((t) => normDate(t?.date))
+    .filter(Boolean)
+    .sort((a, b) => new Date(a) - new Date(b));
+  const latestTripDate = tripDates.length ? tripDates[tripDates.length - 1] : null;
+
+  // اگر تاریخ weekly_reports موجود و مطابق بود، اون رو برگردون،
+  // در غیر این صورت از آخرین تاریخ موجود در weekly_trips استفاده کن
+  if (currDate) {
+    return weeklyTripsForGroup.filter((t) => {
+      const td = normDate(t?.date);
+      return td === currDate || (latestTripDate && td === latestTripDate);
+    });
+  }
+
+  return latestTripDate
+    ? weeklyTripsForGroup.filter((t) => normDate(t?.date) === latestTripDate)
+    : [];
 })();
+// ...existing code...
 
   // momLink: اول از latest.mom، اگر خالی بود از آخرین ردیف weekly که mom دارد
   let momLink = toStr(latest.mom || "").trim();
