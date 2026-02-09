@@ -88,7 +88,7 @@ export default function MembersHistoryChart({ rows = [] }) {
         Deals vs Offers Sent
       </div>
 
-      <div style={{ width: "100%", height: 260 }}>
+      <div style={{ width: "100%", height: 210 }}>
         <ResponsiveContainer>
           <BarChart
             data={data}

@@ -68,6 +68,8 @@ function mapSheetsToPayload({
   techQueueSheet = [],
   megaDealsSheet = [],
   weeklyTripsSheet = [], // ✅ اضافه شد
+ logisticAASheet = [], // ✅ اضافه شد
+
 }) {
   // ✅ weekly_trips_details: فقط آخرین تاریخ برای هر گروه
 const weekly_trips_details = weeklyTripsSheet
@@ -154,6 +156,23 @@ const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
       name: `Group ${key}`,
     }));
   }
+// ✅ logistic_aa (index-based, safe)
+const logistic_aa = logisticAASheet.map((r) => ({
+  plane_dispatch_within_2_months:
+    (r["plane Dispatch(within 2 months)"] ??
+      r.plane_dispatch_within_2_months ??
+      "").trim(),
+
+  on_the_way_to_iran_within_1_month:
+    (r["on the way to iran(within 1 month)"] ??
+      r.on_the_way_to_iran_within_1_month ??
+      "").trim(),
+
+  customs_within_2_week:
+    (r["customs(within 2 week)"] ?? r.customs_within_2_week ?? "").trim(),
+}));
+
+
 
   // members (آخرین رکورد هر نفر)
   const members = {};
@@ -334,7 +353,7 @@ const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
     technical_queue,
     mega_deals_details,   // 👈 این
     weekly_trips_details: weekly_trips_details_latest,
-
+    logistic_aa,
   };
 }
 
@@ -351,8 +370,9 @@ export default async function handler(req, res) {
       SHEET_CEO_MSG_CSV_URL,
       SHEET_AR_LIST_CSV_URL,
       SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
-      SHEET_MEGA_DEALS_CSV_URL
-      
+      SHEET_MEGA_DEALS_CSV_URL,
+      SHEET_LOGISTIC_AA_CSV_URL,
+
     } = process.env;
 
     const fetchCSV = async (url) => {
@@ -361,8 +381,7 @@ export default async function handler(req, res) {
       if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
       return parseCSV(await r.text());
     };
-
-        let weeklySheet = [],
+let weeklySheet = [],
   membersSheet = [],
   latestSheet = [],
   groupsSheet = [],
@@ -371,8 +390,8 @@ export default async function handler(req, res) {
   arListSheet = [],
   techQueueSheet = [],
   megaDealsSheet = [],
-  weeklyTripsSheet = []; // ✅ اضافه شد
-
+  weeklyTripsSheet = [],
+  logisticAASheet = []; // ✅ اینجا باید باشد
 
     try {
       weeklySheet = await fetchCSV(SHEET_WEEKLY_CSV_URL);
@@ -385,6 +404,11 @@ export default async function handler(req, res) {
       techQueueSheet = await fetchCSV(SHEET_TECH_QUEUE_CSV_URL);
       megaDealsSheet = await fetchCSV(SHEET_MEGA_DEALS_CSV_URL); // 👈 این
       weeklyTripsSheet = await fetchCSV(SHEET_WEEKLY_TRIPS_CSV_URL);
+logisticAASheet = await fetchCSV(SHEET_LOGISTIC_AA_CSV_URL);
+console.log("LOGISTIC URL:", SHEET_LOGISTIC_AA_CSV_URL);
+console.log("LOGISTIC rows:", logisticAASheet.length);
+console.log("LOGISTIC first row keys:", logisticAASheet[0] ? Object.keys(logisticAASheet[0]) : null);
+console.log("LOGISTIC first row:", logisticAASheet[0] || null);
 
     } catch (e) {
       console.warn("CSV fetch failed — using sample.json", e);
@@ -424,6 +448,8 @@ export default async function handler(req, res) {
   techQueueSheet,
   megaDealsSheet,
   weeklyTripsSheet, // ✅ اضافه شد
+  logisticAASheet, // ✅ حتماً این هم باشه
+
 });
 
     res.status(200).json(payload);

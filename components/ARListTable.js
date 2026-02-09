@@ -68,7 +68,7 @@ export default function ARListTable({ rows = [] }) {
   return (
     <div
       style={{
-        marginTop: 18,
+        
         borderRadius: 18,
         background: "linear-gradient(135deg, #e3f2ff, #f8fafc)",
         padding: 1,
@@ -80,9 +80,9 @@ export default function ARListTable({ rows = [] }) {
         {/* هدر AR LIST (این ثابت می‌مونه چون بیرون اسکروله) */}
         <div
           style={{
-            padding: "10px 14px",
+            padding: "12px 16px",
             borderBottom: "1px solid #e5e7eb",
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: 800,
             color: "#ffffff",
             textTransform: "uppercase",

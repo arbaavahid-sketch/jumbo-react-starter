@@ -1,4 +1,5 @@
 // pages/share/[slug].js — داشبورد عمومی گروه/تکنیکال بر اساس slug (مثلاً /share/...)
+import LogisticAATable from "../../components/LogisticAATable";
 
 import Head from "next/head";
 import useSWR from "swr";
@@ -16,17 +17,9 @@ import TgjuTickersBlock from "../../components/TgjuTickersBlock";
 import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
 
-// برای داشبورد تکنیکال
-import {
-  ResponsiveContainer,
-  BarChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  Bar,
-} from "recharts";
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from "recharts";
+
+
 
 import {
   FiTrendingUp,
@@ -57,22 +50,21 @@ export async function getServerSideProps(context) {
     props: { slug, groupKey },
   };
 }
-
-// ---------- Helpers ----------
 const fetcher = async (url) => {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 };
 
-const fmtEUR = (n) =>
-  typeof n === "number"
-    ? new Intl.NumberFormat("de-DE", {
-        style: "currency",
-        currency: "EUR",
-        maximumFractionDigits: 2,
-      }).format(n)
-    : "-";
+const fmtEUR = (n) => {
+  if (typeof n !== "number") return "-";
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 2,
+  }).format(n);
+};
+
 
 const toStr = (v) => (v == null ? "" : String(v));
 const ensureArray = (v) => (Array.isArray(v) ? v : []);
@@ -212,7 +204,6 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
   );
 }
 
-// ---------- PublicGroupDashboard (A/B/C) ----------
 function PublicGroupDashboard({ groupKey }) {
   const { data: raw, error, isLoading } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
@@ -234,6 +225,7 @@ function PublicGroupDashboard({ groupKey }) {
   const dealsExecAll = ensureArray(raw.deals_exec);
   const ceoMessages = raw.ceo_messages || {};
   const arAll = ensureArray(raw.ar_list);
+  const logisticRows = ensureArray(raw.logistic_aa);
 
   const arForGroup = arAll.filter((r) => toStr(r.group).toUpperCase() === groupKey);
 
@@ -357,11 +349,15 @@ function PublicGroupDashboard({ groupKey }) {
         </section>
       )}
 
-      {/* KPI */}
-      <section className="section kpi-section" style={{ marginTop: 8 }}>
-        <div className="group-grid">
-          <div>
-            <div className="kpi-grid">
+      <section className="section kpi-section" style={{ marginTop: 8, marginBottom: 0, paddingBottom: 0 }}>
+  {/* KPI grid: 2 rows (4x2) */}
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+      gap: 12,
+    }}
+  >
               <StatCard
                 label="Total Sales (2025)"
                 value={fmtEUR(latest?.total_sales_eur)}
@@ -464,35 +460,54 @@ function PublicGroupDashboard({ groupKey }) {
                 actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
               />
             </div>
-          </div>
+          {/* Charts row: same height */}
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 14,
+      marginTop: 14,
+      alignItems: "stretch",
+    }}
+  >
+    <div style={{ height: 320 }}>
+      <GroupSalesBars data={salesBarData} />
+    </div>
 
-          <div>
-            <GroupSalesBars data={salesBarData} />
-          </div>
-        </div>
-      </section>
+    <div style={{ height: 320 }}>
+      <MembersHistoryChart rows={members[groupKey] || []} />
+    </div>
+  </div>
+</section>
 
-      {/* Bottom */}
-      <section className="section" style={{ marginTop: 32 }}>
-        <div
-          className="bottom-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: 16,
-            alignItems: "flex-start",
-          }}
-        >
-          <div>
-            <MembersHistoryChart rows={members[groupKey] || []} />
-          </div>
+      <section className="section" style={{ marginTop: 14, paddingTop: 0 }}>
+  {/* Row 1: Deal Exec + AR (same size) */}
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 14,
+      alignItems: "stretch",
+    }}
+  >
+    <div style={{ height: 360 }}>
+      <DealsExecTable rows={dealsForGroup} />
+    </div>
 
-          <div>
-            <DealsExecTable rows={dealsForGroup} />
-            <ARListTable rows={arForGroup} />
-          </div>
-        </div>
-      </section>
+    <div style={{ height: 360 }}>
+      <ARListTable rows={arForGroup} />
+    </div>
+    <div style={{ marginTop: 14 }}>
+</div>
+
+  </div>
+
+  {/* Row 2: Logistic AA full width */}
+  <div style={{ marginTop: 0 }}>
+    <LogisticAATable rows={ensureArray(raw.logistic_aa)} />
+  </div>
+</section>
+
 
       {/* Bloomberg News */}
       <section className="section">
