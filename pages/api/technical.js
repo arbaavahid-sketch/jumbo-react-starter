@@ -150,7 +150,7 @@ last_meeting: (
         // اینجا چند اسم احتمالی برای ستون در نظر گرفتیم
         installed_ids: (
           r.installed_ids ||
-          r["installed_ids_2025"] ||
+          r["installed_ids_2026"] ||
           r["installed deals"] ||
           r["installed_deals_ids"] ||
           r["Installed deals IDs"] ||
