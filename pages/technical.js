@@ -272,7 +272,7 @@ export default function TechnicalDashboard() {
               <TechCard icon={<FiPieChart />} label="TOTAL DEALS DONE (WEEK)" value={t.total_deals_week} isMobile={isMobile} />
               <TechCard icon={<FiLayers />} label="TECHNICAL APPROVAL QUEUE" value={techQueue.length} delta={deltas.queue} isMobile={isMobile} />
               <TechCard icon={<FiClock />} label="WAITING FOR INSTALLATION" value={t.waiting_installation} delta={deltas.waiting} isMobile={isMobile} />
-              <TechCard icon={<FiCheckSquare />} label="INSTALLED DEALS AT 2025" value={installedCount} delta={installedDelta} isMobile={isMobile} />
+              <TechCard icon={<FiCheckSquare />} label="INSTALLED DEALS AT 2026" value={installedCount} delta={installedDelta} isMobile={isMobile} />
               <TechCard icon={<FiMapPin />} label="PROMOTION TRIPS / MEETINGS" value={t.promotion_trips} isMobile={isMobile} />
               <TechCard icon={<FiMonitor />} label="DEMO SHOWS (QUARTERLY)" value={t.demo_shows} isMobile={isMobile} />
               <TechCard icon={<FiBookOpen />} label="INTERNAL TRAININGS (QUARTERLY)" value={t.internal_trainings} isMobile={isMobile} />
