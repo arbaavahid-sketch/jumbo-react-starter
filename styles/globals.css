@@ -13,22 +13,103 @@
   gap: 18px;
 }
 
-/* زیر 900px → دو ستون میشه یک ستون */
-@media (max-width: 900px) {
+/* --- GRID برای داشبورد --- */
+.group-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* گرید KPIها */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.dashboard-title {
+  margin: 0;
+}
+
+.dashboard-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* Tablet & mobile */
+@media (max-width: 1024px), (max-device-width: 1024px) {
   .group-grid {
     grid-template-columns: 1fr;
   }
+.kpi-grid {
+     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+.dashboard-header {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-brand {
+    width: 100%;
+    align-items: flex-start;
+  }
 }
 
-/* زیر 640px → KPI ها هم تک‌ستونی + کانتینر جمع‌وجورتر */
-@media (max-width: 640px) {
+/* Mobile */
+@media (max-width: 760px), (max-device-width: 760px) {
   .kpi-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+
+  .group-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .container {
+    margin: 16px auto;
+      padding: 0 10px;
+  }
+
+  .dashboard-title {
+    font-size: 24px;
+  }
+}
+
+/* برخی مرورگرهای موبایل layout viewport بزرگ‌تری گزارش می‌کنند؛
+   برای جلوگیری از به‌هم‌ریختگی، روی دستگاه لمسی همیشه حالت stack فعال باشد. */
+@media (hover: none) and (pointer: coarse) {
+  .group-grid,
+  .kpi-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr !important;
   }
 
   .container {
-    margin: 16px auto;
-    padding: 0 12px;
+    padding: 0 10px;
+  }
+
+  .dashboard-header {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-brand {
+    width: 100%;
+    align-items: flex-start;
   }
 }
 

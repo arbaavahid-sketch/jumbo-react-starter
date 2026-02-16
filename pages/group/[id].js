@@ -371,7 +371,7 @@ const currTrips = (() => {
 
   // 🔹 حالت عادی: داشبورد
   return (
-    <main className="container" style={{ padding: 24 }}>
+     <main className="container">
       <Head>
         <title>{pageTitle}</title>
         <meta
@@ -381,24 +381,9 @@ const currTrips = (() => {
       </Head>
 
       {/* هدر بالا: عنوان + لوگو + ساعت */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 16,
-          marginBottom: 12,
-        }}
-      >
-        <h1 style={{ margin: 0 }}>{pageTitle}</h1>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: 6,
-          }}
-        >
+       <div className="dashboard-header">
+        <h1 className="dashboard-title">{pageTitle}</h1>
+        <div className="dashboard-brand">
           <img
             src="/company-logo.png"
             alt="company logo"
