@@ -428,13 +428,7 @@ const currTrips = (() => {
       {/* KPI + Charts */}
 <section className="section kpi-section" style={{ marginTop: 0, marginBottom: 0 }}>
   {/* 1) KPI grid: 2 rows (4x2) */}
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-      gap: 12,
-    }}
-  >
+    <div className="dashboard-kpi-grid">
     <StatCard
       label="Total Sales (2025)"
       value={fmtEUR(latest?.total_sales_eur)}
@@ -532,15 +526,7 @@ const currTrips = (() => {
   </div>
 
   {/* 2) Charts row: same height */}
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 14,
-      marginTop: 14,
-      alignItems: "stretch",
-    }}
-  >
+    <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
     <div style={{ height: 320 }}>
       <GroupSalesBars data={salesBarData} />
     </div>
@@ -556,14 +542,7 @@ const currTrips = (() => {
      {/* Tables */}
 <div style={{ marginTop: 0 }}>
   {/* Row 1: Deal Exec + AR */}
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 14,
-      alignItems: "stretch",
-    }}
-  >
+    <div className="dashboard-two-col-grid">
     <div>
   <DealsExecTable rows={dealsForGroup} />
 </div>

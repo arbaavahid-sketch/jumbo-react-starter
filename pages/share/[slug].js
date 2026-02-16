@@ -343,13 +343,7 @@ function PublicGroupDashboard({ groupKey }) {
 
       <section className="section kpi-section" style={{ marginTop: 8, marginBottom: 0, paddingBottom: 0 }}>
   {/* KPI grid: 2 rows (4x2) */}
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-      gap: 12,
-    }}
-  >
+    <div className="dashboard-kpi-grid">
               <StatCard
                 label="Total Sales (2025)"
                 value={fmtEUR(latest?.total_sales_eur)}
@@ -453,15 +447,7 @@ function PublicGroupDashboard({ groupKey }) {
               />
             </div>
           {/* Charts row: same height */}
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 14,
-      marginTop: 14,
-      alignItems: "stretch",
-    }}
-  >
+    <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
     <div style={{ height: 320 }}>
       <GroupSalesBars data={salesBarData} />
     </div>
@@ -474,14 +460,7 @@ function PublicGroupDashboard({ groupKey }) {
 
       <section className="section" style={{ marginTop: 14, paddingTop: 0 }}>
   {/* Row 1: Deal Exec + AR (same size) */}
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 14,
-      alignItems: "stretch",
-    }}
-  >
+    <div className="dashboard-two-col-grid">
     <div style={{ height: 360 }}>
       <DealsExecTable rows={dealsForGroup} />
     </div>
