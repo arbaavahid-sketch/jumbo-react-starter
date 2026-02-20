@@ -51,9 +51,7 @@ const displayOrBlank = (v) => {
   return pretty(v);
 };
 
-const makeRowKey = (row = {}) => {
-  const deal = norm(row.deal_number);
-  if (deal) return `deal:${deal}`;
+const makeLegacyRowKey = (row = {}) => {
 
   const parsed = splitPlaneDispatch(row.plane_dispatch_within_2_months, "");
   if (norm(parsed.dealNumber)) return `parsed:${norm(parsed.dealNumber)}`;
@@ -64,7 +62,33 @@ const makeRowKey = (row = {}) => {
     norm(row.customs_within_2_week),
   ].join("||");
 };
+const makeRowKey = (row = {}) => {
+  const deal = norm(row.deal_number);
+  const base = [
+    norm(row.plane_dispatch_within_2_months),
+    norm(row.on_the_way_to_iran_within_1_month),
+    norm(row.customs_within_2_week),
+  ].join("||");
 
+  return deal ? `${base}||deal:${deal}` : base;
+};
+
+const makeDealFirstRowKey = (row = {}) => {
+  const deal = norm(row.deal_number);
+  if (deal) return `deal:${deal}`;
+
+  return makeLegacyRowKey(row);
+};
+
+const getPreviousStatus = (store, row) => {
+  const keyCandidates = [makeRowKey(row), makeLegacyRowKey(row), makeDealFirstRowKey(row)];
+
+  for (const key of keyCandidates) {
+    if (key && store[key]) return store[key];
+  }
+
+  return {};
+};
 const readStore = () => {
   if (typeof window === "undefined") return {};
   try {
@@ -184,7 +208,8 @@ export default function LogisticAATable({ rows = [] }) {
 
     safeRows.forEach((row, idx) => {
       const key = makeRowKey(row);
-      const prev = previousStore[key] || {};
+      const legacyKey = makeLegacyRowKey(row);
+      const prev = getPreviousStatus(previousStore, row);
 
       const isPlaneActive = hasMeaningful(row.plane_dispatch_within_2_months);
       const isIranActive = hasMeaningful(row.on_the_way_to_iran_within_1_month);
@@ -226,7 +251,7 @@ export default function LogisticAATable({ rows = [] }) {
               <tr>
                 <th style={th} colSpan={2}>
                   <div style={thLabelWrap}>
-                    <span>Plane Dispatch (within 2 months)</span>
+                    <span>Planned Dispatch (within 2 months)</span>
                     <span style={thBadge}>Countdown: 60→0</span>
                   </div>
                 </th>
@@ -244,7 +269,7 @@ export default function LogisticAATable({ rows = [] }) {
                 </th>
               </tr>
               <tr>
-                <th style={thSub}>Plane Dispatch</th>
+                <th style={thSub}>Planned Dispatch</th>
                 <th style={thSub}>Deal Number</th>
               </tr>
             </thead>

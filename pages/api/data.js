@@ -71,6 +71,29 @@ function mapSheetsToPayload({
  logisticAASheet = [], // ✅ اضافه شد
 
 }) {
+  const normKey = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+  const pickField = (row, candidates = []) => {
+    if (!row || typeof row !== "object") return "";
+
+    for (const key of candidates) {
+      const value = row[key];
+      if (value != null && String(value).trim() !== "") {
+        return String(value).trim();
+      }
+    }
+
+    const normalized = candidates.map(normKey);
+    for (const [k, v] of Object.entries(row)) {
+      if (v == null || String(v).trim() === "") continue;
+      if (normalized.includes(normKey(k))) return String(v).trim();
+    }
+
+    return "";
+  };
   // ✅ weekly_trips_details: فقط آخرین تاریخ برای هر گروه
 const weekly_trips_details = weeklyTripsSheet
   .map((r) => ({
@@ -157,23 +180,33 @@ const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
     }));
   }
 // ✅ logistic_aa (index-based, safe)
-const logistic_aa = logisticAASheet.map((r) => ({
-  plane_dispatch_within_2_months:
-    (r["plane Dispatch(within 2 months)"] ??
-      r.plane_dispatch_within_2_months ??
-      "").trim(),
+const logistic_aa = logisticAASheet.map((r) => {
+  const planeDispatch = pickField(r, [
+    "plane Dispatch(within 2 months)",
+    "planned dispatch(within 2 months)",
+    "planned dispatch",
+    "plane_dispatch_within_2_months",
+    "planned_dispatch_within_2_months",
+    "plane_dispatch",
+  ]);
 
-  on_the_way_to_iran_within_1_month:
-    (r["on the way to iran(within 1 month)"] ??
-      r.on_the_way_to_iran_within_1_month ??
-      "").trim(),
+  const dealNumber = pickField(r, ["deal number", "deal_number", "deal no", "deal"]);
 
-  customs_within_2_week:
-    (r["customs(within 2 week)"] ?? r.customs_within_2_week ?? "").trim(),
-}));
-
-
-
+  return {
+    plane_dispatch_within_2_months: planeDispatch,
+    deal_number: dealNumber,
+    on_the_way_to_iran_within_1_month: pickField(r, [
+      "on the way to iran(within 1 month)",
+      "on_the_way_to_iran_within_1_month",
+      "on the way to iran",
+    ]),
+    customs_within_2_week: pickField(r, [
+      "customs(within 2 week)",
+      "customs_within_2_week",
+      "customs",
+    ]),
+  };
+});
   // members (آخرین رکورد هر نفر)
   const members = {};
 
