@@ -1,7 +1,37 @@
 // pages/api/data.js
 import fs from "fs/promises";
 import path from "path";
+function dateSortValue(input) {
+  const raw = String(input || "").trim();
+  if (!raw) return 0;
 
+  const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
+  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+
+  if (parts.length === 3) {
+    let year;
+    let month;
+    let day;
+
+    if (parts[0].length === 4) {
+      year = Number(parts[0]);
+      month = Number(parts[1]);
+      day = Number(parts[2]);
+    } else {
+      day = Number(parts[0]);
+      month = Number(parts[1]);
+      year = Number(parts[2]);
+    }
+
+    if (Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)) {
+      return year * 10000 + month * 100 + day;
+    }
+  }
+
+  const ts = Date.parse(raw);
+  if (Number.isFinite(ts)) return ts;
+  return 0;
+}
 // ----------------- CSV PARSER -----------------
 function parseCSV(text) {
   const rows = [];
@@ -114,11 +144,11 @@ for (const row of weekly_trips_details) {
 const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
   ([g, arr]) => {
     // مرتب‌سازی بر اساس تاریخ (بهتره تاریخ‌ها YYYY/MM/DD یا YYYY-MM-DD باشن)
-    arr.sort((a, b) => new Date(a.date) - new Date(b.date));
-    const lastDate = arr[arr.length - 1]?.date;
+    arr.sort((a, b) => dateSortValue(a.date) - dateSortValue(b.date));
+    const lastDateValue = dateSortValue(arr[arr.length - 1]?.date);
 
-    // فقط ردیف‌های همان آخرین تاریخ را نگه دار
-    return arr.filter((x) => x.date === lastDate);
+    // فقط ردیف‌های همان آخرین تاریخ را نگه دار (با نرمال‌سازی تاریخ)
+    return arr.filter((x) => dateSortValue(x.date) === lastDateValue);
   }
 );
 
@@ -259,7 +289,7 @@ const logistic_aa = logisticAASheet.map((r) => {
     }
 
     for (const [g, arr] of Object.entries(byG)) {
-      arr.sort((a, b) => new Date(a.date) - new Date(b.date));
+      arr.sort((a, b) => dateSortValue(a.date) - dateSortValue(b.date));
       const last = arr[arr.length - 1] || {};
 
       latest[g] = {
@@ -304,7 +334,7 @@ const logistic_aa = logisticAASheet.map((r) => {
 
   const history = {};
   for (const [g, arr] of Object.entries(byGroup)) {
-    arr.sort((a, b) => new Date(a.date) - new Date(b.date));
+    arr.sort((a, b) => dateSortValue(a.date) - dateSortValue(b.date));
     history[g] = arr.slice(-12).map((r) => ({
       week: r.week,
       date: r.date,

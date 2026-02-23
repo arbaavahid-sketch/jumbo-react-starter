@@ -46,14 +46,55 @@ const fmtEUR = (n) =>
 
 const toStr = (v) => (v == null ? "" : String(v));
 const ensureArray = (v) => (Array.isArray(v) ? v : []);
+const dateSortValue = (input) => {
+  const raw = String(input || "").trim();
+  if (!raw) return 0;
 
+  const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
+  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+
+  if (parts.length === 3) {
+    let year;
+    let month;
+    let day;
+
+    if (parts[0].length === 4) {
+      year = Number(parts[0]);
+      month = Number(parts[1]);
+      day = Number(parts[2]);
+    } else {
+      day = Number(parts[0]);
+      month = Number(parts[1]);
+      year = Number(parts[2]);
+    }
+
+    if (Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)) {
+      return year * 10000 + month * 100 + day;
+    }
+  }
+
+  const ts = Date.parse(raw);
+  return Number.isFinite(ts) ? ts : 0;
+};
+const normalizeGroup = (v) => {
+  const cleaned = toStr(v)
+    .replace(/group/gi, "")
+    .replace(/[^A-Z0-9]/gi, "")
+    .toUpperCase();
+
+  if (["1", "A"].includes(cleaned)) return "A";
+  if (["2", "B"].includes(cleaned)) return "B";
+  if (["3", "C"].includes(cleaned)) return "C";
+
+  return cleaned;
+};
 function lastTwo(weekly, groupKey) {
   const rows = ensureArray(weekly)
     .filter((r) => toStr(r.group).toUpperCase() === groupKey)
     .slice()
     .sort(
       (a, b) =>
-        new Date(a.date || 0) - new Date(b.date || 0) ||
+        dateSortValue(a.date) - dateSortValue(b.date) ||
         String(a.week).localeCompare(String(b.week))
     );
   const n = rows.length;
@@ -252,7 +293,7 @@ export default function GroupDashboard() {
   );
 const tripsAll = ensureArray(raw.weekly_trips_details);
 const weeklyTripsForGroup = tripsAll.filter(
-  (r) => toStr(r.group).toUpperCase() === groupKey
+    (r) => normalizeGroup(r.group) === groupKey
 );
 
   const group =
@@ -287,7 +328,7 @@ const currTrips = (() => {
   const tripDates = weeklyTripsForGroup
     .map((t) => normDate(t?.date))
     .filter(Boolean)
-    .sort((a, b) => new Date(a) - new Date(b));
+    .sort((a, b) => dateSortValue(a) - dateSortValue(b));
   const latestTripDate = tripDates.length ? tripDates[tripDates.length - 1] : null;
 
   // اگر تاریخ weekly_reports موجود و مطابق بود، اون رو برگردون،
@@ -317,7 +358,7 @@ const currTrips = (() => {
       .slice()
       .sort(
         (a, b) =>
-          new Date(a.date || 0) - new Date(b.date || 0) ||
+          dateSortValue(a.date) - dateSortValue(b.date) ||
           String(a.week).localeCompare(String(b.week))
       );
     if (rowsWithMom.length) {
@@ -430,7 +471,7 @@ const currTrips = (() => {
   {/* 1) KPI grid: 2 rows (4x2) */}
     <div className="dashboard-kpi-grid">
     <StatCard
-      label="Total Sales (2025)"
+      label="Total Sales (2026)"
       value={fmtEUR(latest?.total_sales_eur)}
       delta={deltas.total_sales_eur}
       Icon={FiTrendingUp}
@@ -884,4 +925,3 @@ const sortedTrips = list.slice().sort((a, b) => {
     </>
   );
 }
-

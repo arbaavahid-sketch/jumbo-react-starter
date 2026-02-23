@@ -68,14 +68,43 @@ const fmtEUR = (n) => {
 
 const toStr = (v) => (v == null ? "" : String(v));
 const ensureArray = (v) => (Array.isArray(v) ? v : []);
+const dateSortValue = (input) => {
+  const raw = String(input || "").trim();
+  if (!raw) return 0;
 
+  const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
+  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+
+  if (parts.length === 3) {
+    let year;
+    let month;
+    let day;
+
+    if (parts[0].length === 4) {
+      year = Number(parts[0]);
+      month = Number(parts[1]);
+      day = Number(parts[2]);
+    } else {
+      day = Number(parts[0]);
+      month = Number(parts[1]);
+      year = Number(parts[2]);
+    }
+
+    if (Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)) {
+      return year * 10000 + month * 100 + day;
+    }
+  }
+
+  const ts = Date.parse(raw);
+  return Number.isFinite(ts) ? ts : 0;
+};
 function lastTwo(weekly, groupKey) {
   const rows = ensureArray(weekly)
     .filter((r) => toStr(r.group).toUpperCase() === groupKey)
     .slice()
     .sort(
       (a, b) =>
-        new Date(a.date || 0) - new Date(b.date || 0) ||
+        dateSortValue(a.date) - dateSortValue(b.date) ||
         String(a.week).localeCompare(String(b.week))
     );
 
@@ -85,7 +114,7 @@ function lastTwo(weekly, groupKey) {
 
 function lastTwoRows(rows) {
   if (!Array.isArray(rows) || rows.length === 0) return { curr: null, prev: null };
-  const sorted = [...rows].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+  const sorted = [...rows].sort((a, b) => dateSortValue(a.date) - dateSortValue(b.date));
   const n = sorted.length;
   return { prev: n >= 2 ? sorted[n - 2] : null, curr: sorted[n - 1] };
 }
@@ -232,15 +261,25 @@ function PublicGroupDashboard({ groupKey }) {
   // ✅ Mega Deals
   const megaDealsAll = ensureArray(raw.mega_deals_details || raw.mega_deals);
 
-  const normalizeGroup = (v) =>
-    toStr(v).replace(/group/gi, "").trim().toUpperCase();
+  const normalizeGroup = (v) => {
+    const cleaned = toStr(v)
+      .replace(/group/gi, "")
+      .replace(/[^A-Z0-9]/gi, "")
+      .toUpperCase();
+
+    if (["1", "A"].includes(cleaned)) return "A";
+    if (["2", "B"].includes(cleaned)) return "B";
+    if (["3", "C"].includes(cleaned)) return "C";
+
+    return cleaned;
+  };
 
   let megaDealsForGroup = megaDealsAll.filter((r) => normalizeGroup(r.group) === groupKey);
   if (!megaDealsForGroup.length) megaDealsForGroup = megaDealsAll;
 
   // ✅ Weekly Trips details
   const tripsAll = ensureArray(raw.weekly_trips_details);
-  const weeklyTripsForGroup = tripsAll.filter((r) => toStr(r.group).toUpperCase() === groupKey);
+  const weeklyTripsForGroup = tripsAll.filter((r) => normalizeGroup(r.group) === groupKey);
 
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
@@ -267,7 +306,7 @@ function PublicGroupDashboard({ groupKey }) {
       .slice()
       .sort(
         (a, b) =>
-          new Date(a.date || 0) - new Date(b.date || 0) ||
+          dateSortValue(a.date) - dateSortValue(b.date) ||
           String(a.week).localeCompare(String(b.week))
       );
     if (rowsWithMom.length) momLink = toStr(rowsWithMom[rowsWithMom.length - 1].mom || "").trim();
