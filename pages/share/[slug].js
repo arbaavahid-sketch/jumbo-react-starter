@@ -514,7 +514,7 @@ function PublicGroupDashboard({ groupKey }) {
 
   {/* Row 2: Logistic AA full width */}
   <div style={{ marginTop: 0 }}>
-    <LogisticAATable rows={ensureArray(raw.logistic_aa)} />
+     <LogisticAATable rows={ensureArray(raw.logistic_aa)} datasetDate={curr?.date || ""} />
   </div>
 </section>
 

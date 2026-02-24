@@ -31,15 +31,12 @@ const splitPlaneDispatch = (value, fallbackDealNumber = "") => {
   };
 };
 
-const STORAGE_KEY = "logistic_aa_status_tracker_v3";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const LIMIT_DAYS = {
   plane: 60,
   iran: 30,
   customs: 14,
 };
-
-const norm = (v) => String(v || "").trim().toLowerCase();
 
 const hasMeaningful = (v) => {
   const s = String(v || "").trim();
@@ -51,66 +48,50 @@ const displayOrBlank = (v) => {
   return pretty(v);
 };
 
-const makeLegacyRowKey = (row = {}) => {
+const toUtcStartOfDayTs = (input) => {
+  const raw = String(input || "").trim();
+  if (!raw) return null;
 
-  const parsed = splitPlaneDispatch(row.plane_dispatch_within_2_months, "");
-  if (norm(parsed.dealNumber)) return `parsed:${norm(parsed.dealNumber)}`;
+  const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
+  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
 
-  return [
-    norm(row.plane_dispatch_within_2_months),
-    norm(row.on_the_way_to_iran_within_1_month),
-    norm(row.customs_within_2_week),
-  ].join("||");
-};
-const makeRowKey = (row = {}) => {
-  const deal = norm(row.deal_number);
-  const base = [
-    norm(row.plane_dispatch_within_2_months),
-    norm(row.on_the_way_to_iran_within_1_month),
-    norm(row.customs_within_2_week),
-  ].join("||");
+  if (parts.length === 3) {
+    let year;
+    let month;
+    let day;
 
-  return deal ? `${base}||deal:${deal}` : base;
-};
+    if (parts[0].length === 4) {
+      year = Number(parts[0]);
+      month = Number(parts[1]);
+      day = Number(parts[2]);
+    } else {
+      day = Number(parts[0]);
+      month = Number(parts[1]);
+      year = Number(parts[2]);
+    }
 
-const makeDealFirstRowKey = (row = {}) => {
-  const deal = norm(row.deal_number);
-  if (deal) return `deal:${deal}`;
-
-  return makeLegacyRowKey(row);
-};
-
-const getPreviousStatus = (store, row) => {
-  const keyCandidates = [makeRowKey(row), makeLegacyRowKey(row), makeDealFirstRowKey(row)];
-
-  for (const key of keyCandidates) {
-    if (key && store[key]) return store[key];
+    if (
+      Number.isFinite(year) &&
+      Number.isFinite(month) &&
+      Number.isFinite(day) &&
+      year > 0 &&
+      month >= 1 &&
+      month <= 12 &&
+      day >= 1 &&
+      day <= 31
+    ) {
+      return Date.UTC(year, month - 1, day);
+    }
   }
 
-  return {};
-};
-const readStore = () => {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
+  const parsed = Date.parse(raw);
+  if (!Number.isFinite(parsed)) return null;
+
+const d = new Date(parsed);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 };
 
-const writeStore = (value) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-  } catch {
-    // ignore localStorage write errors
-  }
-};
-
-const buildCountdown = (isActive, sinceTs, now, limitDays) => {
+const buildCountdown = (isActive, now, limitDays, baselineTs) => {
   if (!isActive) {
     return {
       sinceTs: null,
@@ -123,8 +104,8 @@ const buildCountdown = (isActive, sinceTs, now, limitDays) => {
     };
   }
 
-  const startedAt = sinceTs || now;
-  const ageDays = Math.floor((now - startedAt) / DAY_MS);
+  const startedAt = baselineTs || now;
+  const ageDays = Math.max(0, Math.floor((now - startedAt) / DAY_MS));
   const remainingDays = limitDays - ageDays;
   const isOverdue = remainingDays <= 0;
 
@@ -139,7 +120,7 @@ const buildCountdown = (isActive, sinceTs, now, limitDays) => {
   };
 };
 
-export default function LogisticAATable({ rows = [] }) {
+export default function LogisticAATable({ rows = [], datasetDate = "" }) {
   const safeRows = Array.isArray(rows) ? rows : [];
 
   const scrollRef = useRef(null);
@@ -202,36 +183,26 @@ export default function LogisticAATable({ rows = [] }) {
 
   useEffect(() => {
     const now = clockTick;
-    const previousStore = readStore();
-    const nextStore = {};
+    const datasetStartTs = toUtcStartOfDayTs(datasetDate);
     const nextRowStatusMap = {};
 
     safeRows.forEach((row, idx) => {
-      const key = makeRowKey(row);
-      const legacyKey = makeLegacyRowKey(row);
-      const prev = getPreviousStatus(previousStore, row);
+      
 
       const isPlaneActive = hasMeaningful(row.plane_dispatch_within_2_months);
       const isIranActive = hasMeaningful(row.on_the_way_to_iran_within_1_month);
       const isCustomsActive = hasMeaningful(row.customs_within_2_week);
 
-      const plane = buildCountdown(isPlaneActive, prev.planeSince, now, LIMIT_DAYS.plane);
-      const iran = buildCountdown(isIranActive, prev.iranSince, now, LIMIT_DAYS.iran);
-      const customs = buildCountdown(isCustomsActive, prev.customsSince, now, LIMIT_DAYS.customs);
-
+      const plane = buildCountdown(isPlaneActive, now, LIMIT_DAYS.plane, datasetStartTs);
+      const iran = buildCountdown(isIranActive, now, LIMIT_DAYS.iran, datasetStartTs);
+      const customs = buildCountdown(isCustomsActive, now, LIMIT_DAYS.customs, datasetStartTs);
       nextRowStatusMap[idx] = { plane, iran, customs };
 
-      nextStore[key] = {
-        planeSince: plane.sinceTs,
-        iranSince: iran.sinceTs,
-        customsSince: customs.sinceTs,
-        updatedAt: now,
-      };
+      
     });
 
     setRowStatusMap(nextRowStatusMap);
-    writeStore(nextStore);
-  }, [safeRows, clockTick]);
+    }, [safeRows, clockTick, datasetDate]);
 
   return (
     <div style={outerCard}>

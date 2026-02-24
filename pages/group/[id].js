@@ -596,7 +596,7 @@ const currTrips = (() => {
 
   {/* Row 2: Logistic AA (فاصله کم) */}
   <div style={{ marginTop: 0 }}>
-    <LogisticAATable rows={logisticRows} />
+    <LogisticAATable rows={logisticRows} datasetDate={curr?.date || ""} />
   </div>
 </div>
 
