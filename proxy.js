@@ -20,7 +20,7 @@ export function proxy(req) {
     pathname.startsWith("/api/rates") ||
     pathname.startsWith("/api/technical") ||
     pathname.startsWith("/api/ceo-message") ||
-
+    pathname.startsWith("/api/supply") ||
     pathname.startsWith("/_next");
 
   if (isPublicPath) {

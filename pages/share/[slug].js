@@ -6,7 +6,7 @@ import useSWR from "swr";
 import React, { useEffect, useState } from "react";
 
 import { PUBLIC_SHARE_MAP } from "../../lib/publicShareMap";
-
+import SupplyDashboard from "../supply";
 import NewsTickerEn from "../../components/NewsTickerEn";
 import NewsTicker from "../../components/NewsTicker";
 import DealsExecTable from "../../components/DealsExecTable";
@@ -1103,4 +1103,5 @@ function WeeklyTripsIcon({ trips, currDate }) {
 export default function PublicSharePage(props) {
   if (props.groupKey === "TECHNICAL") return <PublicTechnicalDashboard />;
   return <PublicGroupDashboard {...props} />;
+  if (props.groupKey === "SUPPLY") return <SupplyDashboard />;
 }

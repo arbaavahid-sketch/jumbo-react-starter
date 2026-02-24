@@ -69,7 +69,23 @@ export default function Home() {
               <div style={{ fontSize: 13, opacity: 0.8 }}></div>
             </div>
           </Link>
-
+           <Link href="/supply" style={{ textDecoration: "none" }}>
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 18,
+                background: "linear-gradient(135deg,#0f766e,#14b8a6,#ccfbf1)",
+                color: "#042f2e",
+                boxShadow:
+                  "0 16px 40px rgba(20,184,166,0.35), 0 0 0 1px rgba(45,212,191,0.7)",
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>
+                Supply Dashboard
+              </div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
+            </div>
+          </Link>
           <Link href="/admin/messages" style={{ textDecoration: "none" }}>
             <div
               style={{
