@@ -1101,7 +1101,11 @@ function WeeklyTripsIcon({ trips, currDate }) {
 
 // ---------- Default Export Wrapper ----------
 export default function PublicSharePage(props) {
-  if (props.groupKey === "TECHNICAL") return <PublicTechnicalDashboard />;
-  return <PublicGroupDashboard {...props} />;
+  const normalizedKey = String(props?.groupKey || "").trim().toUpperCase();
+
+  if (normalizedKey === "TECHNICAL") return <PublicTechnicalDashboard />;
+  if (normalizedKey === "SUPPLY") return <SupplyDashboard />;
+
+  return <PublicGroupDashboard {...props} groupKey={normalizedKey} />;
   if (props.groupKey === "SUPPLY") return <SupplyDashboard />;
 }

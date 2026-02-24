@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { useEffect, useRef } from "react";
 import useSWR from "swr";
 import {
   ResponsiveContainer,
@@ -24,6 +25,7 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 
+
 const fetcher = async (url) => {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -31,6 +33,7 @@ const fetcher = async (url) => {
 };
 
 const fmtNum = (n) => new Intl.NumberFormat("en-US").format(Number(n) || 0);
+const cleanManagerName = (value) => String(value || "").replace(/#/g, "").trim();
 
 function pctDelta(curr, prev) {
   if (curr == null || prev == null) return { pct: 0, dir: 0 };
@@ -135,6 +138,56 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
 }
 
 function TableCard({ title, children }) {
+  const scrollRef = useRef(null);
+  const autoScrollIntervalRef = useRef(null);
+  const userInteractingRef = useRef(false);
+  const resumeTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    const box = scrollRef.current;
+    if (!box) return;
+
+    const stopAutoScroll = () => {
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+        autoScrollIntervalRef.current = null;
+      }
+    };
+
+    const startAutoScroll = () => {
+      stopAutoScroll();
+      autoScrollIntervalRef.current = setInterval(() => {
+        const el = scrollRef.current;
+        if (!el || userInteractingRef.current) return;
+
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) el.scrollTop = 0;
+        else el.scrollTop += 1;
+      }, 150);
+    };
+
+    startAutoScroll();
+
+    const handleUserInteract = () => {
+      userInteractingRef.current = true;
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = setTimeout(() => {
+        userInteractingRef.current = false;
+      }, 5000);
+    };
+
+    box.addEventListener("wheel", handleUserInteract, { passive: true });
+    box.addEventListener("touchstart", handleUserInteract, { passive: true });
+    box.addEventListener("mousedown", handleUserInteract);
+
+    return () => {
+      stopAutoScroll();
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      box.removeEventListener("wheel", handleUserInteract);
+      box.removeEventListener("touchstart", handleUserInteract);
+      box.removeEventListener("mousedown", handleUserInteract);
+    };
+  }, [children]);
+
   return (
     <section
       style={{
@@ -156,7 +209,7 @@ function TableCard({ title, children }) {
       >
         {title}
       </div>
-      <div style={{ maxHeight: 350, overflow: "auto" }}>{children}</div>
+      <div ref={scrollRef} style={{ maxHeight: 252, overflow: "auto" }}>{children}</div>
     </section>
   );
 }
@@ -216,7 +269,7 @@ export default function SupplyDashboard() {
               flexWrap: "wrap",
             }}
           >
-            <h1 style={{ margin: 0, fontSize: "clamp(32px,4vw,56px)", lineHeight: 1.1, color: "#021d49", fontWeight: 800 }}>
+            <h1 style={{ margin: 0, fontSize: "clamp(28px,3.2vw,46px)", lineHeight: 1.1, color: "#021d49", fontWeight: 800 }}>
               Supply Side Dashboard
             </h1>
 
@@ -239,6 +292,7 @@ export default function SupplyDashboard() {
               </div>
             </div>
           </div>
+
 
           {error ? (
             <div style={errorStyle}>Error loading supply data.</div>
@@ -285,14 +339,14 @@ export default function SupplyDashboard() {
                   accent="#22c55e"
                 />
                 <StatCard
-                  label="#Undelivered items (ERP)"
+                  label="Undelivered items (ERP)"
                   value={fmtNum(totals.undelivered_items)}
                   delta={undeliveredDelta}
                   Icon={FiPackage}
                   accent="#0ea5e9"
                 />
                 <StatCard
-                  label="#Late items (ERP)"
+                  label="Late items (ERP)"
                   value={fmtNum(totals.late_items)}
                   delta={lateDelta}
                   Icon={FiAlertCircle}
@@ -357,21 +411,21 @@ export default function SupplyDashboard() {
               </section>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
-                <TableCard title="Supply workload (from HS export)">
+                <TableCard title="Supply workload (from HS)">
                   <table style={tableStyle}>
                     <thead>
                       <tr>
                         <th style={thStyle}>Supply Side manager</th>
-                        <th style={thStyle}>Deals YTD</th>
-                        <th style={thStyle}>Deals last 30 days</th>
-                        <th style={thStyle}>Deals last week</th>
-                        <th style={thStyle}>Deals in supply side stage now</th>
+                        <th style={thNumStyle}>Deals YTD</th>
+                        <th style={thNumStyle}>Deals last 30 days</th>
+                        <th style={thNumStyle}>Deals last week</th>
+                        <th style={thNumStyle}>Deals in supply side stage now</th>
                       </tr>
                     </thead>
                     <tbody>
                       {rows.map((r) => (
-                        <tr key={`w-${r.manager}`}>
-                          <td style={tdLeft}>{r.manager}</td>
+                        <tr key={`w-${cleanManagerName(r.manager)}`}>
+                          <td style={tdLeft}>{cleanManagerName(r.manager)}</td>
                           <td style={tdNum}>{fmtNum(r.deals_ytd)}</td>
                           <td style={tdNum}>{fmtNum(r.deals_last_30_days)}</td>
                           <td style={tdNum}>{fmtNum(r.deals_last_week)}</td>
@@ -382,24 +436,24 @@ export default function SupplyDashboard() {
                   </table>
                 </TableCard>
 
-                <TableCard title="Supply Dashboard - PO KPI by Owner">
+                <TableCard title="Supply workload (from ERP)">
                   <table style={tableStyle}>
                     <thead>
                       <tr>
                         <th style={thStyle}>Supply Side manager</th>
-                        <th style={thStyle}>#Undelivered items (ERP)</th>
-                        <th style={thStyle}>#Nonplaced items (ERP)</th>
-                        <th style={thStyle}>#Late items (ERP)</th>
-                        <th style={thStyle}>Open PO count (ERP)</th>
-                        <th style={thStyle}>PO Val Sub YTD</th>
-                        <th style={thStyle}>Out not billed</th>
-                        <th style={thStyle}>Out not delivered</th>
+                        <th style={thNumStyle}>Undelivered items (ERP)</th>
+                        <th style={thNumStyle}>Nonplaced items (ERP)</th>
+                        <th style={thNumStyle}>Late items (ERP)</th>
+                        <th style={thNumStyle}>Open PO count (ERP)</th>
+                        <th style={thNumStyle}>PO Val Sub YTD</th>
+                        <th style={thNumStyle}>Out not billed</th>
+                        <th style={thNumStyle}>Out not delivered</th>
                       </tr>
                     </thead>
                     <tbody>
                       {rows.map((r) => (
-                        <tr key={`p-${r.manager}`}>
-                          <td style={tdLeft}>{r.manager}</td>
+                        <tr key={`p-${cleanManagerName(r.manager)}`}>
+                          <td style={tdLeft}>{cleanManagerName(r.manager)}</td>
                           <td style={tdNum}>{fmtNum(r.undelivered_items)}</td>
                           <td style={tdNum}>{fmtNum(r.nonplaced_items)}</td>
                           <td style={tdNum}>{fmtNum(r.late_items)}</td>
@@ -456,6 +510,11 @@ const thStyle = {
   whiteSpace: "nowrap",
 };
 
+const thNumStyle = {
+  ...thStyle,
+  textAlign: "center",
+};
+
 const tdLeft = {
   padding: "10px",
   borderBottom: "1px solid #e2e8f0",
@@ -466,6 +525,6 @@ const tdLeft = {
 const tdNum = {
   padding: "10px",
   borderBottom: "1px solid #e2e8f0",
-  textAlign: "right",
+  textAlign: "center",
   fontVariantNumeric: "tabular-nums",
 };
