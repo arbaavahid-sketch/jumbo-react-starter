@@ -237,27 +237,47 @@ const logistic_aa = logisticAASheet.map((r) => {
     ]),
   };
 });
-  // members (آخرین رکورد هر نفر)
+   // members (فقط آخرین snapshot هر گروه)
   const members = {};
-
-  for (const m of membersSheet) {
+  const membersByGroup = {};
+  membersSheet.forEach((m, index) => {
     const g = String(m.group || m.Group || "").toUpperCase();
-    if (!g) continue;
-
+    if (!g) return;
     const name = (m.member || m.name || "").trim();
-    if (!name) continue;
+    if (!name) return;
 
-    if (!members[g]) members[g] = {};
+    const rawDate = pickField(m, ["date", "Date", "week", "Week"]);
+    const sortDate = dateSortValue(rawDate);
 
-    members[g][name] = {
+    if (!membersByGroup[g]) membersByGroup[g] = [];
+    membersByGroup[g].push({
       name,
       deals: Number(m.deals || m.Deals || 0),
       offers_sent: Number(m.offers_sent || m.Offers_sent || 0),
-    };
-  }
+    sortDate,
+      index,
+    });
+  });
 
-  Object.keys(members).forEach((g) => {
-    members[g] = Object.values(members[g]);
+  Object.entries(membersByGroup).forEach(([g, rows]) => {
+    const maxDate = Math.max(...rows.map((r) => r.sortDate));
+    const scopedRows =
+      maxDate > 0
+        ? rows.filter((r) => r.sortDate === maxDate)
+        : rows;
+
+    const byName = {};
+    scopedRows
+      .sort((a, b) => a.index - b.index)
+      .forEach((r) => {
+        byName[r.name] = {
+          name: r.name,
+          deals: r.deals,
+          offers_sent: r.offers_sent,
+        };
+      });
+
+  members[g] = Object.values(byName);
   });
 
   // latest
