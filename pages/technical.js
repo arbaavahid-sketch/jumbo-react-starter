@@ -366,7 +366,7 @@ export default function TechnicalDashboard() {
           </TableCard>
 
           {/* Waiting */}
-          <TableCard title="WAITING INSTALLATION DETAILS" height={tableHeight}>
+          <TableCard title="WAITING INSTALLATION DEَALS" height={tableHeight}>
             {waitingRows.length === 0 ? (
               <EmptyBox text="No items in installation queue." />
             ) : (
