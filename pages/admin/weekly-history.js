@@ -520,7 +520,8 @@ export default function WeeklyHistory() {
 
   const [weekA, setWeekA] = useState("");
   const [weekB, setWeekB] = useState("");
-  const [selectedKpi, setSelectedKpi] = useState("weekly_sales_eur");
+  const [comparisonKpi, setComparisonKpi] = useState("weekly_sales_eur");
+  const [trendKpi, setTrendKpi] = useState("offers_sent");
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [viewMode, setViewMode] = useState("simple");
   const [pinnedKpi, setPinnedKpi] = useState("weekly_sales_eur");
@@ -530,7 +531,8 @@ export default function WeeklyHistory() {
   const effectiveWeekB = weekB || defaultWeek;
   const activeGroupKeys = selectedGroups.length ? selectedGroups : groupKeys;
 
-  const selectedKpiMeta = KPI_OPTIONS.find((k) => k.key === selectedKpi) || KPI_OPTIONS[0];
+  const comparisonKpiMeta = KPI_OPTIONS.find((k) => k.key === comparisonKpi) || KPI_OPTIONS[0];
+  const trendKpiMeta = KPI_OPTIONS.find((k) => k.key === trendKpi) || KPI_OPTIONS[0];
   const pinnedMeta = KPI_OPTIONS.find((k) => k.key === pinnedKpi) || KPI_OPTIONS[0];
 
   const labelWeekA = `Week ${effectiveWeekA}`;
@@ -560,10 +562,10 @@ export default function WeeklyHistory() {
       .map((g) => {
         const ra = compareModel[g]?.a || {};
         const rb = compareModel[g]?.b || {};
-        return { group: g, weekA: num(ra[selectedKpi]), weekB: num(rb[selectedKpi]) };
+        return { group: g, weekA: num(ra[comparisonKpi]), weekB: num(rb[comparisonKpi]) };
       })
       .sort((a, b) => a.group.localeCompare(b.group));
-  }, [activeGroupKeys, compareModel, selectedKpi]);
+  }, [activeGroupKeys, compareModel, comparisonKpi]);
 
   const trendData = useMemo(() => {
     const byWeek = new Map();
@@ -576,11 +578,11 @@ export default function WeeklyHistory() {
       if (!Number.isFinite(w)) continue;
 
       if (!byWeek.has(w)) byWeek.set(w, { week: w });
-      byWeek.get(w)[g] = num(r[selectedKpi]);
+      byWeek.get(w)[g] = num(r[trendKpi]);
     }
 
     return Array.from(byWeek.values()).sort((a, b) => a.week - b.week);
-  }, [weekly, activeGroupKeys, selectedKpi]);
+  }, [weekly, activeGroupKeys, trendKpi]);
 
   const trendLegendItems = activeGroupKeys.map((g, idx) => ({ label: `Group ${g}`, color: getGroupColor(g, idx) }));
   const compareLegendItems = [
@@ -668,8 +670,15 @@ export default function WeeklyHistory() {
         </div>
 
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 900, color: "#475569" }}>
-          KPI for Charts/Comparison
-          <select value={selectedKpi} onChange={(e) => setSelectedKpi(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
+          Comparison Chart KPI
+          <select value={comparisonKpi} onChange={(e) => setComparisonKpi(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
+            {KPI_OPTIONS.map((k) => <option key={k.key} value={k.key}>{k.label}</option>)}
+          </select>
+        </label>
+
+        <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 900, color: "#475569" }}>
+          Trend Chart KPI
+          <select value={trendKpi} onChange={(e) => setTrendKpi(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
             {KPI_OPTIONS.map((k) => <option key={k.key} value={k.key}>{k.label}</option>)}
           </select>
         </label>
@@ -726,7 +735,7 @@ export default function WeeklyHistory() {
         }}
       >
         <ChartCard
-          title={`Group Comparison — ${selectedKpiMeta.label}`}
+          title={`Group Comparison — ${comparisonKpiMeta.label}`}
           subtitle={`${labelWeekA} vs ${labelWeekB}`}
           accent={WEEK_COLORS.weekA}
           legendItems={compareLegendItems}
@@ -757,23 +766,20 @@ export default function WeeklyHistory() {
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip content={<ChartTooltip kind={selectedKpiMeta.kind} />} cursor={{ fill: "rgba(148,163,184,0.10)" }} />
-              <Legend
-                iconType="circle"
-                wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }}
-              />
+              <Tooltip content={<ChartTooltip kind={comparisonKpiMeta.kind} />} cursor={{ fill: "rgba(148,163,184,0.10)" }} />
+              <Legend iconType="circle" wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }} />
               <Bar dataKey="weekA" name={labelWeekA} fill="url(#weekAGradient)" radius={[9, 9, 2, 2]} maxBarSize={44}>
-                <LabelList dataKey="weekA" position="top" formatter={(v) => formatByKind(selectedKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
+                <LabelList dataKey="weekA" position="top" formatter={(v) => formatByKind(comparisonKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
               </Bar>
               <Bar dataKey="weekB" name={labelWeekB} fill="url(#weekBGradient)" radius={[9, 9, 2, 2]} maxBarSize={44}>
-                <LabelList dataKey="weekB" position="top" formatter={(v) => formatByKind(selectedKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
+                <LabelList dataKey="weekB" position="top" formatter={(v) => formatByKind(comparisonKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
         <ChartCard
-          title={`Trend — ${selectedKpiMeta.label}`}
+          title={`Trend — ${trendKpiMeta.label}`}
           subtitle="All weeks by group"
           accent="#16a34a"
           legendItems={trendLegendItems}
@@ -794,11 +800,8 @@ export default function WeeklyHistory() {
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip content={<ChartTooltip kind={selectedKpiMeta.kind} />} cursor={{ stroke: "rgba(100,116,139,0.35)", strokeDasharray: "4 4" }} />
-              <Legend
-                iconType="circle"
-                wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }}
-              />
+              <Tooltip content={<ChartTooltip kind={trendKpiMeta.kind} />} cursor={{ stroke: "rgba(100,116,139,0.35)", strokeDasharray: "4 4" }} />
+              <Legend iconType="circle" wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }} />
               {activeGroupKeys.map((g, idx) => {
                 const color = getGroupColor(g, idx);
                 return (
