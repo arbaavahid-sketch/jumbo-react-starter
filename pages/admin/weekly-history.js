@@ -13,6 +13,7 @@ import {
   Legend,
   BarChart,
   Bar,
+  LabelList,
 } from "recharts";
 
 const fetcher = async (url) => {
@@ -28,7 +29,7 @@ const GROUP_COLORS = {
   A: "#2563eb",
   B: "#f97316",
   C: "#16a34a",
-  D: "#9333ea",
+  D: "#7c3aed",
   E: "#dc2626",
   F: "#0891b2",
 };
@@ -37,7 +38,7 @@ const FALLBACK_GROUP_COLORS = [
   "#2563eb",
   "#f97316",
   "#16a34a",
-  "#9333ea",
+  "#7c3aed",
   "#dc2626",
   "#0891b2",
   "#ca8a04",
@@ -48,6 +49,9 @@ const WEEK_COLORS = {
   weekA: "#2563eb",
   weekB: "#f97316",
 };
+
+const CHART_GRID = "rgba(148,163,184,0.26)";
+const CHART_AXIS = "#64748b";
 
 const getGroupColor = (group, index = 0) =>
   GROUP_COLORS[normGroup(group)] || FALLBACK_GROUP_COLORS[index % FALLBACK_GROUP_COLORS.length];
@@ -189,6 +193,113 @@ function DeltaPill({ delta, label }) {
   );
 }
 
+function ChartTooltip({ active, payload, label, kind }) {
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div
+      style={{
+        minWidth: 150,
+        padding: "10px 12px",
+        borderRadius: 14,
+        background: "rgba(255,255,255,0.96)",
+        border: "1px solid rgba(148,163,184,0.28)",
+        boxShadow: "0 18px 42px rgba(15,23,42,0.14)",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <div style={{ fontSize: 12, fontWeight: 950, color: "#0f172a", marginBottom: 8 }}>
+        {typeof label === "number" || /^\d+$/.test(String(label)) ? `Week ${label}` : label}
+      </div>
+      <div style={{ display: "grid", gap: 6 }}>
+        {payload.map((item) => (
+          <div
+            key={`${item.name}-${item.dataKey}`}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, fontSize: 12 }}
+          >
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "#475569", fontWeight: 800 }}>
+              <span
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: 999,
+                  background: item.color || item.stroke || item.fill,
+                  boxShadow: `0 0 0 3px ${(item.color || item.stroke || item.fill || "#64748b")}22`,
+                }}
+              />
+              {item.name}
+            </span>
+            <b style={{ color: "#0f172a" }}>{formatByKind(kind, item.value)}</b>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LegendChips({ items }) {
+  return (
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+      {items.map((item) => (
+        <span
+          key={item.label}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 7,
+            padding: "5px 9px",
+            borderRadius: 999,
+            background: "rgba(248,250,252,0.9)",
+            border: "1px solid rgba(148,163,184,0.24)",
+            color: "#334155",
+            fontSize: 11,
+            fontWeight: 900,
+            whiteSpace: "nowrap",
+          }}
+        >
+          <span style={{ width: 9, height: 9, borderRadius: 999, background: item.color }} />
+          {item.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ChartCard({ title, subtitle, accent = "#2563eb", legendItems = [], children }) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        background: "linear-gradient(180deg,#ffffff 0%,#fbfdff 100%)",
+        borderRadius: 22,
+        padding: 16,
+        boxShadow: "0 20px 50px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+      }}
+    >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: "0 0 auto 0",
+          height: 4,
+          background: `linear-gradient(90deg, ${accent}, rgba(14,165,233,0.35), rgba(255,255,255,0))`,
+        }}
+      />
+
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 950, color: "#0f172a", letterSpacing: "-0.01em" }}>{title}</div>
+          {subtitle ? <div style={{ marginTop: 4, fontSize: 12, fontWeight: 700, color: "#64748b" }}>{subtitle}</div> : null}
+        </div>
+        {legendItems.length ? <LegendChips items={legendItems} /> : null}
+      </div>
+
+      <div style={{ width: "100%", height: 285, marginTop: 10 }}>{children}</div>
+    </div>
+  );
+}
+
 function ChipButton({ active, onClick, children }) {
   return (
     <button
@@ -197,12 +308,12 @@ function ChipButton({ active, onClick, children }) {
       style={{
         padding: "8px 12px",
         borderRadius: 12,
-        border: "1px solid #e5e7eb",
-        background: active ? "linear-gradient(135deg,#6366f1,#ec4899)" : "#fff",
+        border: active ? "1px solid rgba(99,102,241,0.35)" : "1px solid #e5e7eb",
+        background: active ? "linear-gradient(135deg,#2563eb,#7c3aed)" : "#fff",
         color: active ? "#fff" : "#0f172a",
         fontWeight: 900,
         cursor: "pointer",
-        boxShadow: active ? "0 12px 28px rgba(79,70,229,0.18)" : "none",
+        boxShadow: active ? "0 12px 28px rgba(37,99,235,0.20)" : "none",
       }}
     >
       {children}
@@ -383,22 +494,6 @@ function KpiCardCompact({
   );
 }
 
-function ChartCard({ title, children }) {
-  return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 18,
-        padding: 14,
-        boxShadow: "0 16px 40px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.16)",
-      }}
-    >
-      <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a", marginBottom: 8 }}>{title}</div>
-      <div style={{ width: "100%", height: 260 }}>{children}</div>
-    </div>
-  );
-}
-
 export default function WeeklyHistory() {
   const { data, error, isLoading } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
@@ -486,6 +581,12 @@ export default function WeeklyHistory() {
 
     return Array.from(byWeek.values()).sort((a, b) => a.week - b.week);
   }, [weekly, activeGroupKeys, selectedKpi]);
+
+  const trendLegendItems = activeGroupKeys.map((g, idx) => ({ label: `Group ${g}`, color: getGroupColor(g, idx) }));
+  const compareLegendItems = [
+    { label: labelWeekA, color: WEEK_COLORS.weekA },
+    { label: labelWeekB, color: WEEK_COLORS.weekB },
+  ];
 
   const isAllImplicit = selectedGroups.length === 0;
   const isChecked = (g) => (isAllImplicit ? true : selectedGroups.includes(g));
@@ -624,35 +725,80 @@ export default function WeeklyHistory() {
           gap: 14,
         }}
       >
-        <ChartCard title={`Group Comparison — ${labelWeekA} vs ${labelWeekB} — ${selectedKpiMeta.label}`}>
+        <ChartCard
+          title={`Group Comparison — ${selectedKpiMeta.label}`}
+          subtitle={`${labelWeekA} vs ${labelWeekB}`}
+          accent={WEEK_COLORS.weekA}
+          legendItems={compareLegendItems}
+        >
           <ResponsiveContainer>
-            <BarChart data={compareBars}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="group" tickFormatter={(g) => `Group ${g}`} />
-              <YAxis />
-              <Tooltip
-                formatter={(v, name) => {
-                  const f = (x) => formatByKind(selectedKpiMeta.kind, x);
-                  if (name === "weekA") return [f(v), labelWeekA];
-                  if (name === "weekB") return [f(v), labelWeekB];
-                  return [f(v), name];
-                }}
+            <BarChart data={compareBars} barGap={8} barCategoryGap="28%" margin={{ top: 24, right: 18, left: 0, bottom: 4 }}>
+              <defs>
+                <linearGradient id="weekAGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.98} />
+                  <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.86} />
+                </linearGradient>
+                <linearGradient id="weekBGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fb923c" stopOpacity={0.98} />
+                  <stop offset="100%" stopColor="#ea580c" stopOpacity={0.86} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke={CHART_GRID} vertical={false} />
+              <XAxis
+                dataKey="group"
+                tickFormatter={(g) => `Group ${g}`}
+                tick={{ fill: CHART_AXIS, fontSize: 12, fontWeight: 800 }}
+                axisLine={{ stroke: "rgba(100,116,139,0.34)" }}
+                tickLine={false}
               />
-              <Legend />
-              <Bar dataKey="weekA" name={labelWeekA} fill={WEEK_COLORS.weekA} radius={[7, 7, 0, 0]} />
-              <Bar dataKey="weekB" name={labelWeekB} fill={WEEK_COLORS.weekB} radius={[7, 7, 0, 0]} />
+              <YAxis
+                tick={{ fill: CHART_AXIS, fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                allowDecimals={false}
+              />
+              <Tooltip content={<ChartTooltip kind={selectedKpiMeta.kind} />} cursor={{ fill: "rgba(148,163,184,0.10)" }} />
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }}
+              />
+              <Bar dataKey="weekA" name={labelWeekA} fill="url(#weekAGradient)" radius={[9, 9, 2, 2]} maxBarSize={44}>
+                <LabelList dataKey="weekA" position="top" formatter={(v) => formatByKind(selectedKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
+              </Bar>
+              <Bar dataKey="weekB" name={labelWeekB} fill="url(#weekBGradient)" radius={[9, 9, 2, 2]} maxBarSize={44}>
+                <LabelList dataKey="weekB" position="top" formatter={(v) => formatByKind(selectedKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title={`Trend — ${selectedKpiMeta.label} (All Weeks)`}>
+        <ChartCard
+          title={`Trend — ${selectedKpiMeta.label}`}
+          subtitle="All weeks by group"
+          accent="#16a34a"
+          legendItems={trendLegendItems}
+        >
           <ResponsiveContainer>
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="week" />
-              <YAxis />
-              <Tooltip formatter={(v) => formatByKind(selectedKpiMeta.kind, v)} />
-              <Legend />
+            <LineChart data={trendData} margin={{ top: 16, right: 26, left: 0, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke={CHART_GRID} vertical={false} />
+              <XAxis
+                dataKey="week"
+                tickFormatter={(w) => `W${w}`}
+                tick={{ fill: CHART_AXIS, fontSize: 12, fontWeight: 800 }}
+                axisLine={{ stroke: "rgba(100,116,139,0.34)" }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: CHART_AXIS, fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                allowDecimals={false}
+              />
+              <Tooltip content={<ChartTooltip kind={selectedKpiMeta.kind} />} cursor={{ stroke: "rgba(100,116,139,0.35)", strokeDasharray: "4 4" }} />
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }}
+              />
               {activeGroupKeys.map((g, idx) => {
                 const color = getGroupColor(g, idx);
                 return (
@@ -662,9 +808,10 @@ export default function WeeklyHistory() {
                     dataKey={g}
                     name={`Group ${g}`}
                     stroke={color}
-                    strokeWidth={2.7}
+                    strokeWidth={3}
+                    strokeLinecap="round"
                     dot={{ r: 3, stroke: color, strokeWidth: 2, fill: "#fff" }}
-                    activeDot={{ r: 5, stroke: color, strokeWidth: 2, fill: "#fff" }}
+                    activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2, fill: color }}
                     connectNulls
                   />
                 );
