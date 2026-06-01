@@ -347,7 +347,7 @@ export default function TechnicalDashboard() {
           }}
         >
           {/* Installed */}
-          <TableCard title="INSTALLED DEALS" height={tableHeight}>
+          <TableCard title="Installed Deals- 2026" height={tableHeight}>
             {installedRows.length === 0 ? (
               <EmptyBox text="No installed deals recorded yet." />
             ) : (
@@ -596,7 +596,6 @@ function TableCard({ title, children }) {
           fontSize: 12,
           fontWeight: 700,
           letterSpacing: "0.16em",
-          textTransform: "uppercase",
           color: "#6b7280",
           marginBottom: 8,
         }}
