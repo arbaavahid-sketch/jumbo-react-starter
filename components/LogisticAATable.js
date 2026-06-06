@@ -5,30 +5,42 @@ const pretty = (s) =>
     .trim()
     .replace(/\s*,\s*/g, "\n");
 
-const splitPlaneDispatch = (value, fallbackDealNumber = "") => {
+// Splits a logistic cell into its three parts: center / deal number / item.
+// Two supported input styles:
+//   1) Slash-separated (recommended): "Center / Deal / Item"
+//        "Russia Truck 16/8089/Chromatec" -> center, deal=8089, item=Chromatec
+//        Leave the middle empty when there is no deal number: "Center//Item"
+//   2) Legacy single slash with number+item glued together:
+//        "Dubai Truck 1/7866GOLVES" -> center, deal=7866, item=GOLVES
+const splitDeal = (value, fallbackDealNumber = "") => {
   const raw = String(value || "").trim();
-  if (!raw) {
+  const fallback = String(fallbackDealNumber || "").trim();
+  if (!raw) return { center: "", dealNumber: fallback, goods: "" };
+
+  const seg = raw.split("/").map((s) => s.trim());
+
+  // Style 1: explicit parts separated by slashes (Center / Deal / Item...)
+  if (seg.length >= 3) {
     return {
-      dispatch: "",
-      dealNumber: String(fallbackDealNumber || "").trim(),
+      center: seg[0],
+      dealNumber: seg[1] || fallback,
+      goods: seg.slice(2).filter(Boolean).join(" / "),
     };
   }
 
-  const slashIndex = raw.indexOf("/");
-  if (slashIndex === -1) {
-    return {
-      dispatch: raw,
-      dealNumber: String(fallbackDealNumber || "").trim(),
-    };
+  // Style 2: one slash -> peel the leading number off "DealNumberItem"
+  if (seg.length === 2) {
+    const center = seg[0];
+    const rest = seg[1];
+    const match = rest.match(/^(\d+(?:-\d+)?)\s*(.*)$/);
+    if (match) {
+      return { center, dealNumber: match[1] || fallback, goods: match[2].trim() };
+    }
+    return { center, dealNumber: fallback, goods: rest };
   }
 
-  const dispatch = raw.slice(0, slashIndex).trim();
-  const dealNumber = raw.slice(slashIndex + 1).trim();
-
-  return {
-    dispatch,
-    dealNumber: dealNumber || String(fallbackDealNumber || "").trim(),
-  };
+  // No slash at all
+  return { center: seg[0], dealNumber: fallback, goods: "" };
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -214,116 +226,101 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
           style={{
             maxHeight: 260,
             overflowY: "auto",
-            overflowX: "hidden",
+            overflowX: "auto",
           }}
         >
           <table style={tableStyle}>
             <thead style={theadStyle}>
               <tr>
-                <th style={th} colSpan={2}>
-                  <div style={thLabelWrap}>
+                <th style={th}>
+                  <div style={thLabelStack}>
                     <span>Planned Dispatch (within 2 months)</span>
-                    <span style={thBadge}>Countdown: 60→0</span>
+                    <span style={thBadgeStack}>Countdown: 60→0</span>
                   </div>
                 </th>
-                <th style={th} rowSpan={2}>
+                <th style={th}>
                   <div style={thLabelStack}>
                     <span>On the way to Iran (within 1 month)</span>
                     <span style={thBadgeStack}>Countdown: 30→0</span>
                   </div>
                 </th>
-                <th style={th} rowSpan={2}>
+                <th style={th}>
                   <div style={thLabelStack}>
                     <span>Customs (within 2 week)</span>
                     <span style={thBadgeStack}>Countdown: 14→0</span>
                   </div>
                 </th>
               </tr>
-              <tr>
-                <th style={thSub}>Planned Dispatch</th>
-                <th style={thSub}>Deal Number</th>
-              </tr>
             </thead>
 
             <tbody>
               {safeRows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={emptyCell}>
+                  <td colSpan={3} style={emptyCell}>
                     No Logistic items.
                   </td>
                 </tr>
               ) : (
                 safeRows.map((row, idx) => {
-                  const { dispatch, dealNumber } = splitPlaneDispatch(
-                    row.plane_dispatch_within_2_months,
-                    row.deal_number
-                  );
                   const status = rowStatusMap[idx] || {};
-                  const planeStatus = status.plane || {};
-                  const iranStatus = status.iran || {};
-                  const customsStatus = status.customs || {};
+                  const stages = [
+                    {
+                      key: "plane",
+                      parts: splitDeal(row.plane_dispatch_within_2_months, row.deal_number),
+                      st: status.plane || {},
+                    },
+                    {
+                      key: "iran",
+                      parts: splitDeal(row.on_the_way_to_iran_within_1_month),
+                      st: status.iran || {},
+                    },
+                    {
+                      key: "customs",
+                      parts: splitDeal(row.customs_within_2_week),
+                      st: status.customs || {},
+                    },
+                  ];
 
                   return (
                     <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
-                      <td style={{ ...tdSub, ...(planeStatus.isOverdue ? tdOverdue : null) }}>
-                        {planeStatus.isActive && (
-                          <div style={{ marginBottom: 4 }}>
-                            <span
-                              style={{
-                                ...countdownBadge,
-                                ...(planeStatus.tone === "danger" ? countdownBadgeDanger : null),
-                              }}
-                            >
-                              {planeStatus.label || ""}
-                            </span>
-                          </div>
-                        )}
-                        <pre style={{ ...cellPre, ...(planeStatus.isOverdue ? cellPreOverdue : null) }}>
-                          {displayOrBlank(dispatch)}
-                        </pre>
-                      </td>
+                      {stages.map(({ key, parts, st }) => {
+                        const overdue = st.isOverdue ? tdOverdue : null;
+                        const fields = [
+                          { label: "Center", value: parts.center },
+                          { label: "Deal No.", value: parts.dealNumber },
+                          { label: "Item", value: parts.goods },
+                        ].filter((f) => displayOrBlank(f.value));
 
-                      <td style={{ ...tdSub, ...(planeStatus.isOverdue ? tdOverdue : null) }}>
-                        <pre style={{ ...cellPre, ...(planeStatus.isOverdue ? cellPreOverdue : null) }}>
-                          {displayOrBlank(dealNumber)}
-                        </pre>
-                      </td>
-
-                      <td style={{ ...tdMain, ...(iranStatus.isOverdue ? tdOverdue : null) }}>
-                        {iranStatus.isActive && (
-                          <div style={{ marginBottom: 4 }}>
-                            <span
-                              style={{
-                                ...countdownBadge,
-                                ...(iranStatus.tone === "danger" ? countdownBadgeDanger : null),
-                              }}
-                            >
-                              {iranStatus.label || ""}
-                            </span>
-                          </div>
-                        )}
-                        <pre style={{ ...cellPre, ...(iranStatus.isOverdue ? cellPreOverdue : null) }}>
-                          {displayOrBlank(row.on_the_way_to_iran_within_1_month)}
-                        </pre>
-                      </td>
-
-                      <td style={{ ...tdMain, ...(customsStatus.isOverdue ? tdOverdue : null) }}>
-                        {customsStatus.isActive && (
-                          <div style={{ marginBottom: 4 }}>
-                            <span
-                              style={{
-                                ...countdownBadge,
-                                ...(customsStatus.tone === "danger" ? countdownBadgeDanger : null),
-                              }}
-                            >
-                              {customsStatus.label || ""}
-                            </span>
-                          </div>
-                        )}
-                        <pre style={{ ...cellPre, ...(customsStatus.isOverdue ? cellPreOverdue : null) }}>
-                          {displayOrBlank(row.customs_within_2_week)}
-                        </pre>
-                      </td>
+                        return (
+                          <td key={key} style={{ ...tdMain, ...overdue }}>
+                            {st.isActive && (
+                              <div style={{ marginBottom: 6 }}>
+                                <span
+                                  style={{
+                                    ...countdownBadge,
+                                    ...(st.tone === "danger" ? countdownBadgeDanger : null),
+                                  }}
+                                >
+                                  {st.label || ""}
+                                </span>
+                              </div>
+                            )}
+                            {fields.map((f) => (
+                              <div key={f.label} style={partRow}>
+                                <span style={partLabel}>{f.label}</span>
+                                <pre
+                                  style={{
+                                    ...partValue,
+                                    ...(st.isOverdue ? cellPreOverdue : null),
+                                  }}
+                                >
+                                  {displayOrBlank(f.value)}
+                                </pre>
+                              </div>
+                            ))}
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
                 })
@@ -364,6 +361,7 @@ const titleStyle = {
 
 const tableStyle = {
   width: "100%",
+  minWidth: 760,
   borderCollapse: "collapse",
   fontSize: 13,
   tableLayout: "fixed",
@@ -436,7 +434,37 @@ const tdSub = {
 
 const tdMain = {
   ...tdBase,
-  width: "30%",
+  width: "33.33%",
+};
+
+const partRow = {
+  display: "flex",
+  alignItems: "baseline",
+  gap: 6,
+  marginBottom: 4,
+};
+
+const partLabel = {
+  flex: "0 0 auto",
+  minWidth: 64,
+  fontSize: 11,
+  fontWeight: 700,
+  color: "#64748b",
+  textAlign: "left",
+  whiteSpace: "nowrap",
+};
+
+const partValue = {
+  margin: 0,
+  flex: "1 1 auto",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-word",
+  overflowWrap: "anywhere",
+  fontFamily: "inherit",
+  fontSize: 14,
+  fontWeight: 700,
+  lineHeight: 1.3,
+  color: "#0f172a",
 };
 
 const tdOverdue = {
