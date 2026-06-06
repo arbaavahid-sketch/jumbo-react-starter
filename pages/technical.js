@@ -55,9 +55,7 @@ function lastTwo(rows) {
   if (!Array.isArray(rows) || rows.length === 0) {
     return { curr: null, prev: null };
   }
-  const sorted = [...rows].sort(
-    (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
-  );
+  const sorted = [...rows].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
   const n = sorted.length;
   return {
     prev: n >= 2 ? sorted[n - 2] : null,
@@ -129,9 +127,7 @@ export default function TechnicalDashboard() {
     "Technical CEO message — editable in CEO Messages panel.";
 
   // جدول Tech Queue از /api/data
-  const techQueueRaw = Array.isArray(mainData?.technical_queue)
-    ? mainData.technical_queue
-    : [];
+  const techQueueRaw = Array.isArray(mainData?.technical_queue) ? mainData.technical_queue : [];
   const techQueue = [...techQueueRaw].sort((a, b) => {
     const ga = (a.group || "").localeCompare(b.group || "");
     if (ga !== 0) return ga;
@@ -146,8 +142,7 @@ export default function TechnicalDashboard() {
         style={{
           padding: 24,
           borderRadius: 24,
-          background:
-            "linear-gradient(135deg,rgba(239,68,68,0.08),rgba(248,113,113,0.25))",
+          background: "linear-gradient(135deg,rgba(239,68,68,0.08),rgba(248,113,113,0.25))",
           color: "#7f1d1d",
           border: "1px solid rgba(248,113,113,0.45)",
         }}
@@ -161,8 +156,7 @@ export default function TechnicalDashboard() {
         style={{
           padding: 24,
           borderRadius: 24,
-          background:
-            "linear-gradient(135deg,rgba(0,95,158,0.05),rgba(0,184,148,0.05))",
+          background: "linear-gradient(135deg,rgba(0,95,158,0.05),rgba(0,184,148,0.05))",
           border: "1px solid rgba(148,163,184,0.35)",
           color: "#4b5563",
         }}
@@ -176,10 +170,8 @@ export default function TechnicalDashboard() {
         style={{
           padding: 24,
           borderRadius: 24,
-          background:
-            "linear-gradient(135deg,rgba(0,95,158,0.08),rgba(0,184,148,0.10))",
-          boxShadow:
-            "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
+          background: "linear-gradient(135deg,rgba(0,95,158,0.08),rgba(0,184,148,0.10))",
+          boxShadow: "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
           color: "#0f172a",
         }}
       >
@@ -218,15 +210,13 @@ export default function TechnicalDashboard() {
     const installedCount = installedRows.length;
 
     const waitingCount = Number(
-      t.waiting_installation != null ? t.waiting_installation : waitingRows.length
+      t.waiting_installation != null ? t.waiting_installation : waitingRows.length,
     );
 
     const totalInstall = installedCount + (waitingCount || 0);
-    const installSuccessPct =
-      totalInstall > 0 ? (installedCount / totalInstall) * 100 : 0;
+    const installSuccessPct = totalInstall > 0 ? (installedCount / totalInstall) * 100 : 0;
 
-    const installedDelta =
-      totalInstall > 0 ? { pct: installSuccessPct, dir: 1, inf: false } : null;
+    const installedDelta = totalInstall > 0 ? { pct: installSuccessPct, dir: 1, inf: false } : null;
 
     const dealsChartData = [
       { name: "Aref", weeklyDeals: t.aref_deals_done ?? 0, totalDeals: t.aref ?? 0 },
@@ -243,17 +233,14 @@ export default function TechnicalDashboard() {
           borderRadius: 28,
           padding: isMobile ? 14 : 20,
           background: "#f9fafb",
-          boxShadow:
-            "0 20px 50px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
+          boxShadow: "0 20px 50px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
         }}
       >
         {/* کارت‌ها + نمودار */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobile
-              ? "1fr"
-              : "minmax(0,2.1fr) minmax(0,1.5fr)",
+            gridTemplateColumns: isMobile ? "1fr" : "minmax(0,2.1fr) minmax(0,1.5fr)",
             gap: isMobile ? 14 : 20,
             alignItems: "flex-start",
           }}
@@ -267,15 +254,63 @@ export default function TechnicalDashboard() {
                 gap: 12,
               }}
             >
-              <TechCard icon={<FiCalendar />} label="DATE OF PUBLISH" value={t.date} isMobile={isMobile} />
-              <TechCard icon={<FiTrendingUp />} label="DEALS ADDED THIS WEEK" value={t.deals_added_technical} isMobile={isMobile} />
-              <TechCard icon={<FiPieChart />} label="TOTAL DEALS DONE (WEEK)" value={t.total_deals_week} isMobile={isMobile} />
-              <TechCard icon={<FiLayers />} label="TECHNICAL APPROVAL QUEUE" value={techQueue.length} delta={deltas.queue} isMobile={isMobile} />
-              <TechCard icon={<FiClock />} label="WAITING FOR INSTALLATION" value={t.waiting_installation} delta={deltas.waiting} isMobile={isMobile} />
-              <TechCard icon={<FiCheckSquare />} label="INSTALLED DEALS AT 2026" value={installedCount} delta={installedDelta} isMobile={isMobile} />
-              <TechCard icon={<FiMapPin />} label="PROMOTION TRIPS / MEETINGS" value={t.promotion_trips} isMobile={isMobile} />
-              <TechCard icon={<FiMonitor />} label="DEMO SHOWS (QUARTERLY)" value={t.demo_shows} isMobile={isMobile} />
-              <TechCard icon={<FiBookOpen />} label="INTERNAL TRAININGS (QUARTERLY)" value={t.internal_trainings} isMobile={isMobile} />
+              <TechCard
+                icon={<FiCalendar />}
+                label="DATE OF PUBLISH"
+                value={t.date}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiTrendingUp />}
+                label="DEALS ADDED THIS WEEK"
+                value={t.deals_added_technical}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiPieChart />}
+                label="TOTAL DEALS DONE (WEEK)"
+                value={t.total_deals_week}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiLayers />}
+                label="TECHNICAL APPROVAL QUEUE"
+                value={techQueue.length}
+                delta={deltas.queue}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiClock />}
+                label="WAITING FOR INSTALLATION"
+                value={t.waiting_installation}
+                delta={deltas.waiting}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiCheckSquare />}
+                label="INSTALLED DEALS AT 2026"
+                value={installedCount}
+                delta={installedDelta}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiMapPin />}
+                label="PROMOTION TRIPS / MEETINGS"
+                value={t.promotion_trips}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiMonitor />}
+                label="DEMO SHOWS (QUARTERLY)"
+                value={t.demo_shows}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiBookOpen />}
+                label="INTERNAL TRAININGS (QUARTERLY)"
+                value={t.internal_trainings}
+                isMobile={isMobile}
+              />
 
               <TechCard
                 icon={<FiLink />}
@@ -292,8 +327,7 @@ export default function TechnicalDashboard() {
             style={{
               borderRadius: 20,
               overflow: "hidden",
-              boxShadow:
-                "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+              boxShadow: "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
               background: "#ffffff",
               padding: "12px 16px",
               display: "flex",
@@ -328,8 +362,20 @@ export default function TechnicalDashboard() {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="weeklyDeals" name="Deals this week" fill="#38bdf8" radius={[6, 6, 0, 0]} barSize={30} />
-                  <Bar dataKey="totalDeals" name="Total deals" fill="#0f766e" radius={[6, 6, 0, 0]} barSize={30} />
+                  <Bar
+                    dataKey="weeklyDeals"
+                    name="Deals this week"
+                    fill="#38bdf8"
+                    radius={[6, 6, 0, 0]}
+                    barSize={30}
+                  />
+                  <Bar
+                    dataKey="totalDeals"
+                    name="Total deals"
+                    fill="#0f766e"
+                    radius={[6, 6, 0, 0]}
+                    barSize={30}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -433,7 +479,13 @@ export default function TechnicalDashboard() {
                         <td style={tdBase()}>{row.deal}</td>
                         <td style={tdBase({ muted: true })}>{row.center || "—"}</td>
                         <td style={tdBase({ muted: true })}>{row.subject || "—"}</td>
-                        <td style={{ ...tdBase(), whiteSpace: "nowrap", color: row.status ? "#0f766e" : "#9ca3af" }}>
+                        <td
+                          style={{
+                            ...tdBase(),
+                            whiteSpace: "nowrap",
+                            color: row.status ? "#0f766e" : "#9ca3af",
+                          }}
+                        >
                           {row.status || "In process"}
                         </td>
                       </tr>
@@ -644,7 +696,14 @@ function SimpleTable({ rows }) {
       <tbody>
         {rows.map((row, idx) => (
           <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
-            <td style={{ padding: "7px 10px", whiteSpace: "nowrap", color: "#111827", fontWeight: 600 }}>
+            <td
+              style={{
+                padding: "7px 10px",
+                whiteSpace: "nowrap",
+                color: "#111827",
+                fontWeight: 600,
+              }}
+            >
               {row.id}
             </td>
             <td style={{ padding: "7px 10px", color: "#374151" }}>{row.description}</td>
@@ -754,7 +813,15 @@ function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
         </span>
       </div>
 
-      <div style={{ marginTop: 8, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+      <div
+        style={{
+          marginTop: 8,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 4,
+        }}
+      >
         <span style={{ fontSize: 20, fontWeight: 800, color: "#0f172a" }}>
           {hasLink ? (
             link ? (
@@ -779,7 +846,7 @@ function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
               "-"
             )
           ) : (
-            value ?? 0
+            (value ?? 0)
           )}
         </span>
 

@@ -26,7 +26,5 @@ export default function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
-  return res
-    .status(401)
-    .json({ ok: false, message: "Username یا Password اشتباه است." });
+  return res.status(401).json({ ok: false, message: "Username یا Password اشتباه است." });
 }

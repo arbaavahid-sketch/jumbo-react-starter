@@ -28,7 +28,6 @@
   gap: 18px;
 }
 
-
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -54,10 +53,9 @@
   align-items: stretch;
 }
 
-
-
 /* Tablet & mobile */
-@media (max-width: 1199px) {  .group-grid {
+@media (max-width: 1199px) {
+  .group-grid {
     grid-template-columns: 1fr;
   }
   .kpi-grid {
@@ -67,7 +65,8 @@
   .bottom-grid {
     grid-template-columns: 1fr;
   }
-  .dashboard-header {    flex-wrap: wrap;
+  .dashboard-header {
+    flex-wrap: wrap;
   }
   .dashboard-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -80,7 +79,7 @@
 
 /* Mobile */
 @media (max-width: 760px) {
-    .kpi-grid {
+  .kpi-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -90,18 +89,18 @@
   }
   .container {
     margin: 16px auto;
-    padding: 0 10px;  }
+    padding: 0 10px;
+  }
 
   .dashboard-title {
     font-size: 24px;
   }
 }
 
-  .dashboard-kpi-grid,
-  .dashboard-two-col-grid {
-    grid-template-columns: 1fr !important;
-  }
-
+.dashboard-kpi-grid,
+.dashboard-two-col-grid {
+  grid-template-columns: 1fr !important;
+}
 
 /* Desktop hard-override (prevents accidental single-column on large screens) */
 @media (min-width: 1200px) {
@@ -116,12 +115,12 @@
 /* برخی مرورگرهای موبایل layout viewport بزرگ‌تری گزارش می‌کنند؛
    برای جلوگیری از به‌هم‌ریختگی، روی دستگاه لمسی همیشه حالت stack فعال باشد. */
 @media (hover: none) and (pointer: coarse) and (max-width: 760px) {
-    .group-grid,
+  .group-grid,
   .kpi-grid,
   .bottom-grid {
     grid-template-columns: 1fr !important;
   }
-.dashboard-kpi-grid,
+  .dashboard-kpi-grid,
   .dashboard-two-col-grid {
     grid-template-columns: 1fr !important;
   }
@@ -163,7 +162,13 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
     sans-serif;
   direction: ltr;
 }

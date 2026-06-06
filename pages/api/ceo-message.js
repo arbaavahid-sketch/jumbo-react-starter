@@ -31,9 +31,7 @@ export default async function handler(req, res) {
       }
 
       if (!r.ok) {
-        res
-          .status(500)
-          .json({ error: "Script error", status: r.status, body: json });
+        res.status(500).json({ error: "Script error", status: r.status, body: json });
         return;
       }
 

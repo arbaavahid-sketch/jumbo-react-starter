@@ -106,19 +106,18 @@ export default function EventSlideshow({ files = [], onSkip }) {
       >
         {mode === "video" && activeVideo ? (
           <video
-  key={activeVideo}
-  src={activeVideo}
-  autoPlay
-  loop
-  controls
-  style={{
-    width: "100%",
-    height: "100%",
-    objectFit: "contain",
-    display: "block",
-  }}
-/>
-
+            key={activeVideo}
+            src={activeVideo}
+            autoPlay
+            loop
+            controls
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              display: "block",
+            }}
+          />
         ) : (
           activeImage && (
             <img
@@ -147,9 +146,7 @@ export default function EventSlideshow({ files = [], onSkip }) {
           alignItems: "center",
         }}
       >
-        <span style={{ opacity: 0.85 }}>
-          {fileName ? `Now playing: ${fileName}` : ""}
-        </span>
+        <span style={{ opacity: 0.85 }}>{fileName ? `Now playing: ${fileName}` : ""}</span>
         {mode === "video" && (
           <span style={{ opacity: 0.7 }}>
             Video is muted for auto-play – subtitles / captions only

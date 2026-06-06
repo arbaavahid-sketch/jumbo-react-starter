@@ -24,15 +24,15 @@ function parseCSV(text) {
       }
     } else if (c === '"') {
       insideQuotes = true;
-    } else if (c === ',') {
+    } else if (c === ",") {
       row.push(field);
       field = "";
-    } else if (c === '\n') {
+    } else if (c === "\n") {
       row.push(field);
       rows.push(row);
       row = [];
       field = "";
-    } else if (c !== '\r') {
+    } else if (c !== "\r") {
       field += c;
     }
 
@@ -76,37 +76,165 @@ const toNum = (value) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-
 const defaultRows = [
-  { manager: "Albert Kunafin", deals_ytd: 13, deals_last_30_days: 11, deals_last_week: 3, deals_in_supply_side_stage_now: 1, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Alexander Nikitin", deals_ytd: 12, deals_last_30_days: 11, deals_last_week: 1, deals_in_supply_side_stage_now: 0, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Hesam Abbasi", deals_ytd: 1, deals_last_30_days: 1, deals_last_week: 0, deals_in_supply_side_stage_now: 1, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Karina Shaydullina", deals_ytd: 2, deals_last_30_days: 2, deals_last_week: 1, deals_in_supply_side_stage_now: 0, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Milad Hooshyar", deals_ytd: 1, deals_last_30_days: 1, deals_last_week: 0, deals_in_supply_side_stage_now: 0, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Mostafa Hajivali", deals_ytd: 13, deals_last_30_days: 11, deals_last_week: 0, deals_in_supply_side_stage_now: 5, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Ulyana Smakova", deals_ytd: 8, deals_last_30_days: 8, deals_last_week: 2, deals_in_supply_side_stage_now: 6, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Azat Akhmerov", deals_ytd: 1, deals_last_30_days: 1, deals_last_week: 0, deals_in_supply_side_stage_now: 1, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
-  { manager: "Unassigned", deals_ytd: 8, deals_last_30_days: 7, deals_last_week: 0, deals_in_supply_side_stage_now: 0, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 },
+  {
+    manager: "Albert Kunafin",
+    deals_ytd: 13,
+    deals_last_30_days: 11,
+    deals_last_week: 3,
+    deals_in_supply_side_stage_now: 1,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Alexander Nikitin",
+    deals_ytd: 12,
+    deals_last_30_days: 11,
+    deals_last_week: 1,
+    deals_in_supply_side_stage_now: 0,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Hesam Abbasi",
+    deals_ytd: 1,
+    deals_last_30_days: 1,
+    deals_last_week: 0,
+    deals_in_supply_side_stage_now: 1,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Karina Shaydullina",
+    deals_ytd: 2,
+    deals_last_30_days: 2,
+    deals_last_week: 1,
+    deals_in_supply_side_stage_now: 0,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Milad Hooshyar",
+    deals_ytd: 1,
+    deals_last_30_days: 1,
+    deals_last_week: 0,
+    deals_in_supply_side_stage_now: 0,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Mostafa Hajivali",
+    deals_ytd: 13,
+    deals_last_30_days: 11,
+    deals_last_week: 0,
+    deals_in_supply_side_stage_now: 5,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Ulyana Smakova",
+    deals_ytd: 8,
+    deals_last_30_days: 8,
+    deals_last_week: 2,
+    deals_in_supply_side_stage_now: 6,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Azat Akhmerov",
+    deals_ytd: 1,
+    deals_last_30_days: 1,
+    deals_last_week: 0,
+    deals_in_supply_side_stage_now: 1,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
+  {
+    manager: "Unassigned",
+    deals_ytd: 8,
+    deals_last_30_days: 7,
+    deals_last_week: 0,
+    deals_in_supply_side_stage_now: 0,
+    undelivered_items: 0,
+    nonplaced_items: 0,
+    late_items: 0,
+    open_po_count: 0,
+    po_val_sub_ytd: 0,
+    out_not_billed: 0,
+    out_not_delivered: 0,
+  },
 ];
 
-const calcTotals = (rows) => rows.reduce(
-  (acc, r) => {
-    acc.deals_ytd += r.deals_ytd;
-    acc.deals_last_30_days += r.deals_last_30_days;
-    acc.deals_last_week += r.deals_last_week;
-    acc.deals_in_supply_side_stage_now += r.deals_in_supply_side_stage_now;
-    acc.undelivered_items += r.undelivered_items;
-    acc.nonplaced_items += r.nonplaced_items;
-    acc.late_items += r.late_items;
-    acc.open_po_count += r.open_po_count;
-    acc.po_val_sub_ytd += r.po_val_sub_ytd;
-    acc.out_not_billed += r.out_not_billed;
-    acc.out_not_delivered += r.out_not_delivered;
-    return acc;
-  },
-  { deals_ytd: 0, deals_last_30_days: 0, deals_last_week: 0, deals_in_supply_side_stage_now: 0, undelivered_items: 0, nonplaced_items: 0, late_items: 0, open_po_count: 0, po_val_sub_ytd: 0, out_not_billed: 0, out_not_delivered: 0 }
-);
-
+const calcTotals = (rows) =>
+  rows.reduce(
+    (acc, r) => {
+      acc.deals_ytd += r.deals_ytd;
+      acc.deals_last_30_days += r.deals_last_30_days;
+      acc.deals_last_week += r.deals_last_week;
+      acc.deals_in_supply_side_stage_now += r.deals_in_supply_side_stage_now;
+      acc.undelivered_items += r.undelivered_items;
+      acc.nonplaced_items += r.nonplaced_items;
+      acc.late_items += r.late_items;
+      acc.open_po_count += r.open_po_count;
+      acc.po_val_sub_ytd += r.po_val_sub_ytd;
+      acc.out_not_billed += r.out_not_billed;
+      acc.out_not_delivered += r.out_not_delivered;
+      return acc;
+    },
+    {
+      deals_ytd: 0,
+      deals_last_30_days: 0,
+      deals_last_week: 0,
+      deals_in_supply_side_stage_now: 0,
+      undelivered_items: 0,
+      nonplaced_items: 0,
+      late_items: 0,
+      open_po_count: 0,
+      po_val_sub_ytd: 0,
+      out_not_billed: 0,
+      out_not_delivered: 0,
+    },
+  );
 
 export default async function handler(req, res) {
   try {
@@ -124,14 +252,25 @@ export default async function handler(req, res) {
     const rawRows = parseCSV(csvText);
 
     const rows = rawRows.map((r) => ({
-      manager: pickField(r, ["Supply side manager", "Supply Side manager", "Supply Manager", "manager"]),
+      manager: pickField(r, [
+        "Supply side manager",
+        "Supply Side manager",
+        "Supply Manager",
+        "manager",
+      ]),
       deals_ytd: toNum(pickField(r, ["Deals YTD", "deals_ytd"])),
       deals_last_30_days: toNum(pickField(r, ["Deals last 30 days", "deals_last_30_days"])),
       deals_last_week: toNum(pickField(r, ["Deals last week", "deals_last_week"])),
       deals_in_supply_side_stage_now: toNum(
-        pickField(r, ["Deals in supply side stage now", "Deals in supply stage now", "deals_in_supply_side_stage_now"])
+        pickField(r, [
+          "Deals in supply side stage now",
+          "Deals in supply stage now",
+          "deals_in_supply_side_stage_now",
+        ]),
       ),
-      undelivered_items: toNum(pickField(r, ["#Undelivered items (ERP)", "undelivered_items", "# Undelivered Items"])),
+      undelivered_items: toNum(
+        pickField(r, ["#Undelivered items (ERP)", "undelivered_items", "# Undelivered Items"]),
+      ),
       nonplaced_items: toNum(pickField(r, ["#Nonplaced items (ERP)", "nonplaced_items"])),
       late_items: toNum(pickField(r, ["#Late items (ERP)", "late_items"])),
       open_po_count: toNum(pickField(r, ["Open PO count (ERP)", "open_po_count"])),
@@ -145,7 +284,17 @@ export default async function handler(req, res) {
     const totals = calcTotals(cleanRows);
     res.status(200).json({ rows: cleanRows, totals, source: sheetUrl, fallback: false });
   } catch (error) {
-    console.warn("API /api/supply failed, using built-in fallback:", String(error.message || error));
-    res.status(200).json({ rows: defaultRows, totals: calcTotals(defaultRows), source: "fallback", fallback: true });
+    console.warn(
+      "API /api/supply failed, using built-in fallback:",
+      String(error.message || error),
+    );
+    res
+      .status(200)
+      .json({
+        rows: defaultRows,
+        totals: calcTotals(defaultRows),
+        source: "fallback",
+        fallback: true,
+      });
   }
 }

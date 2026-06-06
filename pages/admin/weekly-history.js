@@ -22,7 +22,10 @@ const fetcher = async (url) => {
   return r.json();
 };
 
-const normGroup = (v) => String(v || "").trim().toUpperCase();
+const normGroup = (v) =>
+  String(v || "")
+    .trim()
+    .toUpperCase();
 const num = (v) => (typeof v === "number" ? v : Number(v || 0));
 
 const GROUP_COLORS = {
@@ -215,16 +218,30 @@ function ChartTooltip({ active, payload, label, kind }) {
         {payload.map((item) => (
           <div
             key={`${item.name}-${item.dataKey}`}
-            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, fontSize: 12 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+              fontSize: 12,
+            }}
           >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "#475569", fontWeight: 800 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                color: "#475569",
+                fontWeight: 800,
+              }}
+            >
               <span
                 style={{
                   width: 9,
                   height: 9,
                   borderRadius: 999,
                   background: item.color || item.stroke || item.fill,
-                  boxShadow: `0 0 0 3px ${(item.color || item.stroke || item.fill || "#64748b")}22`,
+                  boxShadow: `0 0 0 3px ${item.color || item.stroke || item.fill || "#64748b"}22`,
                 }}
               />
               {item.name}
@@ -287,10 +304,26 @@ function ChartCard({ title, subtitle, accent = "#2563eb", legendItems = [], chil
         }}
       />
 
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+        }}
+      >
         <div>
-          <div style={{ fontSize: 14, fontWeight: 950, color: "#0f172a", letterSpacing: "-0.01em" }}>{title}</div>
-          {subtitle ? <div style={{ marginTop: 4, fontSize: 12, fontWeight: 700, color: "#64748b" }}>{subtitle}</div> : null}
+          <div
+            style={{ fontSize: 14, fontWeight: 950, color: "#0f172a", letterSpacing: "-0.01em" }}
+          >
+            {title}
+          </div>
+          {subtitle ? (
+            <div style={{ marginTop: 4, fontSize: 12, fontWeight: 700, color: "#64748b" }}>
+              {subtitle}
+            </div>
+          ) : null}
         </div>
         {legendItems.length ? <LegendChips items={legendItems} /> : null}
       </div>
@@ -321,17 +354,7 @@ function ChipButton({ active, onClick, children }) {
   );
 }
 
-function KpiCardCompact({
-  label,
-  icon,
-  kind,
-  valueA,
-  valueB,
-  weekA,
-  weekB,
-  mode,
-  pinned = false,
-}) {
+function KpiCardCompact({ label, icon, kind, valueA, valueB, weekA, weekB, mode, pinned = false }) {
   const delta = calcDelta(valueB, valueA);
   const colors = heatColors(delta);
 
@@ -353,7 +376,14 @@ function KpiCardCompact({
           minHeight: 98,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "flex-start",
+          }}
+        >
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
@@ -368,18 +398,49 @@ function KpiCardCompact({
               }}
             >
               <span>📌</span>
-              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
+              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {label}
+              </span>
             </div>
 
-            <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ fontSize: 30, fontWeight: 950, color: colors.text, lineHeight: 1 }}>{B}</div>
+            <div
+              style={{
+                marginTop: 6,
+                display: "flex",
+                alignItems: "baseline",
+                gap: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ fontSize: 30, fontWeight: 950, color: colors.text, lineHeight: 1 }}>
+                {B}
+              </div>
               <DeltaPill delta={delta} label={`vs ${weekA}:`} />
             </div>
 
-            <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <span>{weekB}: <b style={{ color: "#0f172a" }}>{B}</b></span>
-              <span style={{ opacity: 0.85 }}>{weekA}: {A}</span>
-              <span style={{ opacity: 0.9 }}>Δ: <b style={{ color: "#0f172a" }}>{absPrefix}{absText}</b></span>
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: 12,
+                color: "#64748b",
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <span>
+                {weekB}: <b style={{ color: "#0f172a" }}>{B}</b>
+              </span>
+              <span style={{ opacity: 0.85 }}>
+                {weekA}: {A}
+              </span>
+              <span style={{ opacity: 0.9 }}>
+                Δ:{" "}
+                <b style={{ color: "#0f172a" }}>
+                  {absPrefix}
+                  {absText}
+                </b>
+              </span>
             </div>
           </div>
 
@@ -417,7 +478,14 @@ function KpiCardCompact({
         minHeight: mode === "analytic" ? 104 : 96,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 10,
+          alignItems: "flex-start",
+        }}
+      >
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
@@ -440,14 +508,37 @@ function KpiCardCompact({
 
           {mode === "simple" ? (
             <>
-              <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                <div style={{ fontWeight: 950, fontSize: 18, color: "#0f172a", lineHeight: 1.1 }}>{B}</div>
+              <div
+                style={{
+                  marginTop: 6,
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ fontWeight: 950, fontSize: 18, color: "#0f172a", lineHeight: 1.1 }}>
+                  {B}
+                </div>
                 <DeltaPill delta={delta} label={`vs ${weekA}:`} />
               </div>
 
-              <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span>{weekB}: <b style={{ color: "#0f172a" }}>{B}</b></span>
-                <span style={{ opacity: 0.85 }}>{weekA}: {A}</span>
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 12,
+                  color: "#64748b",
+                  display: "flex",
+                  gap: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span>
+                  {weekB}: <b style={{ color: "#0f172a" }}>{B}</b>
+                </span>
+                <span style={{ opacity: 0.85 }}>
+                  {weekA}: {A}
+                </span>
               </div>
             </>
           ) : (
@@ -460,10 +551,20 @@ function KpiCardCompact({
                 <span style={{ color: WEEK_COLORS.weekB, fontWeight: 900 }}>{weekB}</span>
                 <b style={{ color: "#0f172a" }}>{B}</b>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "center",
+                }}
+              >
                 <span style={{ color: "#64748b", fontWeight: 900 }}>Δ</span>
                 <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                  <b style={{ color: "#0f172a" }}>{absPrefix}{absText}</b>
+                  <b style={{ color: "#0f172a" }}>
+                    {absPrefix}
+                    {absText}
+                  </b>
                   <DeltaPill delta={delta} />
                 </span>
               </div>
@@ -509,9 +610,7 @@ export default function WeeklyHistory() {
   }, [weekly]);
 
   const groupKeys = useMemo(() => {
-    const keys = groups
-      .map((g) => normGroup(g.key || g.code || g.slug || ""))
-      .filter(Boolean);
+    const keys = groups.map((g) => normGroup(g.key || g.code || g.slug || "")).filter(Boolean);
 
     return keys.length
       ? keys
@@ -526,7 +625,9 @@ export default function WeeklyHistory() {
   const [viewMode, setViewMode] = useState("simple");
   const [pinnedKpi, setPinnedKpi] = useState("weekly_sales_eur");
 
-  const defaultWeek = availableWeeks.length ? String(availableWeeks[availableWeeks.length - 1]) : "";
+  const defaultWeek = availableWeeks.length
+    ? String(availableWeeks[availableWeeks.length - 1])
+    : "";
   const effectiveWeekA = weekA || defaultWeek;
   const effectiveWeekB = weekB || defaultWeek;
   const activeGroupKeys = selectedGroups.length ? selectedGroups : groupKeys;
@@ -584,7 +685,10 @@ export default function WeeklyHistory() {
     return Array.from(byWeek.values()).sort((a, b) => a.week - b.week);
   }, [weekly, activeGroupKeys, trendKpi]);
 
-  const trendLegendItems = activeGroupKeys.map((g, idx) => ({ label: `Group ${g}`, color: getGroupColor(g, idx) }));
+  const trendLegendItems = activeGroupKeys.map((g, idx) => ({
+    label: `Group ${g}`,
+    color: getGroupColor(g, idx),
+  }));
   const compareLegendItems = [
     { label: labelWeekA, color: WEEK_COLORS.weekA },
     { label: labelWeekB, color: WEEK_COLORS.weekB },
@@ -609,7 +713,9 @@ export default function WeeklyHistory() {
 
   if (isLoading) return <div style={{ padding: 16 }}>Loading...</div>;
   if (error) {
-    return <div style={{ padding: 16, color: "#b91c1c" }}>Error: {String(error.message || error)}</div>;
+    return (
+      <div style={{ padding: 16, color: "#b91c1c" }}>Error: {String(error.message || error)}</div>
+    );
   }
 
   return (
@@ -621,7 +727,9 @@ export default function WeeklyHistory() {
         fontFamily: "system-ui",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+      <div
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
+      >
         <h1 style={{ margin: 0, fontSize: 32 }}>📊 Weekly History & Comparison</h1>
         <Link href="/admin">Back</Link>
       </div>
@@ -641,27 +749,54 @@ export default function WeeklyHistory() {
       >
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 900, color: "#475569" }}>
           Week A
-          <select value={effectiveWeekA} onChange={(e) => setWeekA(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
-            {availableWeeks.map((w) => <option key={w} value={w}>Week {w}</option>)}
+          <select
+            value={effectiveWeekA}
+            onChange={(e) => setWeekA(e.target.value)}
+            style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}
+          >
+            {availableWeeks.map((w) => (
+              <option key={w} value={w}>
+                Week {w}
+              </option>
+            ))}
           </select>
         </label>
 
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 900, color: "#475569" }}>
           Week B
-          <select value={effectiveWeekB} onChange={(e) => setWeekB(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
-            {availableWeeks.map((w) => <option key={w} value={w}>Week {w}</option>)}
+          <select
+            value={effectiveWeekB}
+            onChange={(e) => setWeekB(e.target.value)}
+            style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}
+          >
+            {availableWeeks.map((w) => (
+              <option key={w} value={w}>
+                Week {w}
+              </option>
+            ))}
           </select>
         </label>
 
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ fontSize: 12, fontWeight: 900, color: "#475569" }}>View Mode</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <ChipButton active={viewMode === "simple"} onClick={() => setViewMode("simple")}>Simple</ChipButton>
-            <ChipButton active={viewMode === "analytic"} onClick={() => setViewMode("analytic")}>Analytic (A/B)</ChipButton>
+            <ChipButton active={viewMode === "simple"} onClick={() => setViewMode("simple")}>
+              Simple
+            </ChipButton>
+            <ChipButton active={viewMode === "analytic"} onClick={() => setViewMode("analytic")}>
+              Analytic (A/B)
+            </ChipButton>
             <button
               type="button"
               onClick={swapWeeks}
-              style={{ padding: "8px 12px", borderRadius: 12, border: "1px solid #e5e7eb", background: "#fff", fontWeight: 900, cursor: "pointer" }}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 12,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
               title="Swap Week A and Week B"
             >
               🔄 Swap
@@ -671,31 +806,94 @@ export default function WeeklyHistory() {
 
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 900, color: "#475569" }}>
           Comparison Chart KPI
-          <select value={comparisonKpi} onChange={(e) => setComparisonKpi(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
-            {KPI_OPTIONS.map((k) => <option key={k.key} value={k.key}>{k.label}</option>)}
+          <select
+            value={comparisonKpi}
+            onChange={(e) => setComparisonKpi(e.target.value)}
+            style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}
+          >
+            {KPI_OPTIONS.map((k) => (
+              <option key={k.key} value={k.key}>
+                {k.label}
+              </option>
+            ))}
           </select>
         </label>
 
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 900, color: "#475569" }}>
           Trend Chart KPI
-          <select value={trendKpi} onChange={(e) => setTrendKpi(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
-            {KPI_OPTIONS.map((k) => <option key={k.key} value={k.key}>{k.label}</option>)}
+          <select
+            value={trendKpi}
+            onChange={(e) => setTrendKpi(e.target.value)}
+            style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}
+          >
+            {KPI_OPTIONS.map((k) => (
+              <option key={k.key} value={k.key}>
+                {k.label}
+              </option>
+            ))}
           </select>
         </label>
 
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 900, color: "#475569" }}>
           📌 Pin KPI (Large Card)
-          <select value={pinnedKpi} onChange={(e) => setPinnedKpi(e.target.value)} style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}>
-            {KPI_OPTIONS.map((k) => <option key={k.key} value={k.key}>{k.label}</option>)}
+          <select
+            value={pinnedKpi}
+            onChange={(e) => setPinnedKpi(e.target.value)}
+            style={{ padding: "10px 10px", borderRadius: 12, border: "1px solid #e5e7eb" }}
+          >
+            {KPI_OPTIONS.map((k) => (
+              <option key={k.key} value={k.key}>
+                {k.label}
+              </option>
+            ))}
           </select>
         </label>
 
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ fontSize: 12, fontWeight: 900, color: "#475569" }}>Groups</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button type="button" onClick={() => setSelectedGroups([])} style={{ padding: "8px 12px", borderRadius: 12, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontWeight: 900 }}>Show All</button>
-            <button type="button" onClick={() => setSelectedGroups(groupKeys)} style={{ padding: "8px 12px", borderRadius: 12, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontWeight: 900 }}>Select All</button>
-            <button type="button" onClick={() => setSelectedGroups([])} style={{ padding: "8px 12px", borderRadius: 12, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontWeight: 900 }}>Reset</button>
+            <button
+              type="button"
+              onClick={() => setSelectedGroups([])}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 12,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+                cursor: "pointer",
+                fontWeight: 900,
+              }}
+            >
+              Show All
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedGroups(groupKeys)}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 12,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+                cursor: "pointer",
+                fontWeight: 900,
+              }}
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedGroups([])}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 12,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+                cursor: "pointer",
+                fontWeight: 900,
+              }}
+            >
+              Reset
+            </button>
           </div>
 
           <div
@@ -712,8 +910,15 @@ export default function WeeklyHistory() {
             }}
           >
             {groupKeys.map((g, idx) => (
-              <label key={g} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                <input type="checkbox" checked={isChecked(g)} onChange={(e) => toggleGroup(g, e.target.checked)} />
+              <label
+                key={g}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13 }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked(g)}
+                  onChange={(e) => toggleGroup(g, e.target.checked)}
+                />
                 <span style={{ color: getGroupColor(g, idx), fontWeight: 900 }}>●</span>
                 Group {g}
               </label>
@@ -741,7 +946,12 @@ export default function WeeklyHistory() {
           legendItems={compareLegendItems}
         >
           <ResponsiveContainer>
-            <BarChart data={compareBars} barGap={8} barCategoryGap="28%" margin={{ top: 24, right: 18, left: 0, bottom: 4 }}>
+            <BarChart
+              data={compareBars}
+              barGap={8}
+              barCategoryGap="28%"
+              margin={{ top: 24, right: 18, left: 0, bottom: 4 }}
+            >
               <defs>
                 <linearGradient id="weekAGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.98} />
@@ -766,13 +976,41 @@ export default function WeeklyHistory() {
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip content={<ChartTooltip kind={comparisonKpiMeta.kind} />} cursor={{ fill: "rgba(148,163,184,0.10)" }} />
-              <Legend iconType="circle" wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }} />
-              <Bar dataKey="weekA" name={labelWeekA} fill="url(#weekAGradient)" radius={[9, 9, 2, 2]} maxBarSize={44}>
-                <LabelList dataKey="weekA" position="top" formatter={(v) => formatByKind(comparisonKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
+              <Tooltip
+                content={<ChartTooltip kind={comparisonKpiMeta.kind} />}
+                cursor={{ fill: "rgba(148,163,184,0.10)" }}
+              />
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }}
+              />
+              <Bar
+                dataKey="weekA"
+                name={labelWeekA}
+                fill="url(#weekAGradient)"
+                radius={[9, 9, 2, 2]}
+                maxBarSize={44}
+              >
+                <LabelList
+                  dataKey="weekA"
+                  position="top"
+                  formatter={(v) => formatByKind(comparisonKpiMeta.kind, v)}
+                  style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }}
+                />
               </Bar>
-              <Bar dataKey="weekB" name={labelWeekB} fill="url(#weekBGradient)" radius={[9, 9, 2, 2]} maxBarSize={44}>
-                <LabelList dataKey="weekB" position="top" formatter={(v) => formatByKind(comparisonKpiMeta.kind, v)} style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }} />
+              <Bar
+                dataKey="weekB"
+                name={labelWeekB}
+                fill="url(#weekBGradient)"
+                radius={[9, 9, 2, 2]}
+                maxBarSize={44}
+              >
+                <LabelList
+                  dataKey="weekB"
+                  position="top"
+                  formatter={(v) => formatByKind(comparisonKpiMeta.kind, v)}
+                  style={{ fill: "#334155", fontSize: 11, fontWeight: 800 }}
+                />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -800,8 +1038,14 @@ export default function WeeklyHistory() {
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip content={<ChartTooltip kind={trendKpiMeta.kind} />} cursor={{ stroke: "rgba(100,116,139,0.35)", strokeDasharray: "4 4" }} />
-              <Legend iconType="circle" wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }} />
+              <Tooltip
+                content={<ChartTooltip kind={trendKpiMeta.kind} />}
+                cursor={{ stroke: "rgba(100,116,139,0.35)", strokeDasharray: "4 4" }}
+              />
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ paddingTop: 8, fontSize: 12, fontWeight: 800 }}
+              />
               {activeGroupKeys.map((g, idx) => {
                 const color = getGroupColor(g, idx);
                 return (
@@ -825,8 +1069,17 @@ export default function WeeklyHistory() {
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 16, color: "#0f172a" }}>KPI Cards — {labelWeekA} → {labelWeekB}</h2>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            gap: 12,
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 16, color: "#0f172a" }}>
+            KPI Cards — {labelWeekA} → {labelWeekB}
+          </h2>
           <div style={{ fontSize: 12, color: "#64748b" }}>(Δ based on WeekA → WeekB)</div>
         </div>
 
@@ -863,16 +1116,27 @@ export default function WeeklyHistory() {
               <div
                 key={g}
                 style={{
-                  background: "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(34,197,94,0.04))",
+                  background:
+                    "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(34,197,94,0.04))",
                   borderRadius: 20,
                   padding: 14,
                   boxShadow: "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.16)",
                   borderTop: `4px solid ${groupColor}`,
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <div style={{ fontSize: 18, fontWeight: 950, color: groupColor }}>Group {g}</div>
-                  <div style={{ fontSize: 12, color: "#64748b" }}><b>A:</b> {headerA} &nbsp; | &nbsp; <b>B:</b> {headerB}</div>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>
+                    <b>A:</b> {headerA} &nbsp; | &nbsp; <b>B:</b> {headerB}
+                  </div>
                 </div>
 
                 <div style={{ marginTop: 12 }}>
@@ -889,7 +1153,15 @@ export default function WeeklyHistory() {
                   />
                 </div>
 
-                <div style={{ marginTop: 12, display: "grid", gap: 12, gridTemplateColumns: "repeat(2, minmax(0, 1fr))", alignItems: "stretch" }}>
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "grid",
+                    gap: 12,
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                    alignItems: "stretch",
+                  }}
+                >
                   {restKeys.map((k) => {
                     const meta = KPI_OPTIONS.find((x) => x.key === k);
                     if (!meta) return null;

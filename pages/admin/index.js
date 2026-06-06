@@ -1,16 +1,8 @@
-
 // pages/admin/index.js
 import Link from "next/link";
 import useSWR from "swr";
 import { FiUsers, FiActivity } from "react-icons/fi";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 import { useEffect, useRef } from "react";
 
 const fetcher = async (url) => {
@@ -87,9 +79,7 @@ export default function Admin() {
 
   // 👇 لیست نصب‌شده و در انتظار نصب از تکنیکال
   const installedList = parseTechList(techLatest?.installed_ids || "");
-  const waitingInstallList = parseTechList(
-    techLatest?.waiting_installation_ids || ""
-  );
+  const waitingInstallList = parseTechList(techLatest?.waiting_installation_ids || "");
   const techQueue = ensureArray(data.technical_queue);
 
   // ---------- Total Deals و Total Sales هر گروه بر اساس آخرین هفته ----------
@@ -113,14 +103,7 @@ export default function Admin() {
     value: t.totalSales,
   }));
 
-  const renderPieLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-  }) => {
+  const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
     if (!percent || percent <= 0) return null;
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
@@ -172,44 +155,43 @@ export default function Admin() {
           ></p>
 
           {/* دکمه‌ها زیر توضیحات */}
-<div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
-  <Link href="/admin/messages" style={{ textDecoration: "none" }}>
-    <button
-      style={{
-        padding: "8px 18px",
-        borderRadius: 999,
-        border: "none",
-        background: "linear-gradient(135deg, #6366f1, #ec4899)",
-        color: "#fff",
-        fontSize: 13,
-        fontWeight: 600,
-        boxShadow: "0 12px 30px rgba(79,70,229,0.6)",
-        cursor: "pointer",
-      }}
-    >
-      CEO Messages
-    </button>
-  </Link>
+          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Link href="/admin/messages" style={{ textDecoration: "none" }}>
+              <button
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: "linear-gradient(135deg, #6366f1, #ec4899)",
+                  color: "#fff",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  boxShadow: "0 12px 30px rgba(79,70,229,0.6)",
+                  cursor: "pointer",
+                }}
+              >
+                CEO Messages
+              </button>
+            </Link>
 
-  <Link href="/admin/weekly-history" style={{ textDecoration: "none" }}>
-    <button
-      style={{
-        padding: "8px 18px",
-        borderRadius: 999,
-        border: "none",
-        background: "linear-gradient(135deg, #0ea5e9, #22c55e)",
-        color: "#fff",
-        fontSize: 13,
-        fontWeight: 600,
-        boxShadow: "0 12px 30px rgba(34,197,94,0.35)",
-        cursor: "pointer",
-      }}
-    >
-      📊 تاریخچه هفتگی
-    </button>
-  </Link>
-</div>
-
+            <Link href="/admin/weekly-history" style={{ textDecoration: "none" }}>
+              <button
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: "linear-gradient(135deg, #0ea5e9, #22c55e)",
+                  color: "#fff",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  boxShadow: "0 12px 30px rgba(34,197,94,0.35)",
+                  cursor: "pointer",
+                }}
+              >
+                📊 تاریخچه هفتگی
+              </button>
+            </Link>
+          </div>
         </div>
 
         {/* لوگو سمت راست، بدون ساعت */}
@@ -257,11 +239,7 @@ export default function Admin() {
         {groups.map((g) => {
           const row = latest[g.key] || {};
           return (
-            <Link
-              key={g.id}
-              href={`/group/${g.id}`}
-              style={{ textDecoration: "none" }}
-            >
+            <Link key={g.id} href={`/group/${g.id}`} style={{ textDecoration: "none" }}>
               <div
                 style={{
                   position: "relative",
@@ -270,8 +248,7 @@ export default function Admin() {
                   color: "#e5e7eb",
                   background:
                     "radial-gradient(circle at top left, rgba(59,130,246,0.4), rgba(15,23,42,1))",
-                  boxShadow:
-                    "0 30px 70px rgba(15,23,42,0.75), 0 0 0 1px rgba(148,163,184,0.45)",
+                  boxShadow: "0 30px 70px rgba(15,23,42,0.75), 0 0 0 1px rgba(148,163,184,0.45)",
                   overflow: "hidden",
                 }}
               >
@@ -341,27 +318,19 @@ export default function Admin() {
                 >
                   <div>
                     <div style={{ opacity: 0.8 }}>Total deals</div>
-                    <div style={{ fontWeight: 700 }}>
-                      {row.total_deals ?? 0}
-                    </div>
+                    <div style={{ fontWeight: 700 }}>{row.total_deals ?? 0}</div>
                   </div>
                   <div>
                     <div style={{ opacity: 0.8 }}>Offers sent</div>
-                    <div style={{ fontWeight: 700 }}>
-                      {row.offers_sent ?? 0}
-                    </div>
+                    <div style={{ fontWeight: 700 }}>{row.offers_sent ?? 0}</div>
                   </div>
                   <div>
                     <div style={{ opacity: 0.8 }}>Weekly sales (€)</div>
-                    <div style={{ fontWeight: 700 }}>
-                      {fmtEUR(row.weekly_sales_eur ?? 0)}
-                    </div>
+                    <div style={{ fontWeight: 700 }}>{fmtEUR(row.weekly_sales_eur ?? 0)}</div>
                   </div>
                   <div>
                     <div style={{ opacity: 0.8 }}>Total sales (€)</div>
-                    <div style={{ fontWeight: 700 }}>
-                      {fmtEUR(row.total_sales_eur ?? 0)}
-                    </div>
+                    <div style={{ fontWeight: 700 }}>{fmtEUR(row.total_sales_eur ?? 0)}</div>
                   </div>
                 </div>
               </div>
@@ -379,8 +348,7 @@ export default function Admin() {
               color: "#e5e7eb",
               background:
                 "radial-gradient(circle at top left, rgba(45,212,191,0.4), rgba(15,23,42,1))",
-              boxShadow:
-                "0 30px 70px rgba(15,23,42,0.75), 0 0 0 1px rgba(148,163,184,0.45)",
+              boxShadow: "0 30px 70px rgba(15,23,42,0.75), 0 0 0 1px rgba(148,163,184,0.45)",
               overflow: "hidden",
             }}
           >
@@ -450,27 +418,19 @@ export default function Admin() {
             >
               <div>
                 <div style={{ opacity: 0.8 }}>Deals added this week</div>
-                <div style={{ fontWeight: 700 }}>
-                  {techLatest?.deals_added_technical ?? 0}
-                </div>
+                <div style={{ fontWeight: 700 }}>{techLatest?.deals_added_technical ?? 0}</div>
               </div>
               <div>
                 <div style={{ opacity: 0.8 }}>Remaining in queue</div>
-                <div style={{ fontWeight: 700 }}>
-                  {techLatest?.remaining_queue ?? 0}
-                </div>
+                <div style={{ fontWeight: 700 }}>{techLatest?.remaining_queue ?? 0}</div>
               </div>
               <div>
                 <div style={{ opacity: 0.8 }}>Waiting for installation</div>
-                <div style={{ fontWeight: 700 }}>
-                  {techLatest?.waiting_installation ?? 0}
-                </div>
+                <div style={{ fontWeight: 700 }}>{techLatest?.waiting_installation ?? 0}</div>
               </div>
               <div>
                 <div style={{ opacity: 0.8 }}>Total deals in week</div>
-                <div style={{ fontWeight: 700 }}>
-                  {techLatest?.total_deals_week ?? 0}
-                </div>
+                <div style={{ fontWeight: 700 }}>{techLatest?.total_deals_week ?? 0}</div>
               </div>
             </div>
           </div>
@@ -494,8 +454,7 @@ export default function Admin() {
               background: "radial-gradient(circle at top left,#eff6ff,#ffffff)",
               borderRadius: 22,
               padding: 18,
-              boxShadow:
-                "0 18px 45px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.25)",
+              boxShadow: "0 18px 45px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.25)",
             }}
           >
             <div
@@ -548,11 +507,7 @@ export default function Admin() {
                       />
                     ))}
                   </Pie>
-                  <Legend
-                    verticalAlign="bottom"
-                    iconType="circle"
-                    iconSize={10}
-                  />
+                  <Legend verticalAlign="bottom" iconType="circle" iconSize={10} />
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
@@ -565,8 +520,7 @@ export default function Admin() {
               background: "radial-gradient(circle at top left,#ecfeff,#ffffff)",
               borderRadius: 22,
               padding: 18,
-              boxShadow:
-                "0 18px 45px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.25)",
+              boxShadow: "0 18px 45px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.25)",
             }}
           >
             <div
@@ -619,11 +573,7 @@ export default function Admin() {
                       />
                     ))}
                   </Pie>
-                  <Legend
-                    verticalAlign="bottom"
-                    iconType="circle"
-                    iconSize={10}
-                  />
+                  <Legend verticalAlign="bottom" iconType="circle" iconSize={10} />
                   <Tooltip formatter={(value) => fmtEUR(value)} />
                 </PieChart>
               </ResponsiveContainer>
@@ -634,16 +584,13 @@ export default function Admin() {
 
       {/* ---------- Deal Executions Report برای همه گروه‌ها ---------- */}
       <section style={{ marginTop: 32 }}>
-        <h2 style={{ fontSize: 18, marginBottom: 12 }}>
-          Deal Executions Report
-        </h2>
+        <h2 style={{ fontSize: 18, marginBottom: 12 }}>Deal Executions Report</h2>
 
         <div
           style={{
             background: "#ffffff",
             borderRadius: 18,
-            boxShadow:
-              "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+            boxShadow: "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
             overflow: "hidden",
           }}
         >
@@ -732,16 +679,11 @@ export default function Admin() {
                     <tr
                       key={idx}
                       style={{
-                        backgroundColor:
-                          idx % 2 === 0 ? "#f9fafb" : "#ffffff",
+                        backgroundColor: idx % 2 === 0 ? "#f9fafb" : "#ffffff",
                       }}
                     >
-                      <td style={{ padding: "8px 12px", color: "#111827" }}>
-                        {d.deal}
-                      </td>
-                      <td style={{ padding: "8px 12px", color: "#111827" }}>
-                        {d.responsible}
-                      </td>
+                      <td style={{ padding: "8px 12px", color: "#111827" }}>{d.deal}</td>
+                      <td style={{ padding: "8px 12px", color: "#111827" }}>{d.responsible}</td>
                       <td
                         style={{
                           padding: "8px 12px",
@@ -778,8 +720,7 @@ export default function Admin() {
           style={{
             background: "#ffffff",
             borderRadius: 18,
-            boxShadow:
-              "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+            boxShadow: "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
             overflow: "hidden",
           }}
         >
@@ -868,16 +809,11 @@ export default function Admin() {
                     <tr
                       key={`${r.group}-${r.deal_no}-${idx}`}
                       style={{
-                        backgroundColor:
-                          idx % 2 === 0 ? "#f9fafb" : "#ffffff",
+                        backgroundColor: idx % 2 === 0 ? "#f9fafb" : "#ffffff",
                       }}
                     >
-                      <td style={{ padding: "8px 12px", color: "#111827" }}>
-                        {r.group}
-                      </td>
-                      <td style={{ padding: "8px 12px", color: "#111827" }}>
-                        {r.deal_no}
-                      </td>
+                      <td style={{ padding: "8px 12px", color: "#111827" }}>{r.group}</td>
+                      <td style={{ padding: "8px 12px", color: "#111827" }}>{r.deal_no}</td>
                       <td style={{ padding: "8px 12px", color: "#374151" }}>
                         {r.payment_currency || "-"}
                       </td>
@@ -889,9 +825,7 @@ export default function Admin() {
                           fontVariantNumeric: "tabular-nums",
                         }}
                       >
-                        {typeof r.percentage === "number"
-                          ? `${r.percentage.toFixed(1)}%`
-                          : "-"}
+                        {typeof r.percentage === "number" ? `${r.percentage.toFixed(1)}%` : "-"}
                       </td>
                     </tr>
                   ))
@@ -928,8 +862,7 @@ export default function Admin() {
             style={{
               background: "#ffffff",
               borderRadius: 18,
-              boxShadow:
-                "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+              boxShadow: "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
               overflow: "hidden",
             }}
           >
@@ -1004,8 +937,7 @@ export default function Admin() {
                       <tr
                         key={`inst-${idx}`}
                         style={{
-                          backgroundColor:
-                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                          backgroundColor: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
                         }}
                       >
                         <td
@@ -1039,8 +971,7 @@ export default function Admin() {
             style={{
               background: "#ffffff",
               borderRadius: 18,
-              boxShadow:
-                "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+              boxShadow: "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
               overflow: "hidden",
             }}
           >
@@ -1115,8 +1046,7 @@ export default function Admin() {
                       <tr
                         key={`wait-${idx}`}
                         style={{
-                          backgroundColor:
-                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                          backgroundColor: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
                         }}
                       >
                         <td
@@ -1150,8 +1080,7 @@ export default function Admin() {
             style={{
               background: "#ffffff",
               borderRadius: 18,
-              boxShadow:
-                "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+              boxShadow: "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
               overflow: "hidden",
             }}
           >
@@ -1256,8 +1185,7 @@ export default function Admin() {
                       <tr
                         key={`queue-${idx}`}
                         style={{
-                          backgroundColor:
-                            idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                          backgroundColor: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
                         }}
                       >
                         <td

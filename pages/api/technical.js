@@ -93,37 +93,27 @@ export default async function handler(req, res) {
 
         // تعداد دیل‌های انجام‌شده در هفته برای هر نفر
         aref_deals_done: num(
-          r["aref deals done during the week"] ||
-            r.aref_deals_done ||
-            r["aref_deals_done"]
+          r["aref deals done during the week"] || r.aref_deals_done || r["aref_deals_done"],
         ),
         golsanam_deals_done: num(
           r["golsanam deals done during the week"] ||
             r.golsanam_deals_done ||
-            r["golsanam_deals_done"]
+            r["golsanam_deals_done"],
         ),
         vahid_deals_done: num(
-          r["vahid deals done during the week"] ||
-            r.vahid_deals_done ||
-            r["vahid_deals_done"]
+          r["vahid deals done during the week"] || r.vahid_deals_done || r["vahid_deals_done"],
         ),
         pouria_deals_done: num(
-          r["pouria deals done during the week"] ||
-            r.pouria_deals_done ||
-            r["pouria_deals_done"]
+          r["pouria deals done during the week"] || r.pouria_deals_done || r["pouria_deals_done"],
         ),
 
         // صف فنی و صف نصب
         remaining_queue: num(
-          r["Technical Approval Queue"] ||
-            r.technical_queue ||
-            r.remaining_queue
+          r["Technical Approval Queue"] || r.technical_queue || r.remaining_queue,
         ),
 
         waiting_installation: num(
-          r["Waiting for Installation"] ||
-            r.waiting_installation ||
-            r["waiting_installation"]
+          r["Waiting for Installation"] || r.waiting_installation || r["waiting_installation"],
         ),
 
         waiting_installation_ids: (
@@ -138,14 +128,14 @@ export default async function handler(req, res) {
         internal_trainings: num(r.internal_trainings),
 
         mom_link: (r.mom_link || "").trim(),
-last_meeting: (
-  r.last_meeting ||
-  r["last_meeting"] ||
-  r["Last Meeting"] ||
-  r["LAST MEETING"] ||
-  r["last meeting"] ||
-  ""
-).trim(),
+        last_meeting: (
+          r.last_meeting ||
+          r["last_meeting"] ||
+          r["Last Meeting"] ||
+          r["LAST MEETING"] ||
+          r["last meeting"] ||
+          ""
+        ).trim(),
         // ✅ لیست دیل‌های نصب‌شده
         // اینجا چند اسم احتمالی برای ستون در نظر گرفتیم
         installed_ids: (
@@ -162,9 +152,7 @@ last_meeting: (
     });
 
     // مرتب‌سازی براساس تاریخ و گرفتن آخرین ردیف
-    rows.sort(
-      (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
-    );
+    rows.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
     const latest = rows.length ? rows[rows.length - 1] : null;
 
     res.status(200).json({ rows, latest });

@@ -23,7 +23,10 @@ const toUtcStartOfDayTs = (input) => {
   if (!raw) return null;
 
   const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
-  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+  const parts = normalized
+    .split("/")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
   if (parts.length === 3) {
     let year;
@@ -57,7 +60,7 @@ const toUtcStartOfDayTs = (input) => {
   const parsed = Date.parse(raw);
   if (!Number.isFinite(parsed)) return null;
 
-const d = new Date(parsed);
+  const d = new Date(parsed);
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 };
 
@@ -157,8 +160,6 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
     const nextRowStatusMap = {};
 
     safeRows.forEach((row, idx) => {
-      
-
       const isPlaneActive = hasMeaningful(row.plane_dispatch_within_2_months);
       const isIranActive = hasMeaningful(row.on_the_way_to_iran_within_1_month);
       const isCustomsActive = hasMeaningful(row.customs_within_2_week);
@@ -167,12 +168,10 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
       const iran = buildCountdown(isIranActive, now, LIMIT_DAYS.iran, datasetStartTs);
       const customs = buildCountdown(isCustomsActive, now, LIMIT_DAYS.customs, datasetStartTs);
       nextRowStatusMap[idx] = { plane, iran, customs };
-
-      
     });
 
     setRowStatusMap(nextRowStatusMap);
-    }, [safeRows, clockTick, datasetDate]);
+  }, [safeRows, clockTick, datasetDate]);
 
   return (
     <div style={outerCard}>
@@ -231,8 +230,7 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
                     },
                     {
                       key: "iran",
-                      parts:
-                        row.iran_parts || splitDeal(row.on_the_way_to_iran_within_1_month),
+                      parts: row.iran_parts || splitDeal(row.on_the_way_to_iran_within_1_month),
                       st: status.iran || {},
                     },
                     {
@@ -450,7 +448,6 @@ const countdownBadgeDanger = {
   background: "#fee2e2",
   border: "1px solid #fca5a5",
 };
-
 
 const cellPre = {
   margin: 0,

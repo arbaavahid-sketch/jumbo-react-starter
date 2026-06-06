@@ -51,7 +51,10 @@ const dateSortValue = (input) => {
   if (!raw) return 0;
 
   const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
-  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+  const parts = normalized
+    .split("/")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
   if (parts.length === 3) {
     let year;
@@ -95,7 +98,7 @@ function lastTwo(weekly, groupKey) {
     .sort(
       (a, b) =>
         dateSortValue(a.date) - dateSortValue(b.date) ||
-        String(a.week).localeCompare(String(b.week))
+        String(a.week).localeCompare(String(b.week)),
     );
   const n = rows.length;
   return { prev: n >= 2 ? rows[n - 2] : null, curr: n >= 1 ? rows[n - 1] : null };
@@ -105,8 +108,7 @@ function pctDelta(curr, prev) {
   if (curr == null || prev == null) return { pct: 0, dir: 0 };
   const c = Number(curr) || 0;
   const p = Number(prev) || 0;
-  if (p === 0)
-    return { pct: c === 0 ? 0 : 100, dir: c === 0 ? 0 : 1, inf: c !== 0 };
+  if (p === 0) return { pct: c === 0 ? 0 : 100, dir: c === 0 ? 0 : 1, inf: c !== 0 };
   const diff = ((c - p) / Math.abs(p)) * 100;
   return { pct: diff, dir: diff === 0 ? 0 : diff > 0 ? 1 : -1 };
 }
@@ -145,8 +147,7 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
         background: "#ffffff",
         borderRadius: 18,
         padding: 16,
-        boxShadow:
-          "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
+        boxShadow: "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
         overflow: "visible",
         transition: "box-shadow 160ms ease",
       }}
@@ -159,7 +160,6 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
           "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)";
       }}
     >
-
       <div
         style={{
           position: "relative",
@@ -177,16 +177,13 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
               letterSpacing: "0.06em",
               color: "#6b7280",
               marginBottom: 6,
-                  fontWeight: 800,          // 👈 این خط رو اضافه کن برای بولد شدن
+              fontWeight: 800, // 👈 این خط رو اضافه کن برای بولد شدن
             }}
           >
             {label}
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <div
-              className="kpi-value"
-              style={{ fontWeight: 800, fontSize: 22, color: "#020617" }}
-            >
+            <div className="kpi-value" style={{ fontWeight: 800, fontSize: 22, color: "#020617" }}>
               {value}
             </div>
             {delta ? <DeltaBadge {...delta} /> : null}
@@ -224,8 +221,8 @@ export default function GroupDashboard() {
   const { isReady, query } = useRouter();
 
   // 🔴 حالت نمایش: "dashboard" یا "events"
-    const [mode, setMode] = useState("dashboard");
-// 👇 اضافه کن کنار بقیه SWRها
+  const [mode, setMode] = useState("dashboard");
+  // 👇 اضافه کن کنار بقیه SWRها
   const { data: eventsData } = useSWR("/api/events", fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 5 * 60_000, // هر ۵ دقیقه یک‌بار چک کنه
@@ -240,18 +237,20 @@ export default function GroupDashboard() {
 
     // الان برای تست ۲ دقیقه گذاشتیم
     const DASHBOARD_DURATION = 45 * 60 * 1000; // بعداً می‌کنی 60 * 60 * 1000
-    const EVENTS_DURATION = 10 * 60 * 1000;    // بعداً می‌کنی 10 * 60 * 1000
+    const EVENTS_DURATION = 10 * 60 * 1000; // بعداً می‌کنی 10 * 60 * 1000
 
-    const timeout = setTimeout(() => {
-      setMode((prev) => (prev === "dashboard" ? "events" : "dashboard"));
-    }, mode === "dashboard" ? DASHBOARD_DURATION : EVENTS_DURATION);
+    const timeout = setTimeout(
+      () => {
+        setMode((prev) => (prev === "dashboard" ? "events" : "dashboard"));
+      },
+      mode === "dashboard" ? DASHBOARD_DURATION : EVENTS_DURATION,
+    );
 
     return () => clearTimeout(timeout);
   }, [mode, hasEvents]);
 
-
   const id = String(query.id || "1");
-  const groupKey = ({ 1: "A", 2: "B", 3: "C" }[id]) || "A";
+  const groupKey = { 1: "A", 2: "B", 3: "C" }[id] || "A";
 
   // ✅ useSWR همیشه اجرا می‌شود، ولی وقتی isReady نیست، URL = null است
   const {
@@ -262,7 +261,7 @@ export default function GroupDashboard() {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
-  
+
   // ⬅️ اینجا دیگه می‌تونیم لودینگ و ارور را هندل کنیم
   if (!isReady || isLoading || !raw) {
     return <div style={{ padding: 16 }}>Loading…</div>;
@@ -283,27 +282,18 @@ export default function GroupDashboard() {
   const dealsExecAll = ensureArray(raw.deals_exec);
   const ceoMessages = raw.ceo_messages || {};
   const arAll = ensureArray(raw.ar_list);
-  const arForGroup = arAll.filter(
-    (r) => toStr(r.group).toUpperCase() === groupKey
-  );
-  
+  const arForGroup = arAll.filter((r) => toStr(r.group).toUpperCase() === groupKey);
+
   const megaDealsAll = ensureArray(raw.mega_deals_details || raw.mega_deals); // هر کدوم تو API هست
-  const megaDealsForGroup = megaDealsAll.filter(
-    (r) => toStr(r.group).toUpperCase() === groupKey
-  );
-const tripsAll = ensureArray(raw.weekly_trips_details);
-const weeklyTripsForGroup = tripsAll.filter(
-    (r) => normalizeGroup(r.group) === groupKey
-);
+  const megaDealsForGroup = megaDealsAll.filter((r) => toStr(r.group).toUpperCase() === groupKey);
+  const tripsAll = ensureArray(raw.weekly_trips_details);
+  const weeklyTripsForGroup = tripsAll.filter((r) => normalizeGroup(r.group) === groupKey);
 
   const group =
     groups.find((g) => toStr(g.id) === id) ||
-    groups.find(
-      (g) => toStr(g.key || g.code || g.slug).toUpperCase() === groupKey
-    ) ||
+    groups.find((g) => toStr(g.key || g.code || g.slug).toUpperCase() === groupKey) ||
     null;
-const logisticRows = ensureArray(raw.logistic_aa); // ✅ بدون فیلتر
-
+  const logisticRows = ensureArray(raw.logistic_aa); // ✅ بدون فیلتر
 
   if (!group)
     return (
@@ -314,52 +304,51 @@ const logisticRows = ensureArray(raw.logistic_aa); // ✅ بدون فیلتر
 
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
-const normDate = (s) => String(s || "").trim().replace(/\//g, "-");
+  const normDate = (s) =>
+    String(s || "")
+      .trim()
+      .replace(/\//g, "-");
 
-// ...existing code...
-const currTrips = (() => {
-  const currTripsCount = Number(curr?.weekly_trips || 0);
-  if (!curr || currTripsCount <= 0) return [];
+  // ...existing code...
+  const currTrips = (() => {
+    const currTripsCount = Number(curr?.weekly_trips || 0);
+    if (!curr || currTripsCount <= 0) return [];
 
-  const currDateRaw = curr?.date || "";
-  const currDate = normDate(currDateRaw);
+    const currDateRaw = curr?.date || "";
+    const currDate = normDate(currDateRaw);
 
-  // آخرین تاریخ موجود در weeklyTripsForGroup (نرمالایز شده)
-  const tripDates = weeklyTripsForGroup
-    .map((t) => normDate(t?.date))
-    .filter(Boolean)
-    .sort((a, b) => dateSortValue(a) - dateSortValue(b));
-  const latestTripDate = tripDates.length ? tripDates[tripDates.length - 1] : null;
+    // آخرین تاریخ موجود در weeklyTripsForGroup (نرمالایز شده)
+    const tripDates = weeklyTripsForGroup
+      .map((t) => normDate(t?.date))
+      .filter(Boolean)
+      .sort((a, b) => dateSortValue(a) - dateSortValue(b));
+    const latestTripDate = tripDates.length ? tripDates[tripDates.length - 1] : null;
 
-  // اگر تاریخ weekly_reports موجود و مطابق بود، اون رو برگردون،
-  // در غیر این صورت از آخرین تاریخ موجود در weekly_trips استفاده کن
-  if (currDate) {
-    return weeklyTripsForGroup.filter((t) => {
-      const td = normDate(t?.date);
-      return td === currDate || (latestTripDate && td === latestTripDate);
-    });
-  }
+    // اگر تاریخ weekly_reports موجود و مطابق بود، اون رو برگردون،
+    // در غیر این صورت از آخرین تاریخ موجود در weekly_trips استفاده کن
+    if (currDate) {
+      return weeklyTripsForGroup.filter((t) => {
+        const td = normDate(t?.date);
+        return td === currDate || (latestTripDate && td === latestTripDate);
+      });
+    }
 
-  return latestTripDate
-    ? weeklyTripsForGroup.filter((t) => normDate(t?.date) === latestTripDate)
-    : [];
-})();
-// ...existing code...
+    return latestTripDate
+      ? weeklyTripsForGroup.filter((t) => normDate(t?.date) === latestTripDate)
+      : [];
+  })();
+  // ...existing code...
 
   // momLink: اول از latest.mom، اگر خالی بود از آخرین ردیف weekly که mom دارد
   let momLink = toStr(latest.mom || "").trim();
   if (!momLink) {
     const rowsWithMom = weekly
-      .filter(
-        (r) =>
-          toStr(r.group).toUpperCase() === groupKey &&
-          toStr(r.mom || "").trim() !== ""
-      )
+      .filter((r) => toStr(r.group).toUpperCase() === groupKey && toStr(r.mom || "").trim() !== "")
       .slice()
       .sort(
         (a, b) =>
           dateSortValue(a.date) - dateSortValue(b.date) ||
-          String(a.week).localeCompare(String(b.week))
+          String(a.week).localeCompare(String(b.week)),
       );
     if (rowsWithMom.length) {
       momLink = toStr(rowsWithMom[rowsWithMom.length - 1].mom || "").trim();
@@ -380,9 +369,7 @@ const currTrips = (() => {
   };
 
   const pageTitle = `Group Dashboard ${groupKey}`;
-  const dealsForGroup = dealsExecAll.filter(
-    (d) => toStr(d.group).toUpperCase() === groupKey
-  );
+  const dealsForGroup = dealsExecAll.filter((d) => toStr(d.group).toUpperCase() === groupKey);
   const rawCeoText = (ceoMessages[groupKey] ?? "").trim();
   const hasCeoMessage = rawCeoText.length > 0;
 
@@ -391,19 +378,16 @@ const currTrips = (() => {
     return { label: `Group ${gKey}`, value: Number(row.total_sales_eur || 0) };
   });
 
-    // 🔄 حالت "events": فقط وقتی رویداد داریم
+  // 🔄 حالت "events": فقط وقتی رویداد داریم
   if (mode === "events" && hasEvents) {
     return (
-      <main
-        className="container"
-        style={{ padding: 0, minHeight: "100vh", background: "#020617" }}
-      >
+      <main className="container" style={{ padding: 0, minHeight: "100vh", background: "#020617" }}>
         <Head>
           <title>{pageTitle} – Events</title>
         </Head>
 
         <EventSlideshow
-          files={eventFiles}                 // همون لیستی که بالا از /api/events گرفتی
+          files={eventFiles} // همون لیستی که بالا از /api/events گرفتی
           onSkip={() => setMode("dashboard")} // برای دکمه Skip اگر گذاشتی
         />
       </main>
@@ -412,7 +396,7 @@ const currTrips = (() => {
 
   // 🔹 حالت عادی: داشبورد
   return (
-     <main className="container">
+    <main className="container">
       <Head>
         <title>{pageTitle}</title>
         <meta
@@ -422,7 +406,7 @@ const currTrips = (() => {
       </Head>
 
       {/* هدر بالا: عنوان + لوگو + ساعت */}
-       <div className="dashboard-header">
+      <div className="dashboard-header">
         <h1 className="dashboard-title">{pageTitle}</h1>
         <div className="dashboard-brand">
           <img
@@ -467,141 +451,135 @@ const currTrips = (() => {
       )}
 
       {/* KPI + Charts */}
-<section className="section kpi-section" style={{ marginTop: 0, marginBottom: 0 }}>
-  {/* 1) KPI grid: 2 rows (4x2) */}
-    <div className="dashboard-kpi-grid">
-    <StatCard
-      label="Total Sales (2026)"
-      value={fmtEUR(latest?.total_sales_eur)}
-      delta={deltas.total_sales_eur}
-      Icon={FiTrendingUp}
-      accent="#0ea5e9"
-    />
-    <StatCard
-      label="Offers Sent"
-      value={latest?.offers_sent ?? 0}
-      delta={deltas.offers_sent}
-      Icon={FiSend}
-      accent="#6366f1"
-    />
-    <StatCard
-      label="Total Deals in Sales process"
-      value={curr?.in_sales_process ?? 0}
-      delta={deltas.in_sales_process}
-      Icon={FiShoppingBag}
-      accent="#f97316"
-    />
-    <StatCard
-      label="Deals in Supply process"
-      value={curr?.in_supply ?? 0}
-      delta={deltas.in_supply}
-      Icon={FiTruck}
-      accent="#22c55e"
-    />
-    <StatCard
-      label="Deals in Technical process"
-      value={curr?.in_technical ?? 0}
-      delta={deltas.in_technical}
-      Icon={FiActivity}
-      accent="#ec4899"
-    />
-    <StatCard
-      label="Mega Projects"
-      value={latest?.mega_deals ?? 0}
-      delta={deltas.mega_deals}
-      accent="#eab308"
-      actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
-    />
-    <StatCard
-      label="Last Group Meeting"
-      value={latest?.last_meeting || "-"}
-      accent="#3b82f6"
-      actionIcon={
-        momLink ? (
-          <a
-            href={momLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="مشاهده لینک جلسه (MOM)"
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(59,130,246,0.12)",
-              color: "#3b82f6",
-              boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-              textDecoration: "none",
-            }}
-          >
-            <FiLink size={16} />
-          </a>
-        ) : (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(15,23,42,0.06)",
-              color: "#3b82f6",
-              boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-            }}
-          >
-            <FiCalendar size={16} />
+      <section className="section kpi-section" style={{ marginTop: 0, marginBottom: 0 }}>
+        {/* 1) KPI grid: 2 rows (4x2) */}
+        <div className="dashboard-kpi-grid">
+          <StatCard
+            label="Total Sales (2026)"
+            value={fmtEUR(latest?.total_sales_eur)}
+            delta={deltas.total_sales_eur}
+            Icon={FiTrendingUp}
+            accent="#0ea5e9"
+          />
+          <StatCard
+            label="Offers Sent"
+            value={latest?.offers_sent ?? 0}
+            delta={deltas.offers_sent}
+            Icon={FiSend}
+            accent="#6366f1"
+          />
+          <StatCard
+            label="Total Deals in Sales process"
+            value={curr?.in_sales_process ?? 0}
+            delta={deltas.in_sales_process}
+            Icon={FiShoppingBag}
+            accent="#f97316"
+          />
+          <StatCard
+            label="Deals in Supply process"
+            value={curr?.in_supply ?? 0}
+            delta={deltas.in_supply}
+            Icon={FiTruck}
+            accent="#22c55e"
+          />
+          <StatCard
+            label="Deals in Technical process"
+            value={curr?.in_technical ?? 0}
+            delta={deltas.in_technical}
+            Icon={FiActivity}
+            accent="#ec4899"
+          />
+          <StatCard
+            label="Mega Projects"
+            value={latest?.mega_deals ?? 0}
+            delta={deltas.mega_deals}
+            accent="#eab308"
+            actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
+          />
+          <StatCard
+            label="Last Group Meeting"
+            value={latest?.last_meeting || "-"}
+            accent="#3b82f6"
+            actionIcon={
+              momLink ? (
+                <a
+                  href={momLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="مشاهده لینک جلسه (MOM)"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(59,130,246,0.12)",
+                    color: "#3b82f6",
+                    boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                    textDecoration: "none",
+                  }}
+                >
+                  <FiLink size={16} />
+                </a>
+              ) : (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(15,23,42,0.06)",
+                    color: "#3b82f6",
+                    boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                  }}
+                >
+                  <FiCalendar size={16} />
+                </div>
+              )
+            }
+          />
+          <StatCard
+            label="Weekly Trips"
+            value={latest?.weekly_trips ?? 0}
+            delta={deltas.weekly_trips}
+            accent="#0d9488"
+            actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
+          />
+        </div>
+
+        {/* 2) Charts row: same height */}
+        <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
+          <div style={{ height: 320 }}>
+            <GroupSalesBars data={salesBarData} />
           </div>
-        )
-      }
-    />
-    <StatCard
-      label="Weekly Trips"
-      value={latest?.weekly_trips ?? 0}
-      delta={deltas.weekly_trips}
-      accent="#0d9488"
-      actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
-    />
-  </div>
 
-  {/* 2) Charts row: same height */}
-    <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
-    <div style={{ height: 320 }}>
-      <GroupSalesBars data={salesBarData} />
-    </div>
+          <div style={{ height: 320 }}>
+            <MembersHistoryChart rows={members[groupKey] || []} />
+          </div>
+        </div>
+      </section>
 
-    <div style={{ height: 320 }}>
-      <MembersHistoryChart rows={members[groupKey] || []} />
-    </div>
-  </div>
-</section>
+      {/* Tables */}
+      <div style={{ marginTop: 0 }}>
+        {/* Row 1: Deal Exec + AR */}
+        <div className="dashboard-two-col-grid">
+          <div>
+            <DealsExecTable rows={dealsForGroup} />
+          </div>
 
+          <div>
+            <ARListTable rows={arForGroup} />
+          </div>
+        </div>
 
-
-     {/* Tables */}
-<div style={{ marginTop: 0 }}>
-  {/* Row 1: Deal Exec + AR */}
-    <div className="dashboard-two-col-grid">
-    <div>
-  <DealsExecTable rows={dealsForGroup} />
-</div>
-
-<div>
-  <ARListTable rows={arForGroup} />
-</div>
-
-  </div>
-
-  {/* Row 2: Logistic AA (فاصله کم) */}
-  <div style={{ marginTop: 0 }}>
-    <LogisticAATable rows={logisticRows} datasetDate={curr?.date || ""} />
-  </div>
-</div>
-
-
-
+        {/* Row 2: Logistic AA (فاصله کم) */}
+        <div style={{ marginTop: 0 }}>
+          <LogisticAATable rows={logisticRows} datasetDate={curr?.date || ""} />
+        </div>
+      </div>
 
       {/* Bloomberg News پایین صفحه */}
       <section className="section">
@@ -664,8 +642,7 @@ function MegaDealsIcon({ deals }) {
               maxHeight: 320,
               background: "#ffffff",
               borderRadius: 16,
-              boxShadow:
-                "0 20px 60px rgba(15,23,42,0.25), 0 0 0 1px rgba(148,163,184,0.45)",
+              boxShadow: "0 20px 60px rgba(15,23,42,0.25), 0 0 0 1px rgba(148,163,184,0.45)",
               padding: 14,
               zIndex: 9999,
               overflow: "hidden",
@@ -701,9 +678,7 @@ function MegaDealsIcon({ deals }) {
             </div>
 
             {!deals || deals.length === 0 ? (
-              <div style={{ fontSize: 12, color: "#6b7280" }}>
-                No Mega Deals
-              </div>
+              <div style={{ fontSize: 12, color: "#6b7280" }}>No Mega Deals</div>
             ) : (
               <ul
                 style={{
@@ -769,10 +744,8 @@ function WeeklyTripsIcon({ trips, currDate }) {
 
   const list = Array.isArray(trips) ? trips : [];
 
-  
-
   // مرتب‌سازی شیک‌تر
-const sortedTrips = list.slice().sort((a, b) => {
+  const sortedTrips = list.slice().sort((a, b) => {
     const ac = String(a.company_name || "").localeCompare(String(b.company_name || ""));
     if (ac !== 0) return ac;
     return String(a.owner || "").localeCompare(String(b.owner || ""));
@@ -829,8 +802,7 @@ const sortedTrips = list.slice().sort((a, b) => {
               maxHeight: isMobile ? "70vh" : 360,
               background: "#ffffff",
               borderRadius: 16,
-              boxShadow:
-                "0 20px 60px rgba(15,23,42,0.25), 0 0 0 1px rgba(148,163,184,0.45)",
+              boxShadow: "0 20px 60px rgba(15,23,42,0.25), 0 0 0 1px rgba(148,163,184,0.45)",
               padding: 14,
               zIndex: 9999,
               overflow: "hidden",
@@ -847,15 +819,10 @@ const sortedTrips = list.slice().sort((a, b) => {
               }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <div style={{ fontSize: 13, fontWeight: 800 }}>
-                  Weekly Trips Details
-                </div>
+                <div style={{ fontSize: 13, fontWeight: 800 }}>Weekly Trips Details</div>
                 {currDate ? (
-  <div style={{ fontSize: 11, color: "#64748b" }}>
-    Week Date: {currDate}
-  </div>
-) : null}
-
+                  <div style={{ fontSize: 11, color: "#64748b" }}>Week Date: {currDate}</div>
+                ) : null}
               </div>
 
               <button
@@ -875,9 +842,7 @@ const sortedTrips = list.slice().sort((a, b) => {
 
             {/* Content */}
             {sortedTrips.length === 0 ? (
-              <div style={{ fontSize: 12, color: "#6b7280" }}>
-                No trips recorded
-              </div>
+              <div style={{ fontSize: 12, color: "#6b7280" }}>No trips recorded</div>
             ) : (
               <div
                 style={{

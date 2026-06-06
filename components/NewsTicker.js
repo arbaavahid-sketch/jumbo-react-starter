@@ -16,9 +16,7 @@ export default function NewsTicker() {
 
   if (error || isLoading || items.length === 0) return null;
 
-  const line = items
-    .map((n) => `【${n.source}】 ${n.title}`)
-    .join("   •   ");
+  const line = items.map((n) => `【${n.source}】 ${n.title}`).join("   •   ");
 
   return (
     <div

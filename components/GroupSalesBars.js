@@ -18,7 +18,7 @@ export default function GroupSalesBars({ data = [] }) {
         style={{
           display: "flex",
           alignItems: "baseline",
-          gap: 8,           // 👈 فاصله‌ی کم بین عنوان و مجموع
+          gap: 8, // 👈 فاصله‌ی کم بین عنوان و مجموع
           marginBottom: 10,
         }}
       >
@@ -35,7 +35,7 @@ export default function GroupSalesBars({ data = [] }) {
 
         <div
           style={{
-            fontSize: 16,     // کمی درشت‌تر از قبل
+            fontSize: 16, // کمی درشت‌تر از قبل
             fontWeight: 800,
             color: "#1e293b",
             whiteSpace: "nowrap",
@@ -82,8 +82,7 @@ export default function GroupSalesBars({ data = [] }) {
                     background: color,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent:
-                      widthPercent < 20 ? "flex-end" : "center",
+                    justifyContent: widthPercent < 20 ? "flex-end" : "center",
                     paddingRight: widthPercent < 20 ? 8 : 0,
                     color: "white",
                     fontWeight: 700,

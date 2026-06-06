@@ -60,12 +60,7 @@ export default function MembersHistoryChart({ rows = [] }) {
   }));
 
   const maxValue =
-    data.length > 0
-      ? Math.max(
-          ...data.map((d) => Math.max(d.deals || 0, d.offers || 0)),
-          4
-        )
-      : 4;
+    data.length > 0 ? Math.max(...data.map((d) => Math.max(d.deals || 0, d.offers || 0)), 4) : 4;
 
   return (
     <div
@@ -73,8 +68,7 @@ export default function MembersHistoryChart({ rows = [] }) {
         background: "radial-gradient(circle at top, #eff6ff, #f9fafb)",
         borderRadius: 22,
         padding: 18,
-        boxShadow:
-          "0 22px 55px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.22)",
+        boxShadow: "0 22px 55px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.22)",
       }}
     >
       <div
@@ -90,10 +84,7 @@ export default function MembersHistoryChart({ rows = [] }) {
 
       <div style={{ width: "100%", height: 210 }}>
         <ResponsiveContainer>
-          <BarChart
-            data={data}
-            margin={{ top: 8, right: 12, left: -10, bottom: 18 }}
-          >
+          <BarChart data={data} margin={{ top: 8, right: 12, left: -10, bottom: 18 }}>
             <defs>
               <linearGradient id="dealsGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#2563eb" stopOpacity={0.9} />
@@ -105,11 +96,7 @@ export default function MembersHistoryChart({ rows = [] }) {
               </linearGradient>
             </defs>
 
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="#e5e7eb"
-            />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
             <XAxis
               dataKey="name"
               tick={{ fontSize: 11, fill: "#6b7280" }}
@@ -127,9 +114,7 @@ export default function MembersHistoryChart({ rows = [] }) {
             <Legend
               verticalAlign="bottom"
               height={28}
-              formatter={(value) => (
-                <span style={{ fontSize: 11, color: "#4b5563" }}>{value}</span>
-              )}
+              formatter={(value) => <span style={{ fontSize: 11, color: "#4b5563" }}>{value}</span>}
             />
 
             <Bar

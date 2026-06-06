@@ -25,7 +25,6 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 
-
 const fetcher = async (url) => {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -33,7 +32,10 @@ const fetcher = async (url) => {
 };
 
 const fmtNum = (n) => new Intl.NumberFormat("en-US").format(Number(n) || 0);
-const cleanManagerName = (value) => String(value || "").replace(/#/g, "").trim();
+const cleanManagerName = (value) =>
+  String(value || "")
+    .replace(/#/g, "")
+    .trim();
 
 function pctDelta(curr, prev) {
   if (curr == null || prev == null) return { pct: 0, dir: 0 };
@@ -81,8 +83,7 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
         background: "#ffffff",
         borderRadius: 18,
         padding: 16,
-        boxShadow:
-          "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
+        boxShadow: "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
         overflow: "visible",
         transition: "box-shadow 160ms ease",
       }}
@@ -193,8 +194,7 @@ function TableCard({ title, children }) {
       style={{
         background: "#fff",
         borderRadius: 20,
-        boxShadow:
-          "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
+        boxShadow: "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
         overflow: "hidden",
       }}
     >
@@ -209,7 +209,9 @@ function TableCard({ title, children }) {
       >
         {title}
       </div>
-      <div ref={scrollRef} style={{ maxHeight: 252, overflow: "auto" }}>{children}</div>
+      <div ref={scrollRef} style={{ maxHeight: 252, overflow: "auto" }}>
+        {children}
+      </div>
     </section>
   );
 }
@@ -269,7 +271,15 @@ export default function SupplyDashboard() {
               flexWrap: "wrap",
             }}
           >
-            <h1 style={{ margin: 0, fontSize: "clamp(28px,3.2vw,46px)", lineHeight: 1.1, color: "#021d49", fontWeight: 800 }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: "clamp(28px,3.2vw,46px)",
+                lineHeight: 1.1,
+                color: "#021d49",
+                fontWeight: 800,
+              }}
+            >
               Supply Side Dashboard
             </h1>
 
@@ -293,10 +303,7 @@ export default function SupplyDashboard() {
             </div>
           </div>
 
-
-          {error ? (
-            <div style={errorStyle}>Error loading supply data.</div>
-          ) : null}
+          {error ? <div style={errorStyle}>Error loading supply data.</div> : null}
 
           {isLoading || !data ? <div style={loadingStyle}>Loading supply data...</div> : null}
 
@@ -372,8 +379,7 @@ export default function SupplyDashboard() {
                 style={{
                   background: "#fff",
                   borderRadius: 20,
-                  boxShadow:
-                    "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
+                  boxShadow: "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
                   padding: 12,
                   marginBottom: 16,
                 }}

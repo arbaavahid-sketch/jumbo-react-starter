@@ -8,8 +8,7 @@ export default function CeoMessage({ text }) {
         background: "#ffffff",
         borderRadius: 22,
         padding: "18px 22px",
-        boxShadow:
-          "0 24px 60px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
+        boxShadow: "0 24px 60px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
         display: "flex",
         alignItems: "flex-start",
         gap: 16,
@@ -53,8 +52,8 @@ export default function CeoMessage({ text }) {
 
         <div
           style={{
-            fontSize: 15,        // بزرگ‌تر برای TV
-            lineHeight: 1.9,     // فاصله خطوط بیشتر
+            fontSize: 15, // بزرگ‌تر برای TV
+            lineHeight: 1.9, // فاصله خطوط بیشتر
             color: "#111827",
           }}
         >

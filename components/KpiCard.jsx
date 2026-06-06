@@ -1,4 +1,4 @@
-export default function KpiCard({ label, value }){
+export default function KpiCard({ label, value }) {
   return (
     <div className="card">
       <div className="label">{label}</div>

@@ -72,10 +72,8 @@ export default function TopRatesStrip() {
               flex: "1 1 250px",
               borderRadius: 16,
               padding: 10,
-              background:
-                "linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,64,175,0.96))",
-              boxShadow:
-                "0 18px 45px rgba(15,23,42,0.78), 0 0 0 1px rgba(148,163,184,0.45)",
+              background: "linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,64,175,0.96))",
+              boxShadow: "0 18px 45px rgba(15,23,42,0.78), 0 0 0 1px rgba(148,163,184,0.45)",
               color: "#e5e7eb",
               minWidth: 0,
             }}

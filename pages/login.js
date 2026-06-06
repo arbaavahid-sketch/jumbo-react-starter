@@ -47,8 +47,7 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background:
-          "radial-gradient(circle at top left,#e0f2fe,#eff6ff 40%,#dbeafe 70%)",
+        background: "radial-gradient(circle at top left,#e0f2fe,#eff6ff 40%,#dbeafe 70%)",
         fontFamily: "system-ui",
       }}
     >
@@ -58,8 +57,7 @@ export default function LoginPage() {
           maxWidth: "90vw",
           background: "rgba(255,255,255,0.96)",
           borderRadius: 24,
-          boxShadow:
-            "0 30px 80px rgba(15,23,42,0.35), 0 0 0 1px rgba(148,163,184,0.35)",
+          boxShadow: "0 30px 80px rgba(15,23,42,0.35), 0 0 0 1px rgba(148,163,184,0.35)",
           padding: "26px 28px 30px",
         }}
       >
@@ -96,9 +94,7 @@ export default function LoginPage() {
             fontSize: 12,
             color: "#6b7280",
           }}
-        >
-          
-        </p>
+        ></p>
 
         <form onSubmit={handleSubmit}>
           <label
@@ -181,8 +177,7 @@ export default function LoginPage() {
               fontSize: 14,
               fontWeight: 700,
               color: "#fff",
-              background:
-                "linear-gradient(135deg,#2563eb,#4f46e5,#a855f7)",
+              background: "linear-gradient(135deg,#2563eb,#4f46e5,#a855f7)",
               boxShadow: "0 18px 40px rgba(37,99,235,0.55)",
               opacity: loading ? 0.7 : 1,
             }}

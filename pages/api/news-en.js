@@ -43,18 +43,14 @@ export default async function handler(req, res) {
           return (feed.items || []).map((item) => ({
             title: item.title,
             link: item.link,
-            date:
-              item.published ||
-              item.created ||
-              item.pubDate ||
-              new Date().toISOString(),
+            date: item.published || item.created || item.pubDate || new Date().toISOString(),
             source: src.name,
           }));
         } catch (e) {
           console.error("RSS error for", src.id, e);
           return [];
         }
-      })
+      }),
     );
 
     // merge all sources

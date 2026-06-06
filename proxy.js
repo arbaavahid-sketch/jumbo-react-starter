@@ -9,14 +9,12 @@ export function proxy(req) {
     pathname === "/login" ||
     pathname === "/api/login" ||
     pathname === "/favicon.ico" ||
-
     // --- مسیرهای لینک عمومی ---
     pathname.startsWith("/share/") ||
-
     // --- APIهای لازم برای داشبورد آزاد ---
     pathname.startsWith("/api/data") ||
     pathname.startsWith("/api/tgju") ||
-    pathname.startsWith("/api/news") ||        // همین خط همه‌ی news و news-en را پوشش می‌دهد
+    pathname.startsWith("/api/news") || // همین خط همه‌ی news و news-en را پوشش می‌دهد
     pathname.startsWith("/api/rates") ||
     pathname.startsWith("/api/technical") ||
     pathname.startsWith("/api/ceo-message") ||
@@ -39,7 +37,5 @@ export function proxy(req) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/.*|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|ico)).*)"
-  ],
+  matcher: ["/((?!_next/.*|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|ico)).*)"],
 };

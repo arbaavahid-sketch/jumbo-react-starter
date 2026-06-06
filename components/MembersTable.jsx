@@ -12,8 +12,7 @@ export default function MembersTable({ rows }) {
       style={{
         background: "#ffffff",
         borderRadius: 18,
-        boxShadow:
-          "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+        boxShadow: "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
         overflow: "hidden",
       }}
     >
@@ -22,8 +21,7 @@ export default function MembersTable({ rows }) {
         style={{
           padding: "12px 18px",
           borderBottom: "1px solid #e5e7eb",
-          background:
-            "linear-gradient(135deg, rgba(11,99,174,0.06), rgba(255,255,255,1))",
+          background: "linear-gradient(135deg, rgba(11,99,174,0.06), rgba(255,255,255,1))",
         }}
       >
         <span
@@ -114,8 +112,7 @@ export default function MembersTable({ rows }) {
                     e.currentTarget.style.background = "#e0f2fe";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background =
-                      idx % 2 === 0 ? "#ffffff" : "#f9fafb";
+                    e.currentTarget.style.background = idx % 2 === 0 ? "#ffffff" : "#f9fafb";
                   }}
                 >
                   <td style={{ padding: "9px 16px", color: "#111827" }}>

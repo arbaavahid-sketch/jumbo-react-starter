@@ -57,12 +57,7 @@ export default function AdminMessages() {
       // اول از استیت لوکال بخوان
       if (localMessages.TECH !== undefined) return localMessages.TECH;
       // فالس‌ بک روی داده‌ی خام
-      return (
-        messages.TECH ||
-        messages.TECHNICAL ||
-        messages.Technical ||
-        ""
-      );
+      return messages.TECH || messages.TECHNICAL || messages.Technical || "";
     }
     return localMessages[key] ?? messages[key] ?? "";
   };
@@ -91,8 +86,7 @@ export default function AdminMessages() {
         padding: "40px 24px 60px",
         display: "flex",
         justifyContent: "center",
-        background:
-          "radial-gradient(circle at top, #eef2ff 0, #f9fafb 35%, #e5e7eb 80%)",
+        background: "radial-gradient(circle at top, #eef2ff 0, #f9fafb 35%, #e5e7eb 80%)",
       }}
     >
       <div style={{ width: "100%", maxWidth: 1200 }}>
@@ -134,10 +128,8 @@ export default function AdminMessages() {
                   position: "relative",
                   borderRadius: 28,
                   padding: 20,
-                  background:
-                    "radial-gradient(circle at top left, #1e293b, #020617)",
-                  boxShadow:
-                    "0 30px 80px rgba(15,23,42,0.9), 0 0 0 1px rgba(148,163,184,0.5)",
+                  background: "radial-gradient(circle at top left, #1e293b, #020617)",
+                  boxShadow: "0 30px 80px rgba(15,23,42,0.9), 0 0 0 1px rgba(148,163,184,0.5)",
                   color: "#e5e7eb",
                   overflow: "hidden",
                 }}
@@ -215,8 +207,7 @@ export default function AdminMessages() {
                     minHeight: 150,
                     borderRadius: 18,
                     border: "1px solid rgba(30,64,175,0.9)",
-                    background:
-                      "radial-gradient(circle at top left, #020617, #020617)",
+                    background: "radial-gradient(circle at top left, #020617, #020617)",
                     color: "#e5e7eb",
                     padding: 12,
                     fontSize: 14,

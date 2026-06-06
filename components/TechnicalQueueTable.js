@@ -28,8 +28,7 @@ export default function TechnicalQueueTable({ rows = [] }) {
         marginTop: 24,
         borderRadius: 18,
         background: "#ffffff",
-        boxShadow:
-          "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.18)",
+        boxShadow: "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.18)",
         overflow: "hidden",
       }}
     >
@@ -94,9 +93,7 @@ export default function TechnicalQueueTable({ rows = [] }) {
                 }}
               >
                 <td style={tdStyle}>{idx + 1}</td>
-                <td style={{ ...tdStyle, fontWeight: 600, color: "#111827" }}>
-                  {r.deal || "-"}
-                </td>
+                <td style={{ ...tdStyle, fontWeight: 600, color: "#111827" }}>{r.deal || "-"}</td>
                 <td style={tdStyle}>{r.center || "-"}</td>
                 <td style={tdStyle}>{r.subject || "-"}</td>
                 <td style={tdStyle}>{r.status || "-"}</td>

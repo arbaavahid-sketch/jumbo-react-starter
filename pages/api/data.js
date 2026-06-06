@@ -7,7 +7,10 @@ function dateSortValue(input) {
   if (!raw) return 0;
 
   const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
-  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+  const parts = normalized
+    .split("/")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
   if (parts.length === 3) {
     let year;
@@ -99,8 +102,7 @@ function mapSheetsToPayload({
   techQueueSheet = [],
   megaDealsSheet = [],
   weeklyTripsSheet = [], // ✅ اضافه شد
- logisticAASheet = [], // ✅ اضافه شد
-
+  logisticAASheet = [], // ✅ اضافه شد
 }) {
   const normKey = (s) =>
     String(s || "")
@@ -126,47 +128,40 @@ function mapSheetsToPayload({
     return "";
   };
   // ✅ weekly_trips_details: فقط آخرین تاریخ برای هر گروه
-const weekly_trips_details = weeklyTripsSheet
-  .map((r) => ({
-    date: (r.date || r.Date || "").trim(),
-    group: String(r.group || r.Group || "").toUpperCase().trim(),
-    company_name: (r.company_name || r.Company_Name || r.company || r.Company || "").trim(),
-    owner: (r.owner || r.Owner || "").trim(),
-  }))
-  .filter((r) => r.group && r.date);
+  const weekly_trips_details = weeklyTripsSheet
+    .map((r) => ({
+      date: (r.date || r.Date || "").trim(),
+      group: String(r.group || r.Group || "")
+        .toUpperCase()
+        .trim(),
+      company_name: (r.company_name || r.Company_Name || r.company || r.Company || "").trim(),
+      owner: (r.owner || r.Owner || "").trim(),
+    }))
+    .filter((r) => r.group && r.date);
 
-// ✅ انتخاب آخرین تاریخ برای هر گروه
-const tripsByGroup = {};
-for (const row of weekly_trips_details) {
-  if (!tripsByGroup[row.group]) tripsByGroup[row.group] = [];
-  tripsByGroup[row.group].push(row);
-}
+  // ✅ انتخاب آخرین تاریخ برای هر گروه
+  const tripsByGroup = {};
+  for (const row of weekly_trips_details) {
+    if (!tripsByGroup[row.group]) tripsByGroup[row.group] = [];
+    tripsByGroup[row.group].push(row);
+  }
 
-const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
-  ([g, arr]) => {
+  const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(([g, arr]) => {
     // مرتب‌سازی بر اساس تاریخ (بهتره تاریخ‌ها YYYY/MM/DD یا YYYY-MM-DD باشن)
     arr.sort((a, b) => dateSortValue(a.date) - dateSortValue(b.date));
     const lastDateValue = dateSortValue(arr[arr.length - 1]?.date);
 
     // فقط ردیف‌های همان آخرین تاریخ را نگه دار (با نرمال‌سازی تاریخ)
     return arr.filter((x) => dateSortValue(x.date) === lastDateValue);
-  }
-);
-
+  });
 
   // weekly_reports
   const weekly_reports = weeklySheet
     .map((r) => {
-      const inSales = Number(
-        r["deals in Sales process"] || r.in_sales_process || 0
-      );
+      const inSales = Number(r["deals in Sales process"] || r.in_sales_process || 0);
       const inSupply = Number(r["Deals in Supply process"] || r.in_supply || 0);
-      const inTechnical = Number(
-        r["deals in technical process"] || r.in_technical || 0
-      );
-      const offers = Number(
-        r.offers_sent || r.Offers_sent || r["offers_sent"] || 0
-      );
+      const inTechnical = Number(r["deals in technical process"] || r.in_technical || 0);
+      const offers = Number(r.offers_sent || r.Offers_sent || r["offers_sent"] || 0);
 
       return {
         group: String(r.group || r.Group || "").toUpperCase(),
@@ -177,9 +172,7 @@ const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
         offers_sent: offers,
         weekly_sales_eur: Number(r.weekly_sales_eur || r.Weekly_Sales_EUR || 0),
         total_sales_eur: Number(r.total_sales_eur || r.Total_Sales_EUR || 0),
-        active_companies: Number(
-          r.active_companies || r.Active_Companies || 0
-        ),
+        active_companies: Number(r.active_companies || r.Active_Companies || 0),
         mega_deals: Number(r.mega_deals || r.Mega_Deals || 0),
 
         in_technical: inTechnical,
@@ -210,44 +203,40 @@ const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(
       name: `Group ${key}`,
     }));
   }
-// ✅ logistic_aa (index-based, safe)
-const logistic_aa = logisticAASheet.map((r) => {
-  const planeDispatch = pickField(r, [
-    "plane Dispatch(within 2 months)",
-    "planned dispatch(within 2 months)",
-    "planned dispatch",
-    "plane_dispatch_within_2_months",
-    "planned_dispatch_within_2_months",
-    "plane_dispatch",
-  ]);
+  // ✅ logistic_aa (index-based, safe)
+  const logistic_aa = logisticAASheet.map((r) => {
+    const planeDispatch = pickField(r, [
+      "plane Dispatch(within 2 months)",
+      "planned dispatch(within 2 months)",
+      "planned dispatch",
+      "plane_dispatch_within_2_months",
+      "planned_dispatch_within_2_months",
+      "plane_dispatch",
+    ]);
 
-  const dealNumber = pickField(r, ["deal number", "deal_number", "deal no", "deal"]);
+    const dealNumber = pickField(r, ["deal number", "deal_number", "deal no", "deal"]);
 
-  const onTheWay = pickField(r, [
-    "on the way to iran(within 1 month)",
-    "on_the_way_to_iran_within_1_month",
-    "on the way to iran",
-  ]);
+    const onTheWay = pickField(r, [
+      "on the way to iran(within 1 month)",
+      "on_the_way_to_iran_within_1_month",
+      "on the way to iran",
+    ]);
 
-  const customs = pickField(r, [
-    "customs(within 2 week)",
-    "customs_within_2_week",
-    "customs",
-  ]);
+    const customs = pickField(r, ["customs(within 2 week)", "customs_within_2_week", "customs"]);
 
-  return {
-    // Raw sheet values (kept for backward compatibility / countdown checks)
-    plane_dispatch_within_2_months: planeDispatch,
-    deal_number: dealNumber,
-    on_the_way_to_iran_within_1_month: onTheWay,
-    customs_within_2_week: customs,
-    // Pre-parsed { center, dealNumber, item } for each stage
-    plane_parts: splitDeal(planeDispatch, dealNumber),
-    iran_parts: splitDeal(onTheWay),
-    customs_parts: splitDeal(customs),
-  };
-});
-   // members (فقط آخرین snapshot هر گروه)
+    return {
+      // Raw sheet values (kept for backward compatibility / countdown checks)
+      plane_dispatch_within_2_months: planeDispatch,
+      deal_number: dealNumber,
+      on_the_way_to_iran_within_1_month: onTheWay,
+      customs_within_2_week: customs,
+      // Pre-parsed { center, dealNumber, item } for each stage
+      plane_parts: splitDeal(planeDispatch, dealNumber),
+      iran_parts: splitDeal(onTheWay),
+      customs_parts: splitDeal(customs),
+    };
+  });
+  // members (فقط آخرین snapshot هر گروه)
   const members = {};
   const membersByGroup = {};
   membersSheet.forEach((m, index) => {
@@ -264,17 +253,14 @@ const logistic_aa = logisticAASheet.map((r) => {
       name,
       deals: Number(m.deals || m.Deals || 0),
       offers_sent: Number(m.offers_sent || m.Offers_sent || 0),
-    sortDate,
+      sortDate,
       index,
     });
   });
 
   Object.entries(membersByGroup).forEach(([g, rows]) => {
     const maxDate = Math.max(...rows.map((r) => r.sortDate));
-    const scopedRows =
-      maxDate > 0
-        ? rows.filter((r) => r.sortDate === maxDate)
-        : rows;
+    const scopedRows = maxDate > 0 ? rows.filter((r) => r.sortDate === maxDate) : rows;
 
     const byName = {};
     scopedRows
@@ -287,7 +273,7 @@ const logistic_aa = logisticAASheet.map((r) => {
         };
       });
 
-  members[g] = Object.values(byName);
+    members[g] = Object.values(byName);
   });
 
   // latest
@@ -390,23 +376,15 @@ const logistic_aa = logisticAASheet.map((r) => {
       deal_no: r.deal_no || "",
       payment_currency: r.payment_currency || r.payment_curren || "",
       percentage:
-        parseFloat(
-          (r.percentage || "")
-            .toString()
-            .replace("%", "")
-            .replace("٪", "")
-            .trim()
-        ) || 0,
+        parseFloat((r.percentage || "").toString().replace("%", "").replace("٪", "").trim()) || 0,
     }))
     .filter((r) => r.group && r.deal_no);
 
-    // ✅ technical_queue: Owner + deal + center + subject + status
+  // ✅ technical_queue: Owner + deal + center + subject + status
   const technical_queue = techQueueSheet
     .map((r) => {
       // تو شیت ستون اسمش Owner است، اینجا به عنوان group استفاده می‌کنیم
-      const group = String(
-        r.group || r.Group || r.Owner || r.owner || ""
-      ).trim();
+      const group = String(r.group || r.Group || r.Owner || r.owner || "").trim();
 
       const deal = (r.deal || r.Deal || "").trim();
       const center = (r.center || r.Center || "").trim();
@@ -414,11 +392,12 @@ const logistic_aa = logisticAASheet.map((r) => {
       const status = (r.status || r.Status || "").trim();
 
       return {
-        group,   // در UI به عنوان Owner نمایش داده می‌شود
+        group, // در UI به عنوان Owner نمایش داده می‌شود
         deal,
         center,
         subject,
-        status,      };
+        status,
+      };
     })
     // فقط مطمئن شو شماره دیل خالی نباشه
     .filter((r) => r.deal);
@@ -433,7 +412,6 @@ const logistic_aa = logisticAASheet.map((r) => {
     }))
     .filter((r) => r.group && r.mega_deal_id);
 
-
   return {
     groups,
     weekly_reports,
@@ -444,7 +422,7 @@ const logistic_aa = logisticAASheet.map((r) => {
     history,
     ar_list,
     technical_queue,
-    mega_deals_details,   // 👈 این
+    mega_deals_details, // 👈 این
     weekly_trips_details: weekly_trips_details_latest,
     logistic_aa,
   };
@@ -465,7 +443,6 @@ export default async function handler(req, res) {
       SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
       SHEET_MEGA_DEALS_CSV_URL,
       SHEET_LOGISTIC_AA_CSV_URL,
-
     } = process.env;
 
     const fetchCSV = async (url) => {
@@ -474,17 +451,17 @@ export default async function handler(req, res) {
       if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
       return parseCSV(await r.text());
     };
-let weeklySheet = [],
-  membersSheet = [],
-  latestSheet = [],
-  groupsSheet = [],
-  dealsSheet = [],
-  ceoSheet = [],
-  arListSheet = [],
-  techQueueSheet = [],
-  megaDealsSheet = [],
-  weeklyTripsSheet = [],
-  logisticAASheet = []; // ✅ اینجا باید باشد
+    let weeklySheet = [],
+      membersSheet = [],
+      latestSheet = [],
+      groupsSheet = [],
+      dealsSheet = [],
+      ceoSheet = [],
+      arListSheet = [],
+      techQueueSheet = [],
+      megaDealsSheet = [],
+      weeklyTripsSheet = [],
+      logisticAASheet = []; // ✅ اینجا باید باشد
 
     try {
       weeklySheet = await fetchCSV(SHEET_WEEKLY_CSV_URL);
@@ -497,24 +474,26 @@ let weeklySheet = [],
       techQueueSheet = await fetchCSV(SHEET_TECH_QUEUE_CSV_URL);
       megaDealsSheet = await fetchCSV(SHEET_MEGA_DEALS_CSV_URL); // 👈 این
       weeklyTripsSheet = await fetchCSV(SHEET_WEEKLY_TRIPS_CSV_URL);
-logisticAASheet = await fetchCSV(SHEET_LOGISTIC_AA_CSV_URL);
-console.log("LOGISTIC URL:", SHEET_LOGISTIC_AA_CSV_URL);
-console.log("LOGISTIC rows:", logisticAASheet.length);
-console.log("LOGISTIC first row keys:", logisticAASheet[0] ? Object.keys(logisticAASheet[0]) : null);
-console.log("LOGISTIC first row:", logisticAASheet[0] || null);
-
+      logisticAASheet = await fetchCSV(SHEET_LOGISTIC_AA_CSV_URL);
+      console.log("LOGISTIC URL:", SHEET_LOGISTIC_AA_CSV_URL);
+      console.log("LOGISTIC rows:", logisticAASheet.length);
+      console.log(
+        "LOGISTIC first row keys:",
+        logisticAASheet[0] ? Object.keys(logisticAASheet[0]) : null,
+      );
+      console.log("LOGISTIC first row:", logisticAASheet[0] || null);
     } catch (e) {
       console.warn("CSV fetch failed — using sample.json", e);
 
       const raw = await fs.readFile(
         path.join(process.cwd(), "public", "data", "sample.json"),
-        "utf8"
+        "utf8",
       );
       const j = JSON.parse(raw);
 
       weeklySheet = j.weekly_reports || [];
       membersSheet = Object.entries(j.members || {}).flatMap(([g, arr]) =>
-        arr.map((m) => ({ group: g, ...m }))
+        arr.map((m) => ({ group: g, ...m })),
       );
       latestSheet = Object.entries(j.latest || {}).map(([g, d]) => ({
         group: g,
@@ -531,19 +510,18 @@ console.log("LOGISTIC first row:", logisticAASheet[0] || null);
     }
 
     const payload = mapSheetsToPayload({
-  weeklySheet,
-  membersSheet,
-  latestSheet,
-  groupsSheet,
-  dealsSheet,
-  ceoSheet,
-  arListSheet,
-  techQueueSheet,
-  megaDealsSheet,
-  weeklyTripsSheet, // ✅ اضافه شد
-  logisticAASheet, // ✅ حتماً این هم باشه
-
-});
+      weeklySheet,
+      membersSheet,
+      latestSheet,
+      groupsSheet,
+      dealsSheet,
+      ceoSheet,
+      arListSheet,
+      techQueueSheet,
+      megaDealsSheet,
+      weeklyTripsSheet, // ✅ اضافه شد
+      logisticAASheet, // ✅ حتماً این هم باشه
+    });
 
     res.status(200).json(payload);
   } catch (err) {

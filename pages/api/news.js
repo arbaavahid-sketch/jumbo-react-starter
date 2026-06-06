@@ -55,7 +55,7 @@ export default async function handler(req, res) {
           console.error("RSS error for", src.id, e);
           return [];
         }
-      })
+      }),
     );
 
     // همه خبرها در یک آرایه

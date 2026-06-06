@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   ];
 
   const url = `http://api.navasan.tech/latest/?api_key=${encodeURIComponent(
-    key
+    key,
   )}&item=${itemList.join(",")}`;
 
   try {

@@ -68,7 +68,6 @@ export default function ARListTable({ rows = [] }) {
   return (
     <div
       style={{
-        
         borderRadius: 18,
         background: "linear-gradient(135deg, #e3f2ff, #f8fafc)",
         padding: 1,
@@ -104,24 +103,22 @@ export default function ARListTable({ rows = [] }) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
             {/* ✅ THEAD STICKY */}
             <thead
-  style={{
-    position: "sticky",
-    top: 0,
-    zIndex: 2,
-    background: "#e8f1ff",
-  }}
->
-
+              style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 2,
+                background: "#e8f1ff",
+              }}
+            >
               <tr>
                 <th
                   style={{
                     padding: "8px 12px",
                     textAlign: "left",
                     background: "#e8f1ff",
-color: "#0f172a",
-fontWeight: 700,
-borderBottom: "1px solid rgba(148,163,184,0.45)",
-
+                    color: "#0f172a",
+                    fontWeight: 700,
+                    borderBottom: "1px solid rgba(148,163,184,0.45)",
                   }}
                 >
                   Deal No
@@ -131,10 +128,9 @@ borderBottom: "1px solid rgba(148,163,184,0.45)",
                     padding: "8px 12px",
                     textAlign: "left",
                     background: "#e8f1ff",
-color: "#0f172a",
-fontWeight: 700,
-borderBottom: "1px solid rgba(148,163,184,0.45)",
-
+                    color: "#0f172a",
+                    fontWeight: 700,
+                    borderBottom: "1px solid rgba(148,163,184,0.45)",
                   }}
                 >
                   Payment Currency
@@ -144,10 +140,9 @@ borderBottom: "1px solid rgba(148,163,184,0.45)",
                     padding: "8px 12px",
                     textAlign: "right",
                     background: "#e8f1ff",
-color: "#0f172a",
-fontWeight: 700,
-borderBottom: "1px solid rgba(148,163,184,0.45)",
-
+                    color: "#0f172a",
+                    fontWeight: 700,
+                    borderBottom: "1px solid rgba(148,163,184,0.45)",
                   }}
                 >
                   % of Total

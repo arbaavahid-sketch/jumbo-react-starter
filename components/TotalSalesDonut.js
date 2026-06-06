@@ -1,11 +1,5 @@
 // components/TotalSalesDonut.js
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts";
 
 const COLORS = ["#2563eb", "#f97316", "#22c55e"]; // A, B, C
 
@@ -25,10 +19,8 @@ export default function TotalSalesDonut({
         style={{
           borderRadius: 18,
           padding: 16,
-          background:
-            "radial-gradient(circle at top left, rgba(59,130,246,0.05), #f9fafb)",
-          boxShadow:
-            "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
+          background: "radial-gradient(circle at top left, rgba(59,130,246,0.05), #f9fafb)",
+          boxShadow: "0 16px 40px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.18)",
         }}
       >
         <div
@@ -48,14 +40,7 @@ export default function TotalSalesDonut({
     );
   }
 
-  const renderLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-  }) => {
+  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
     if (!percent || percent <= 0) return null;
     const RAD = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.65;
@@ -63,8 +48,7 @@ export default function TotalSalesDonut({
     const y = cy + radius * Math.sin(-midAngle * RAD);
 
     const pct = percent * 100;
-    const text =
-      pct < 1 ? "<1" : pct < 5 ? pct.toFixed(1) : pct.toFixed(1); // زیر ۱٪ رو "<1" می‌نویسیم
+    const text = pct < 1 ? "<1" : pct < 5 ? pct.toFixed(1) : pct.toFixed(1); // زیر ۱٪ رو "<1" می‌نویسیم
 
     return (
       <text
@@ -86,10 +70,8 @@ export default function TotalSalesDonut({
       style={{
         borderRadius: 18,
         padding: 16,
-        background:
-          "radial-gradient(circle at top left, rgba(59,130,246,0.05), #f9fafb)",
-        boxShadow:
-          "0 16px 40px rgba(15,23,42,0.1), 0 0 0 1px rgba(148,163,184,0.2)",
+        background: "radial-gradient(circle at top left, rgba(59,130,246,0.05), #f9fafb)",
+        boxShadow: "0 16px 40px rgba(15,23,42,0.1), 0 0 0 1px rgba(148,163,184,0.2)",
       }}
     >
       <div
@@ -133,10 +115,7 @@ export default function TotalSalesDonut({
               strokeWidth={2}
             >
               {data.map((entry, idx) => (
-                <Cell
-                  key={`cell-${idx}`}
-                  fill={COLORS[idx % COLORS.length]}
-                />
+                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
               ))}
             </Pie>
             <Legend

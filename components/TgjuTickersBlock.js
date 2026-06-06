@@ -33,10 +33,8 @@ export default function TgjuTickersBlock() {
           position: "relative",
           borderRadius: 18,
           padding: "8px 14px 6px",
-          background:
-            "radial-gradient(circle at top left, rgba(37,99,235,0.06), #f9fafb)",
-          boxShadow:
-            "0 18px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.16)",
+          background: "radial-gradient(circle at top left, rgba(37,99,235,0.06), #f9fafb)",
+          boxShadow: "0 18px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.16)",
           overflow: "hidden",
           // اگر می‌خوای کل ردیف رو بگیره، این خط رو بردار:
           // maxWidth: 1000,
@@ -50,8 +48,7 @@ export default function TgjuTickersBlock() {
             insetInline: 0,
             top: 0,
             height: 3,
-            background:
-              "linear-gradient(90deg, rgba(59,130,246,0.95), rgba(45,212,191,0.95))",
+            background: "linear-gradient(90deg, rgba(59,130,246,0.95), rgba(45,212,191,0.95))",
           }}
         />
 
@@ -80,8 +77,7 @@ export default function TgjuTickersBlock() {
                 fontWeight: 700,
                 color: "#0f172a",
               }}
-            >
-            </span>
+            ></span>
           </div>
 
           <span

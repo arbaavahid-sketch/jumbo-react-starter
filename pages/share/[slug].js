@@ -17,9 +17,16 @@ import TgjuTickersBlock from "../../components/TgjuTickersBlock";
 import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
 
-import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from "recharts";
-
-
+import {
+  ResponsiveContainer,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Bar,
+} from "recharts";
 
 import {
   FiTrendingUp,
@@ -65,7 +72,6 @@ const fmtEUR = (n) => {
   }).format(n);
 };
 
-
 const toStr = (v) => (v == null ? "" : String(v));
 const ensureArray = (v) => (Array.isArray(v) ? v : []);
 const dateSortValue = (input) => {
@@ -73,7 +79,10 @@ const dateSortValue = (input) => {
   if (!raw) return 0;
 
   const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
-  const parts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+  const parts = normalized
+    .split("/")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
   if (parts.length === 3) {
     let year;
@@ -105,7 +114,7 @@ function lastTwo(weekly, groupKey) {
     .sort(
       (a, b) =>
         dateSortValue(a.date) - dateSortValue(b.date) ||
-        String(a.week).localeCompare(String(b.week))
+        String(a.week).localeCompare(String(b.week)),
     );
 
   const n = rows.length;
@@ -234,7 +243,11 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
 }
 
 function PublicGroupDashboard({ groupKey }) {
-  const { data: raw, error, isLoading } = useSWR("/api/data", fetcher, {
+  const {
+    data: raw,
+    error,
+    isLoading,
+  } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
@@ -284,7 +297,10 @@ function PublicGroupDashboard({ groupKey }) {
   const latest = latestMap[groupKey] || {};
   const { prev, curr } = lastTwo(weekly, groupKey);
 
-  const normDate = (s) => String(s || "").trim().replace(/\//g, "-");
+  const normDate = (s) =>
+    String(s || "")
+      .trim()
+      .replace(/\//g, "-");
 
   const currTrips = (() => {
     const currTripsCount = Number(curr?.weekly_trips || 0);
@@ -298,16 +314,12 @@ function PublicGroupDashboard({ groupKey }) {
   let momLink = toStr(latest.mom || "").trim();
   if (!momLink) {
     const rowsWithMom = weekly
-      .filter(
-        (r) =>
-          toStr(r.group).toUpperCase() === groupKey &&
-          toStr(r.mom || "").trim() !== ""
-      )
+      .filter((r) => toStr(r.group).toUpperCase() === groupKey && toStr(r.mom || "").trim() !== "")
       .slice()
       .sort(
         (a, b) =>
           dateSortValue(a.date) - dateSortValue(b.date) ||
-          String(a.week).localeCompare(String(b.week))
+          String(a.week).localeCompare(String(b.week)),
       );
     if (rowsWithMom.length) momLink = toStr(rowsWithMom[rowsWithMom.length - 1].mom || "").trim();
   }
@@ -336,10 +348,13 @@ function PublicGroupDashboard({ groupKey }) {
   });
 
   return (
-     <main className="container">
+    <main className="container">
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content={`KPIs, members and weekly deals for group ${groupKey}.`} />
+        <meta
+          name="description"
+          content={`KPIs, members and weekly deals for group ${groupKey}.`}
+        />
       </Head>
 
       {/* Header */}
@@ -380,144 +395,144 @@ function PublicGroupDashboard({ groupKey }) {
         </section>
       )}
 
-      <section className="section kpi-section" style={{ marginTop: 8, marginBottom: 0, paddingBottom: 0 }}>
-  {/* KPI grid: 2 rows (4x2) */}
-    <div className="dashboard-kpi-grid">
-              <StatCard
-                label="Total Sales (2025)"
-                value={fmtEUR(latest?.total_sales_eur)}
-                delta={deltas.total_sales_eur}
-                Icon={FiTrendingUp}
-                accent="#0ea5e9"
-              />
+      <section
+        className="section kpi-section"
+        style={{ marginTop: 8, marginBottom: 0, paddingBottom: 0 }}
+      >
+        {/* KPI grid: 2 rows (4x2) */}
+        <div className="dashboard-kpi-grid">
+          <StatCard
+            label="Total Sales (2025)"
+            value={fmtEUR(latest?.total_sales_eur)}
+            delta={deltas.total_sales_eur}
+            Icon={FiTrendingUp}
+            accent="#0ea5e9"
+          />
 
-              <StatCard
-                label="Offers Sent"
-                value={latest?.offers_sent ?? 0}
-                delta={deltas.offers_sent}
-                Icon={FiSend}
-                accent="#6366f1"
-              />
+          <StatCard
+            label="Offers Sent"
+            value={latest?.offers_sent ?? 0}
+            delta={deltas.offers_sent}
+            Icon={FiSend}
+            accent="#6366f1"
+          />
 
-              <StatCard
-                label="Total Deals in Sales process"
-                value={curr?.in_sales_process ?? 0}
-                delta={deltas.in_sales_process}
-                Icon={FiShoppingBag}
-                accent="#f97316"
-              />
+          <StatCard
+            label="Total Deals in Sales process"
+            value={curr?.in_sales_process ?? 0}
+            delta={deltas.in_sales_process}
+            Icon={FiShoppingBag}
+            accent="#f97316"
+          />
 
-              <StatCard
-                label="Deals in Supply process"
-                value={curr?.in_supply ?? 0}
-                delta={deltas.in_supply}
-                Icon={FiTruck}
-                accent="#22c55e"
-              />
+          <StatCard
+            label="Deals in Supply process"
+            value={curr?.in_supply ?? 0}
+            delta={deltas.in_supply}
+            Icon={FiTruck}
+            accent="#22c55e"
+          />
 
-              <StatCard
-                label="Deals in Technical process"
-                value={curr?.in_technical ?? 0}
-                delta={deltas.in_technical}
-                Icon={FiActivity}
-                accent="#ec4899"
-              />
+          <StatCard
+            label="Deals in Technical process"
+            value={curr?.in_technical ?? 0}
+            delta={deltas.in_technical}
+            Icon={FiActivity}
+            accent="#ec4899"
+          />
 
-              <StatCard
-                label="Mega Projects"
-                value={latest?.mega_deals ?? 0}
-                delta={deltas.mega_deals}
-                accent="#eab308"
-                actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
-              />
+          <StatCard
+            label="Mega Projects"
+            value={latest?.mega_deals ?? 0}
+            delta={deltas.mega_deals}
+            accent="#eab308"
+            actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
+          />
 
-              <StatCard
-                label="Last Group Meeting"
-                value={latest?.last_meeting || "-"}
-                accent="#3b82f6"
-                actionIcon={
-                  momLink ? (
-                    <a
-                      href={momLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="مشاهده لینک جلسه (MOM)"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 999,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "rgba(59,130,246,0.12)",
-                        color: "#3b82f6",
-                        boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-                        textDecoration: "none",
-                      }}
-                    >
-                      <FiLink size={16} />
-                    </a>
-                  ) : (
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 999,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "rgba(15,23,42,0.06)",
-                        color: "#3b82f6",
-                        boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-                      }}
-                    >
-                      <FiCalendar size={16} />
-                    </div>
-                  )
-                }
-              />
+          <StatCard
+            label="Last Group Meeting"
+            value={latest?.last_meeting || "-"}
+            accent="#3b82f6"
+            actionIcon={
+              momLink ? (
+                <a
+                  href={momLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="مشاهده لینک جلسه (MOM)"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(59,130,246,0.12)",
+                    color: "#3b82f6",
+                    boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                    textDecoration: "none",
+                  }}
+                >
+                  <FiLink size={16} />
+                </a>
+              ) : (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(15,23,42,0.06)",
+                    color: "#3b82f6",
+                    boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                  }}
+                >
+                  <FiCalendar size={16} />
+                </div>
+              )
+            }
+          />
 
-              <StatCard
-                label="Weekly Trips"
-                value={latest?.weekly_trips ?? 0}
-                delta={deltas.weekly_trips}
-                accent="#0d9488"
-                actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
-              />
-            </div>
-          {/* Charts row: same height */}
-    <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
-    <div style={{ height: 320 }}>
-      <GroupSalesBars data={salesBarData} />
-    </div>
+          <StatCard
+            label="Weekly Trips"
+            value={latest?.weekly_trips ?? 0}
+            delta={deltas.weekly_trips}
+            accent="#0d9488"
+            actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
+          />
+        </div>
+        {/* Charts row: same height */}
+        <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
+          <div style={{ height: 320 }}>
+            <GroupSalesBars data={salesBarData} />
+          </div>
 
-    <div style={{ height: 320 }}>
-      <MembersHistoryChart rows={members[groupKey] || []} />
-    </div>
-  </div>
-</section>
+          <div style={{ height: 320 }}>
+            <MembersHistoryChart rows={members[groupKey] || []} />
+          </div>
+        </div>
+      </section>
 
       <section className="section" style={{ marginTop: 14, paddingTop: 0 }}>
-  {/* Row 1: Deal Exec + AR (same size) */}
-    <div className="dashboard-two-col-grid">
-    <div style={{ height: 360 }}>
-      <DealsExecTable rows={dealsForGroup} />
-    </div>
+        {/* Row 1: Deal Exec + AR (same size) */}
+        <div className="dashboard-two-col-grid">
+          <div style={{ height: 360 }}>
+            <DealsExecTable rows={dealsForGroup} />
+          </div>
 
-    <div style={{ height: 360 }}>
-      <ARListTable rows={arForGroup} />
-    </div>
-    <div style={{ marginTop: 14 }}>
-</div>
+          <div style={{ height: 360 }}>
+            <ARListTable rows={arForGroup} />
+          </div>
+          <div style={{ marginTop: 14 }}></div>
+        </div>
 
-  </div>
-
-  {/* Row 2: Logistic AA full width */}
-  <div style={{ marginTop: 0 }}>
-     <LogisticAATable rows={ensureArray(raw.logistic_aa)} datasetDate={curr?.date || ""} />
-  </div>
-</section>
-
+        {/* Row 2: Logistic AA full width */}
+        <div style={{ marginTop: 0 }}>
+          <LogisticAATable rows={ensureArray(raw.logistic_aa)} datasetDate={curr?.date || ""} />
+        </div>
+      </section>
 
       {/* Bloomberg News */}
       <section className="section">
@@ -630,13 +645,39 @@ function PublicTechnicalDashboard() {
           }}
         >
           <TechCard icon={<FiCalendar />} label="Date of Publish" value={t.date} />
-          <TechCard icon={<FiPlusCircle />} label="Deals added this week" value={t.deals_added_technical} />
-          <TechCard icon={<FiCheckCircle />} label="Total deals done (week)" value={t.total_deals_week} />
-          <TechCard icon={<FiList />} label="Technical Approval Queue" value={t.remaining_queue} delta={deltas.queue} />
-          <TechCard icon={<FiTruck />} label="Waiting for Installation" value={t.waiting_installation} delta={deltas.waiting} />
-          <TechCard icon={<FiBriefcase />} label="Promotion trips / meetings" value={t.promotion_trips} />
+          <TechCard
+            icon={<FiPlusCircle />}
+            label="Deals added this week"
+            value={t.deals_added_technical}
+          />
+          <TechCard
+            icon={<FiCheckCircle />}
+            label="Total deals done (week)"
+            value={t.total_deals_week}
+          />
+          <TechCard
+            icon={<FiList />}
+            label="Technical Approval Queue"
+            value={t.remaining_queue}
+            delta={deltas.queue}
+          />
+          <TechCard
+            icon={<FiTruck />}
+            label="Waiting for Installation"
+            value={t.waiting_installation}
+            delta={deltas.waiting}
+          />
+          <TechCard
+            icon={<FiBriefcase />}
+            label="Promotion trips / meetings"
+            value={t.promotion_trips}
+          />
           <TechCard icon={<FiCamera />} label="Demo shows (quarterly)" value={t.demo_shows} />
-          <TechCard icon={<FiBookOpen />} label="Internal trainings (quarterly)" value={t.internal_trainings} />
+          <TechCard
+            icon={<FiBookOpen />}
+            label="Internal trainings (quarterly)"
+            value={t.internal_trainings}
+          />
           <TechCard icon={<FiLink />} label="MOM link" value="Open" link={t.mom_link} />
         </div>
 
@@ -678,8 +719,20 @@ function PublicTechnicalDashboard() {
                   }}
                 />
                 <Legend />
-                <Bar dataKey="weeklyDeals" name="Deals this week" fill="#38bdf8" radius={[6, 6, 0, 0]} barSize={38} />
-                <Bar dataKey="totalDeals" name="Total deals" fill="#0f766e" radius={[6, 6, 0, 0]} barSize={38} />
+                <Bar
+                  dataKey="weeklyDeals"
+                  name="Deals this week"
+                  fill="#38bdf8"
+                  radius={[6, 6, 0, 0]}
+                  barSize={38}
+                />
+                <Bar
+                  dataKey="totalDeals"
+                  name="Total deals"
+                  fill="#0f766e"
+                  radius={[6, 6, 0, 0]}
+                  barSize={38}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -724,22 +777,71 @@ function PublicTechnicalDashboard() {
                 overflowX: "auto",
               }}
             >
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 600 }}>
+              <table
+                style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 600 }}
+              >
                 <thead>
-                  <tr style={{ background: "linear-gradient(135deg,rgba(0,95,158,0.12),rgba(0,184,148,0.12))" }}>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#0f172a", borderBottom: "1px solid rgba(148,163,184,0.6)", whiteSpace: "nowrap" }}>
+                  <tr
+                    style={{
+                      background:
+                        "linear-gradient(135deg,rgba(0,95,158,0.12),rgba(0,184,148,0.12))",
+                    }}
+                  >
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       Owner
                     </th>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#0f172a", borderBottom: "1px solid rgba(148,163,184,0.6)" }}>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
+                      }}
+                    >
                       Deal
                     </th>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#0f172a", borderBottom: "1px solid rgba(148,163,184,0.6)" }}>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
+                      }}
+                    >
                       Center
                     </th>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#0f172a", borderBottom: "1px solid rgba(148,163,184,0.6)" }}>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
+                      }}
+                    >
                       Subject
                     </th>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#0f172a", borderBottom: "1px solid rgba(148,163,184,0.6)", whiteSpace: "nowrap" }}>
+                    <th
+                      style={{
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        borderBottom: "1px solid rgba(148,163,184,0.6)",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       Status
                     </th>
                   </tr>
@@ -747,19 +849,68 @@ function PublicTechnicalDashboard() {
                 <tbody>
                   {techQueue.map((row, idx) => (
                     <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
-                      <td style={{ padding: "7px 10px", borderBottom: idx === techQueue.length - 1 ? "none" : "1px solid rgba(226,232,240,0.9)", fontWeight: 600, color: "#111827", whiteSpace: "nowrap" }}>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          fontWeight: 600,
+                          color: "#111827",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {row.group}
                       </td>
-                      <td style={{ padding: "7px 10px", borderBottom: idx === techQueue.length - 1 ? "none" : "1px solid rgba(226,232,240,0.9)", color: "#111827", fontWeight: 500 }}>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: "#111827",
+                          fontWeight: 500,
+                        }}
+                      >
                         {row.deal}
                       </td>
-                      <td style={{ padding: "7px 10px", borderBottom: idx === techQueue.length - 1 ? "none" : "1px solid rgba(226,232,240,0.9)", color: "#374151" }}>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: "#374151",
+                        }}
+                      >
                         {row.center || "—"}
                       </td>
-                      <td style={{ padding: "7px 10px", borderBottom: idx === techQueue.length - 1 ? "none" : "1px solid rgba(226,232,240,0.9)", color: "#374151" }}>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: "#374151",
+                        }}
+                      >
                         {row.subject || "—"}
                       </td>
-                      <td style={{ padding: "7px 10px", borderBottom: idx === techQueue.length - 1 ? "none" : "1px solid rgba(226,232,240,0.9)", color: row.status ? "#0f766e" : "#9ca3af", whiteSpace: "nowrap" }}>
+                      <td
+                        style={{
+                          padding: "7px 10px",
+                          borderBottom:
+                            idx === techQueue.length - 1
+                              ? "none"
+                              : "1px solid rgba(226,232,240,0.9)",
+                          color: row.status ? "#0f766e" : "#9ca3af",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {row.status || "In process"}
                       </td>
                     </tr>
@@ -788,18 +939,57 @@ function PublicTechnicalDashboard() {
       </Head>
 
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, gap: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: 20,
+            gap: 16,
+          }}
+        >
           <div>
-            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", color: "#005F9E" }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 26,
+                fontWeight: 800,
+                letterSpacing: "0.10em",
+                textTransform: "uppercase",
+                color: "#005F9E",
+              }}
+            >
               Technical Dashboard
             </h1>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-            <div style={{ padding: 10, borderRadius: 18, background: "#ffffff", border: "1px solid rgba(148,163,184,0.35)", boxShadow: "0 10px 25px rgba(15,23,42,0.08)" }}>
-              <img src="/company-logo.png" style={{ width: 150, height: 70, objectFit: "contain" }} alt="Company logo" />
+            <div
+              style={{
+                padding: 10,
+                borderRadius: 18,
+                background: "#ffffff",
+                border: "1px solid rgba(148,163,184,0.35)",
+                boxShadow: "0 10px 25px rgba(15,23,42,0.08)",
+              }}
+            >
+              <img
+                src="/company-logo.png"
+                style={{ width: 150, height: 70, objectFit: "contain" }}
+                alt="Company logo"
+              />
             </div>
-            <div style={{ fontSize: 12, padding: "4px 14px", borderRadius: 999, background: "#ffffff", border: "1px solid rgba(148,163,184,0.4)", boxShadow: "0 8px 20px rgba(15,23,42,0.06)", color: "#005F9E" }}>
+            <div
+              style={{
+                fontSize: 12,
+                padding: "4px 14px",
+                borderRadius: 999,
+                background: "#ffffff",
+                border: "1px solid rgba(148,163,184,0.4)",
+                boxShadow: "0 8px 20px rgba(15,23,42,0.06)",
+                color: "#005F9E",
+              }}
+            >
               <LiveClock />
             </div>
           </div>
@@ -842,12 +1032,27 @@ function TechCard({ icon, label, value, link, delta }) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ fontSize: 22, color: "#005F9E" }}>{icon}</span>
-        <span style={{ fontSize: 11, color: "#6b7280", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+        <span
+          style={{
+            fontSize: 11,
+            color: "#6b7280",
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+          }}
+        >
           {label}
         </span>
       </div>
 
-      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+      <div
+        style={{
+          marginTop: 10,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 4,
+        }}
+      >
         <span style={{ fontSize: 22, fontWeight: 700, color: "#0f172a" }}>
           {hasLink ? (
             link ? (
@@ -872,7 +1077,7 @@ function TechCard({ icon, label, value, link, delta }) {
               "-"
             )
           ) : (
-            value ?? 0
+            (value ?? 0)
           )}
         </span>
 
@@ -947,7 +1152,12 @@ function MegaDealsIcon({ deals }) {
               <div style={{ fontSize: 13, fontWeight: 800 }}>Mega Deals</div>
               <button
                 onClick={() => setOpen(false)}
-                style={{ border: "none", background: "transparent", fontSize: 20, cursor: "pointer" }}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: 20,
+                  cursor: "pointer",
+                }}
                 aria-label="Close"
               >
                 ×
@@ -957,11 +1167,30 @@ function MegaDealsIcon({ deals }) {
             {!deals || deals.length === 0 ? (
               <div style={{ fontSize: 12, color: "#6b7280" }}>No Mega Deals</div>
             ) : (
-              <ul style={{ margin: 0, padding: 0, listStyle: "none", maxHeight: 280, overflowY: "auto" }}>
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  maxHeight: 280,
+                  overflowY: "auto",
+                }}
+              >
                 {deals.map((d, i) => (
                   <li key={i} style={{ padding: "8px 6px", borderBottom: "1px solid #e5e7eb" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>{i + 1}. {d.project_name}</div>
-                    <div style={{ fontSize: 11, color: "#6b7280", display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>
+                      {i + 1}. {d.project_name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b7280",
+                        display: "flex",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginTop: 4,
+                      }}
+                    >
                       <span>ID: {d.mega_deal_id}</span>
                       <span>Owner: {d.owner}</span>
                       <span>Date: {d.date || "-"}</span>
@@ -1051,15 +1280,31 @@ function WeeklyTripsIcon({ trips, currDate }) {
               overflow: "hidden",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+                gap: 12,
+              }}
+            >
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <div style={{ fontSize: 13, fontWeight: 800 }}>Weekly Trips Details</div>
-                {currDate ? <div style={{ fontSize: 11, color: "#64748b" }}>Week Date: {currDate}</div> : null}
+                {currDate ? (
+                  <div style={{ fontSize: 11, color: "#64748b" }}>Week Date: {currDate}</div>
+                ) : null}
               </div>
 
               <button
                 onClick={() => setOpen(false)}
-                style={{ border: "none", background: "transparent", fontSize: 20, cursor: "pointer", lineHeight: 1 }}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: 20,
+                  cursor: "pointer",
+                  lineHeight: 1,
+                }}
                 aria-label="Close"
               >
                 ×
@@ -1083,7 +1328,16 @@ function WeeklyTripsIcon({ trips, currDate }) {
                       <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a" }}>
                         {i + 1}. {t.company_name || "—"}
                       </div>
-                      <div style={{ fontSize: 11, color: "#6b7280", display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#6b7280",
+                          display: "flex",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginTop: 4,
+                        }}
+                      >
                         {t.date ? <span>Date: {t.date}</span> : null}
                         {t.owner ? <span>Owner: {t.owner}</span> : null}
                       </div>
@@ -1101,7 +1355,9 @@ function WeeklyTripsIcon({ trips, currDate }) {
 
 // ---------- Default Export Wrapper ----------
 export default function PublicSharePage(props) {
-  const normalizedKey = String(props?.groupKey || "").trim().toUpperCase();
+  const normalizedKey = String(props?.groupKey || "")
+    .trim()
+    .toUpperCase();
 
   if (normalizedKey === "TECHNICAL") return <PublicTechnicalDashboard />;
   if (normalizedKey === "SUPPLY") return <SupplyDashboard />;

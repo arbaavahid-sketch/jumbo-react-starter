@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 export default function DealsExecTable({ rows = [] }) {
   // مرتب‌سازی از بزرگ به کوچک
   const sortedRows = [...rows].sort(
-    (a, b) => Number(b.amount_eur || 0) - Number(a.amount_eur || 0)
+    (a, b) => Number(b.amount_eur || 0) - Number(a.amount_eur || 0),
   );
 
   const scrollRef = useRef(null);
@@ -75,8 +75,7 @@ export default function DealsExecTable({ rows = [] }) {
         background: "linear-gradient(135deg, #e3f2ff, #f8fafc)",
         borderRadius: 18,
         padding: 1,
-        boxShadow:
-          "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
+        boxShadow: "0 16px 40px rgba(15,23,42,0.10), 0 0 0 1px rgba(148,163,184,0.25)",
       }}
     >
       <div
@@ -94,8 +93,7 @@ export default function DealsExecTable({ rows = [] }) {
             fontWeight: 800,
             letterSpacing: "0.08em",
             textTransform: "uppercase",
-            background:
-              "linear-gradient(90deg, rgba(96,120,150,0.55), rgba(119,165,255,0.55))",
+            background: "linear-gradient(90deg, rgba(96,120,150,0.55), rgba(119,165,255,0.55))",
             color: "#ffffff",
             borderBottom: "1px solid rgba(15,23,42,0.15)",
           }}
@@ -129,15 +127,9 @@ export default function DealsExecTable({ rows = [] }) {
             >
               <tr>
                 <th style={{ padding: "8px 12px", textAlign: "left" }}>Deal</th>
-                <th style={{ padding: "8px 12px", textAlign: "left" }}>
-                  Responsible
-                </th>
-                <th style={{ padding: "8px 12px", textAlign: "left" }}>
-                  Status
-                </th>
-                <th style={{ padding: "8px 12px", textAlign: "right" }}>
-                  Amount (€)
-                </th>
+                <th style={{ padding: "8px 12px", textAlign: "left" }}>Responsible</th>
+                <th style={{ padding: "8px 12px", textAlign: "left" }}>Status</th>
+                <th style={{ padding: "8px 12px", textAlign: "right" }}>Amount (€)</th>
               </tr>
             </thead>
 
@@ -161,8 +153,7 @@ export default function DealsExecTable({ rows = [] }) {
                   <tr
                     key={idx}
                     style={{
-                      background:
-                        idx % 2 === 0 ? "#ffffff" : "rgba(226,232,240,0.4)",
+                      background: idx % 2 === 0 ? "#ffffff" : "rgba(226,232,240,0.4)",
                     }}
                   >
                     <td
