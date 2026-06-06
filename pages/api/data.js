@@ -1,6 +1,7 @@
 // pages/api/data.js
 import fs from "fs/promises";
 import path from "path";
+import { splitDeal } from "../../lib/logistic";
 function dateSortValue(input) {
   const raw = String(input || "").trim();
   if (!raw) return 0;
@@ -222,19 +223,28 @@ const logistic_aa = logisticAASheet.map((r) => {
 
   const dealNumber = pickField(r, ["deal number", "deal_number", "deal no", "deal"]);
 
+  const onTheWay = pickField(r, [
+    "on the way to iran(within 1 month)",
+    "on_the_way_to_iran_within_1_month",
+    "on the way to iran",
+  ]);
+
+  const customs = pickField(r, [
+    "customs(within 2 week)",
+    "customs_within_2_week",
+    "customs",
+  ]);
+
   return {
+    // Raw sheet values (kept for backward compatibility / countdown checks)
     plane_dispatch_within_2_months: planeDispatch,
     deal_number: dealNumber,
-    on_the_way_to_iran_within_1_month: pickField(r, [
-      "on the way to iran(within 1 month)",
-      "on_the_way_to_iran_within_1_month",
-      "on the way to iran",
-    ]),
-    customs_within_2_week: pickField(r, [
-      "customs(within 2 week)",
-      "customs_within_2_week",
-      "customs",
-    ]),
+    on_the_way_to_iran_within_1_month: onTheWay,
+    customs_within_2_week: customs,
+    // Pre-parsed { center, dealNumber, item } for each stage
+    plane_parts: splitDeal(planeDispatch, dealNumber),
+    iran_parts: splitDeal(onTheWay),
+    customs_parts: splitDeal(customs),
   };
 });
    // members (فقط آخرین snapshot هر گروه)

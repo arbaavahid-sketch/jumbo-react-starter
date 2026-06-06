@@ -1,58 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import { splitDeal, hasMeaningful } from "../lib/logistic";
 
 const pretty = (s) =>
   String(s || "")
     .trim()
     .replace(/\s*,\s*/g, "\n");
 
-// Splits a logistic cell into its three parts: center / deal number / item.
-// Two supported input styles:
-//   1) Slash-separated (recommended): "Center / Deal / Item"
-//        "Russia Truck 16/8089/Chromatec" -> center, deal=8089, item=Chromatec
-//        Leave the middle empty when there is no deal number: "Center//Item"
-//   2) Legacy single slash with number+item glued together:
-//        "Dubai Truck 1/7866GOLVES" -> center, deal=7866, item=GOLVES
-const splitDeal = (value, fallbackDealNumber = "") => {
-  const raw = String(value || "").trim();
-  const fallback = String(fallbackDealNumber || "").trim();
-  if (!raw) return { center: "", dealNumber: fallback, goods: "" };
-
-  const seg = raw.split("/").map((s) => s.trim());
-
-  // Style 1: explicit parts separated by slashes (Center / Deal / Item...)
-  if (seg.length >= 3) {
-    return {
-      center: seg[0],
-      dealNumber: seg[1] || fallback,
-      goods: seg.slice(2).filter(Boolean).join(" / "),
-    };
-  }
-
-  // Style 2: one slash -> peel the leading number off "DealNumberItem"
-  if (seg.length === 2) {
-    const center = seg[0];
-    const rest = seg[1];
-    const match = rest.match(/^(\d+(?:-\d+)?)\s*(.*)$/);
-    if (match) {
-      return { center, dealNumber: match[1] || fallback, goods: match[2].trim() };
-    }
-    return { center, dealNumber: fallback, goods: rest };
-  }
-
-  // No slash at all
-  return { center: seg[0], dealNumber: fallback, goods: "" };
-};
-
 const DAY_MS = 24 * 60 * 60 * 1000;
 const LIMIT_DAYS = {
   plane: 60,
   iran: 30,
   customs: 14,
-};
-
-const hasMeaningful = (v) => {
-  const s = String(v || "").trim();
-  return Boolean(s) && s !== "-";
 };
 
 const displayOrBlank = (v) => {
@@ -266,17 +224,20 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
                   const stages = [
                     {
                       key: "plane",
-                      parts: splitDeal(row.plane_dispatch_within_2_months, row.deal_number),
+                      parts:
+                        row.plane_parts ||
+                        splitDeal(row.plane_dispatch_within_2_months, row.deal_number),
                       st: status.plane || {},
                     },
                     {
                       key: "iran",
-                      parts: splitDeal(row.on_the_way_to_iran_within_1_month),
+                      parts:
+                        row.iran_parts || splitDeal(row.on_the_way_to_iran_within_1_month),
                       st: status.iran || {},
                     },
                     {
                       key: "customs",
-                      parts: splitDeal(row.customs_within_2_week),
+                      parts: row.customs_parts || splitDeal(row.customs_within_2_week),
                       st: status.customs || {},
                     },
                   ];
@@ -288,7 +249,7 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
                         const fields = [
                           { label: "Center", value: parts.center },
                           { label: "Deal No.", value: parts.dealNumber },
-                          { label: "Item", value: parts.goods },
+                          { label: "Item", value: parts.item },
                         ].filter((f) => displayOrBlank(f.value));
 
                         return (
