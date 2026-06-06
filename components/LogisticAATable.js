@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { splitDeal, hasMeaningful } from "../lib/logistic";
+import { splitDeal, hasMeaningful, dealKey } from "../lib/logistic";
 
 const pretty = (s) =>
   String(s || "")
@@ -62,6 +62,36 @@ const toUtcStartOfDayTs = (input) => {
 
   const d = new Date(parsed);
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+};
+
+// --- Per-deal countdown anchoring (localStorage) ---------------------------
+// Each deal's countdown starts the first time we see its (stage + content) key
+// and is remembered in the browser. Editing the sheet weekly therefore only
+// restarts the deals whose content changed; the rest keep their original date.
+const LEDGER_KEY = "logisticAA:firstSeenV1";
+
+const startOfTodayTs = () => {
+  const d = new Date();
+  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+};
+
+const loadLedger = () => {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(LEDGER_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveLedger = (ledger) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+  } catch {
+    /* ignore quota / private-mode write errors */
+  }
 };
 
 const buildCountdown = (isActive, now, limitDays, baselineTs) => {
@@ -156,19 +186,43 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
 
   useEffect(() => {
     const now = clockTick;
+    const today = startOfTodayTs();
+    // datasetDate is only a last-resort fallback now; each deal is anchored
+    // individually below.
     const datasetStartTs = toUtcStartOfDayTs(datasetDate);
+
+    const ledger = loadLedger();
+    const nextLedger = {};
     const nextRowStatusMap = {};
+
+    // Keep an existing first-seen date for a deal, otherwise anchor it to today
+    // (a deal is "new" when its stage+content key has never been seen before).
+    const anchorFor = (stage, rawValue) => {
+      const key = dealKey(stage, rawValue);
+      const ts = ledger[key] ?? today ?? datasetStartTs ?? now;
+      nextLedger[key] = ts;
+      return ts;
+    };
 
     safeRows.forEach((row, idx) => {
       const isPlaneActive = hasMeaningful(row.plane_dispatch_within_2_months);
       const isIranActive = hasMeaningful(row.on_the_way_to_iran_within_1_month);
       const isCustomsActive = hasMeaningful(row.customs_within_2_week);
 
-      const plane = buildCountdown(isPlaneActive, now, LIMIT_DAYS.plane, datasetStartTs);
-      const iran = buildCountdown(isIranActive, now, LIMIT_DAYS.iran, datasetStartTs);
-      const customs = buildCountdown(isCustomsActive, now, LIMIT_DAYS.customs, datasetStartTs);
+      const planeTs = isPlaneActive ? anchorFor("plane", row.plane_dispatch_within_2_months) : null;
+      const iranTs = isIranActive ? anchorFor("iran", row.on_the_way_to_iran_within_1_month) : null;
+      const customsTs = isCustomsActive ? anchorFor("customs", row.customs_within_2_week) : null;
+
+      const plane = buildCountdown(isPlaneActive, now, LIMIT_DAYS.plane, planeTs);
+      const iran = buildCountdown(isIranActive, now, LIMIT_DAYS.iran, iranTs);
+      const customs = buildCountdown(isCustomsActive, now, LIMIT_DAYS.customs, customsTs);
       nextRowStatusMap[idx] = { plane, iran, customs };
     });
+
+    // nextLedger only holds keys still present, so stale deals are pruned and a
+    // removed-then-re-added deal correctly restarts. Guard against wiping the
+    // ledger when rows are momentarily empty (e.g. a failed data refresh).
+    if (safeRows.length > 0) saveLedger(nextLedger);
 
     setRowStatusMap(nextRowStatusMap);
   }, [safeRows, clockTick, datasetDate]);

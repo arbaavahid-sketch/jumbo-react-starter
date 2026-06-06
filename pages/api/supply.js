@@ -288,13 +288,11 @@ export default async function handler(req, res) {
       "API /api/supply failed, using built-in fallback:",
       String(error.message || error),
     );
-    res
-      .status(200)
-      .json({
-        rows: defaultRows,
-        totals: calcTotals(defaultRows),
-        source: "fallback",
-        fallback: true,
-      });
+    res.status(200).json({
+      rows: defaultRows,
+      totals: calcTotals(defaultRows),
+      source: "fallback",
+      fallback: true,
+    });
   }
 }
