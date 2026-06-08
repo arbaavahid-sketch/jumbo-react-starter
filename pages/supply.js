@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import {
   ResponsiveContainer,
@@ -75,9 +75,23 @@ function DeltaBadge({ pct, dir, inf }) {
   );
 }
 
-function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
+function StatCard({ label, value, delta, Icon, accent = "#2563eb", onClick }) {
+  const clickable = typeof onClick === "function";
   return (
     <div
+      onClick={onClick}
+      onKeyDown={
+        clickable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
       style={{
         position: "relative",
         background: "#ffffff",
@@ -86,6 +100,7 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
         boxShadow: "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
         overflow: "visible",
         transition: "box-shadow 160ms ease",
+        cursor: clickable ? "pointer" : "default",
       }}
     >
       <div
@@ -133,6 +148,75 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb" }) {
             <Icon size={16} />
           </div>
         )}
+      </div>
+
+      {clickable && (
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.04em",
+            color: accent,
+          }}
+        >
+          View by manager →
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BreakdownModal({ title, rows, field, accent, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const items = rows
+    .map((r) => ({ manager: cleanManagerName(r.manager), value: Number(r[field]) || 0 }))
+    .filter((r) => r.value > 0)
+    .sort((a, b) => b.value - a.value);
+  const total = items.reduce((sum, r) => sum + r.value, 0);
+
+  return (
+    <div onClick={onClose} role="dialog" aria-modal="true" style={overlayStyle}>
+      <div onClick={(e) => e.stopPropagation()} style={modalCardStyle}>
+        <div style={modalHeaderStyle}>
+          <span>{title}</span>
+          <button onClick={onClose} aria-label="Close" style={modalCloseStyle}>
+            ×
+          </button>
+        </div>
+        <div style={{ maxHeight: 380, overflow: "auto" }}>
+          {items.length === 0 ? (
+            <div style={{ padding: 20, color: "#6b7280", fontWeight: 600 }}>No items.</div>
+          ) : (
+            <table style={modalTableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Supply Side manager</th>
+                  <th style={thNumStyle}>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((r) => (
+                  <tr key={r.manager}>
+                    <td style={tdLeft}>{r.manager}</td>
+                    <td style={tdNum}>{fmtNum(r.value)}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td style={{ ...tdLeft, fontWeight: 800 }}>Total</td>
+                  <td style={{ ...tdNum, fontWeight: 800, color: accent }}>{fmtNum(total)}</td>
+                </tr>
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -224,6 +308,9 @@ export default function SupplyDashboard() {
 
   const rows = Array.isArray(data?.rows) ? data.rows : [];
   const totals = data?.totals || {};
+
+  // Which card's per-manager breakdown popup is open (null = closed)
+  const [modal, setModal] = useState(null);
 
   const dealsDelta = pctDelta(totals.deals_last_30_days, totals.deals_last_week * 4);
   const weekDelta = pctDelta(totals.deals_last_week, totals.deals_last_30_days / 4);
@@ -344,6 +431,13 @@ export default function SupplyDashboard() {
                   delta={stageDelta}
                   Icon={FiTruck}
                   accent="#22c55e"
+                  onClick={() =>
+                    setModal({
+                      title: "Deals waiting for supply approval — by manager",
+                      field: "deals_in_supply_side_stage_now",
+                      accent: "#22c55e",
+                    })
+                  }
                 />
                 <StatCard
                   label="Undelivered items (ERP)"
@@ -358,6 +452,13 @@ export default function SupplyDashboard() {
                   delta={lateDelta}
                   Icon={FiAlertCircle}
                   accent="#ef4444"
+                  onClick={() =>
+                    setModal({
+                      title: "Late items (ERP) — by manager",
+                      field: "late_items",
+                      accent: "#ef4444",
+                    })
+                  }
                 />
                 <StatCard
                   label="Open PO count (ERP)"
@@ -423,7 +524,7 @@ export default function SupplyDashboard() {
                       <tr>
                         <th style={thStyle}>Supply Side manager</th>
                         <th style={thNumStyle}>Deals YTD</th>
-                        <th style={thNumStyle}>Deals last 30 days</th>
+                        <th style={thNumStyle}>Last 30 Days</th>
                         <th style={thNumStyle}>Deals last week</th>
                         <th style={thNumStyle}>Deals in supply side stage now</th>
                       </tr>
@@ -473,6 +574,16 @@ export default function SupplyDashboard() {
                   </table>
                 </TableCard>
               </div>
+
+              {modal ? (
+                <BreakdownModal
+                  title={modal.title}
+                  rows={rows}
+                  field={modal.field}
+                  accent={modal.accent}
+                  onClose={() => setModal(null)}
+                />
+              ) : null}
             </>
           ) : null}
         </div>
@@ -502,6 +613,52 @@ const tableStyle = {
   width: "100%",
   borderCollapse: "collapse",
   minWidth: 980,
+};
+
+const modalTableStyle = {
+  width: "100%",
+  borderCollapse: "collapse",
+};
+
+const overlayStyle = {
+  position: "fixed",
+  inset: 0,
+  zIndex: 50,
+  background: "rgba(2,6,23,0.55)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 16,
+};
+
+const modalCardStyle = {
+  width: "min(560px, 100%)",
+  background: "#fff",
+  borderRadius: 18,
+  boxShadow: "0 30px 80px rgba(2,6,23,0.45)",
+  overflow: "hidden",
+};
+
+const modalHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  padding: "14px 16px",
+  borderBottom: "1px solid rgba(148,163,184,0.25)",
+  fontSize: 16,
+  fontWeight: 800,
+  color: "#0f172a",
+};
+
+const modalCloseStyle = {
+  border: "none",
+  background: "transparent",
+  fontSize: 24,
+  lineHeight: 1,
+  cursor: "pointer",
+  color: "#64748b",
+  padding: "0 4px",
 };
 
 const thStyle = {
