@@ -932,6 +932,8 @@ export default function WeeklyHistory() {
         </div>
       </div>
 
+      <SupplyHistoryComparison />
+
       <div
         style={{
           marginTop: 14,
@@ -1186,8 +1188,6 @@ export default function WeeklyHistory() {
             );
           })}
         </div>
-
-        <SupplyHistoryComparison />
       </div>
     </div>
   );

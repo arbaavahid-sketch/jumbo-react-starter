@@ -1,15 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import {
-  ResponsiveContainer,
-  BarChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  Bar,
-} from "recharts";
 
 const fetcher = async (url) => {
   const r = await fetch(url);
@@ -73,7 +63,7 @@ export default function SupplyHistoryComparison() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [rows, weekA, weekB]);
 
-  const chartData = useMemo(
+  const cards = useMemo(
     () =>
       managers.map((manager) => {
         const a = byKey.get(`${weekA}|${manager}`);
@@ -87,8 +77,8 @@ export default function SupplyHistoryComparison() {
     [managers, byKey, weekA, weekB, kpi],
   );
 
-  const totalA = chartData.reduce((s, r) => s + r.valueA, 0);
-  const totalB = chartData.reduce((s, r) => s + r.valueB, 0);
+  const totalA = cards.reduce((s, r) => s + r.valueA, 0);
+  const totalB = cards.reduce((s, r) => s + r.valueB, 0);
 
   return (
     <section style={card}>
@@ -158,69 +148,79 @@ export default function SupplyHistoryComparison() {
       ) : null}
 
       {weeks.length > 0 ? (
-        <>
-          <div style={{ width: "100%", height: 320 }}>
-            <ResponsiveContainer>
-              <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 56 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
-                <XAxis
-                  dataKey="manager"
-                  angle={-25}
-                  textAnchor="end"
-                  interval={0}
-                  height={72}
-                  tick={{ fill: "#475569", fontSize: 11 }}
-                />
-                <YAxis tick={{ fill: "#64748b" }} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="valueA" name={`Week ${weekA}`} fill={WEEK_A_COLOR} radius={[6, 6, 0, 0]} />
-                <Bar dataKey="valueB" name={`Week ${weekB}`} fill={WEEK_B_COLOR} radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div style={{ overflowX: "auto", marginTop: 8 }}>
-            <table style={table}>
-              <thead>
-                <tr>
-                  <th style={th}>Supply Side manager</th>
-                  <th style={thNum}>Week {weekA}</th>
-                  <th style={thNum}>Week {weekB}</th>
-                  <th style={thNum}>Δ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {chartData.map((r) => {
-                  const delta = r.valueB - r.valueA;
-                  const color = delta > 0 ? "#0a7f2e" : delta < 0 ? "#c92a2a" : "#6b7280";
-                  return (
-                    <tr key={r.manager}>
-                      <td style={tdLeft}>{r.manager}</td>
-                      <td style={tdNum}>{fmt(r.valueA)}</td>
-                      <td style={tdNum}>{fmt(r.valueB)}</td>
-                      <td style={{ ...tdNum, color, fontWeight: 800 }}>
-                        {delta > 0 ? "+" : ""}
-                        {fmt(delta)}
-                      </td>
-                    </tr>
-                  );
-                })}
-                <tr>
-                  <td style={{ ...tdLeft, fontWeight: 800 }}>Total</td>
-                  <td style={{ ...tdNum, fontWeight: 800 }}>{fmt(totalA)}</td>
-                  <td style={{ ...tdNum, fontWeight: 800 }}>{fmt(totalB)}</td>
-                  <td style={{ ...tdNum, fontWeight: 800 }}>
-                    {totalB - totalA > 0 ? "+" : ""}
-                    {fmt(totalB - totalA)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </>
+        <div style={grid}>
+          <SummaryCard
+            weekA={weekA}
+            weekB={weekB}
+            valueA={totalA}
+            valueB={totalB}
+            label={`Total — ${kpiMeta.label}`}
+          />
+          {cards.map((r) => (
+            <ManagerCard
+              key={r.manager}
+              title={r.manager}
+              weekA={weekA}
+              weekB={weekB}
+              valueA={r.valueA}
+              valueB={r.valueB}
+              label={kpiMeta.label}
+            />
+          ))}
+        </div>
       ) : null}
     </section>
+  );
+}
+
+function deltaMeta(valueA, valueB) {
+  const delta = valueB - valueA;
+  const dir = delta > 0 ? 1 : delta < 0 ? -1 : 0;
+  return {
+    delta,
+    accent: dir > 0 ? "#22c55e" : dir < 0 ? "#ef4444" : "#94a3b8",
+    pillColor: dir > 0 ? "#0a7f2e" : dir < 0 ? "#c92a2a" : "#475569",
+    pillBg:
+      dir > 0
+        ? "rgba(34,197,94,0.14)"
+        : dir < 0
+          ? "rgba(239,68,68,0.14)"
+          : "rgba(148,163,184,0.18)",
+    arrow: dir > 0 ? "▲" : dir < 0 ? "▼" : "•",
+  };
+}
+
+function ManagerCard({ title, label, weekA, weekB, valueA, valueB, strong }) {
+  const d = deltaMeta(valueA, valueB);
+  return (
+    <div style={{ ...managerCard, borderTop: `4px solid ${d.accent}` }}>
+      <div style={cardHead}>
+        <span style={{ ...cardTitle, fontSize: strong ? 17 : 15 }}>{title}</span>
+        <span style={{ ...pill, background: d.pillBg, color: d.pillColor }}>
+          <span aria-hidden>{d.arrow}</span> {d.delta > 0 ? "+" : ""}
+          {fmt(d.delta)}
+        </span>
+      </div>
+      <div style={cardKpi}>{label}</div>
+      <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+        <WeekRow color={WEEK_A_COLOR} week={weekA} value={valueA} />
+        <WeekRow color={WEEK_B_COLOR} week={weekB} value={valueB} />
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard(props) {
+  return <ManagerCard {...props} title={props.label} strong />;
+}
+
+function WeekRow({ color, week, value }) {
+  return (
+    <div style={weekRow}>
+      <span style={{ ...dot, background: color }} />
+      <span style={{ color: "#475569", fontWeight: 700 }}>Week {week}</span>
+      <span style={weekVal}>{fmt(value)}</span>
+    </div>
   );
 }
 
@@ -240,7 +240,7 @@ const card = {
   borderRadius: 20,
   boxShadow: "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
   padding: 16,
-  marginTop: 16,
+  marginTop: 14,
 };
 
 const headerRow = {
@@ -249,7 +249,7 @@ const headerRow = {
   justifyContent: "space-between",
   gap: 16,
   flexWrap: "wrap",
-  marginBottom: 12,
+  marginBottom: 14,
 };
 
 const titleStyle = { fontWeight: 800, fontSize: 18, color: "#0f172a" };
@@ -266,6 +266,47 @@ const select = {
   fontWeight: 600,
   color: "#0f172a",
 };
+
+const grid = {
+  display: "grid",
+  gap: 12,
+  gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
+};
+
+const managerCard = {
+  background: "linear-gradient(135deg, rgba(99,102,241,0.05), rgba(248,250,252,0.95))",
+  borderRadius: 16,
+  padding: 14,
+  boxShadow: "0 14px 34px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.18)",
+};
+
+const cardHead = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+};
+
+const cardTitle = { fontWeight: 900, color: "#0f172a" };
+
+const cardKpi = { fontSize: 12, color: "#64748b", marginTop: 2, fontWeight: 600 };
+
+const pill = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
+  fontSize: 12,
+  fontWeight: 900,
+  padding: "3px 9px",
+  borderRadius: 999,
+  whiteSpace: "nowrap",
+};
+
+const weekRow = { display: "flex", alignItems: "center", gap: 8, fontSize: 14 };
+
+const dot = { width: 9, height: 9, borderRadius: 999, display: "inline-block", flex: "0 0 auto" };
+
+const weekVal = { marginLeft: "auto", fontWeight: 900, color: "#0f172a", fontVariantNumeric: "tabular-nums" };
 
 const note = {
   padding: 14,
@@ -284,31 +325,4 @@ const setupNote = {
   color: "#713f12",
   fontSize: 13,
   lineHeight: 1.5,
-};
-
-const table = { width: "100%", borderCollapse: "collapse", minWidth: 520 };
-
-const th = {
-  textAlign: "left",
-  padding: "10px",
-  fontSize: 13,
-  background: "#f8fafc",
-  borderBottom: "1px solid #cbd5e1",
-  whiteSpace: "nowrap",
-};
-
-const thNum = { ...th, textAlign: "center" };
-
-const tdLeft = {
-  padding: "10px",
-  borderBottom: "1px solid #e2e8f0",
-  fontWeight: 600,
-  whiteSpace: "nowrap",
-};
-
-const tdNum = {
-  padding: "10px",
-  borderBottom: "1px solid #e2e8f0",
-  textAlign: "center",
-  fontVariantNumeric: "tabular-nums",
 };
