@@ -308,6 +308,7 @@ export default function SupplyDashboard() {
 
   const rows = Array.isArray(data?.rows) ? data.rows : [];
   const totals = data?.totals || {};
+  const publishDate = data?.publishDate || "";
 
   // Which card's per-manager breakdown popup is open (null = closed)
   const [modal, setModal] = useState(null);
@@ -387,6 +388,17 @@ export default function SupplyDashboard() {
               >
                 <LiveClock />
               </div>
+              {publishDate ? (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#334155",
+                    fontWeight: 700,
+                  }}
+                >
+                  Data as of {publishDate}
+                </div>
+              ) : null}
             </div>
           </div>
 

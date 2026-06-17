@@ -2,6 +2,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { useMemo, useState } from "react";
+import SupplyHistoryComparison from "../../components/SupplyHistoryComparison";
 import {
   ResponsiveContainer,
   LineChart,
@@ -1185,6 +1186,8 @@ export default function WeeklyHistory() {
             );
           })}
         </div>
+
+        <SupplyHistoryComparison />
       </div>
     </div>
   );

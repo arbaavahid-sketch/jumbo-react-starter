@@ -281,8 +281,21 @@ export default async function handler(req, res) {
 
     const cleanRows = rows.filter((r) => r.manager);
 
+    // Publish date is read from a "Publish date" column in the sheet (first
+    // non-empty value wins). The header match is case-insensitive and tolerant
+    // of spacing, so "Publish date", "Publish Date", "published", "تاریخ انتشار"
+    // all work. Shown as "Data as of ..." on the dashboard.
+    const PUBLISH_RE = /^(publish ?_?date|published|تاریخ ?انتشار)$/i;
+    const publishDate =
+      rawRows
+        .map((r) => {
+          const key = Object.keys(r).find((k) => PUBLISH_RE.test(String(k).trim()));
+          return key ? String(r[key] || "").trim() : "";
+        })
+        .find(Boolean) || "";
+
     const totals = calcTotals(cleanRows);
-    res.status(200).json({ rows: cleanRows, totals, source: sheetUrl, fallback: false });
+    res.status(200).json({ rows: cleanRows, totals, publishDate, source: sheetUrl, fallback: false });
   } catch (error) {
     console.warn(
       "API /api/supply failed, using built-in fallback:",
@@ -291,6 +304,7 @@ export default async function handler(req, res) {
     res.status(200).json({
       rows: defaultRows,
       totals: calcTotals(defaultRows),
+      publishDate: "",
       source: "fallback",
       fallback: true,
     });
