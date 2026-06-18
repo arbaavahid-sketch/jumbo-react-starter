@@ -22,6 +22,11 @@ export default async function handler(req, res) {
     "eth",
     "btc",
     "usdt",
+    // مرکز مبادله (نیما) — برای محاسبه‌ی اختلاف نرخ بازار آزاد با نیما
+    "mex_usd_sell",
+    "mex_usd_buy",
+    "mex_eur_sell",
+    "mex_eur_buy",
   ];
 
   const url = `http://api.navasan.tech/latest/?api_key=${encodeURIComponent(

@@ -7,7 +7,7 @@ import useSWR from "swr";
 import { useState, useEffect } from "react";
 import NewsTicker from "../../components/NewsTicker";
 import NewsTickerEn from "../../components/NewsTickerEn";
-import TgjuTickersBlock from "../../components/TgjuTickersBlock";
+import RatesStrip from "../../components/RatesStrip";
 import DealsExecTable from "../../components/DealsExecTable";
 import ARListTable from "../../components/ARListTable";
 import CeoMessage from "../../components/CeoMessage";
@@ -439,7 +439,7 @@ export default function GroupDashboard() {
         </div>
 
         <div className="news-block" style={{ marginBottom: 20 }}>
-          <TgjuTickersBlock />
+          <RatesStrip />
         </div>
       </section>
 
