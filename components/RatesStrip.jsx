@@ -139,7 +139,8 @@ export default function RatesStrip() {
           gap: 34px;
           width: max-content;
           padding: 10px 0;
-          animation: fxscroll 55s linear infinite;
+          /* مدت‌زمان = سرعت اسکرول؛ عددِ کمتر سریع‌تر، عددِ بیشتر کندتر */
+          animation: fxscroll 35s linear infinite;
           will-change: transform;
         }
         .fxwrap:hover .fxtrack {
