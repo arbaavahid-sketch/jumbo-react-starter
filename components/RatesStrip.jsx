@@ -47,7 +47,14 @@ export default function RatesStrip() {
     refreshInterval: 30 * 60 * 1000,
   });
 
+  // Second-hall ("تالار دوم") rates entered in the sheet (ice.ir values).
+  const { data: nimaData } = useSWR("/api/nima", fetcher, {
+    revalidateOnFocus: false,
+    refreshInterval: 30 * 60 * 1000,
+  });
+
   const items = data?.items || {};
+  const nimaRates = nimaData?.rates || {};
 
   const segData = ITEMS.map((it) => {
     const val = toNum(items?.[it.key]?.value);
@@ -56,7 +63,13 @@ export default function RatesStrip() {
 
     let spread = NaN;
     if (it.nimaKey) {
-      const [f, n] = matchScale(val, toNum(items?.[it.nimaKey]?.value));
+      // Prefer the sheet's second-hall rate (from TGJU/ice.ir); fall back to
+      // Navasan's exchange-center rate. matchScale handles Rial vs Toman either way.
+      const sheetNima = nimaRates[it.key];
+      const rawNima = Number.isFinite(sheetNima) && sheetNima > 0
+        ? sheetNima
+        : toNum(items?.[it.nimaKey]?.value);
+      const [f, n] = matchScale(val, rawNima);
       if (f > 0 && n > 0) spread = ((f - n) / n) * 100;
     }
 
