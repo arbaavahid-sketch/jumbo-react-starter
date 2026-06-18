@@ -94,12 +94,10 @@ export default function RatesStrip() {
 
     const read = () => {
       const box = document.getElementById("tgju-nima-hidden");
-      if (!box) return;
-      const text = box.innerText || box.textContent || "";
-      if (!text.trim()) return;
+      const text = box ? box.innerText || box.textContent || "" : "(no box)";
       const parsed = parseTgju(text);
       // eslint-disable-next-line no-console
-      console.log("[NimaWidget] raw text:", text, "parsed:", parsed);
+      console.log("[NimaWidget] len=", text.length, "text=", text.slice(0, 400), "parsed=", parsed);
       if (Number.isFinite(parsed.usd) || Number.isFinite(parsed.eur)) {
         setTgjuNima((prev) => ({ ...prev, ...parsed }));
       }
