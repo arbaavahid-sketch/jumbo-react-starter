@@ -13,7 +13,7 @@ import DealsExecTable from "../../components/DealsExecTable";
 import ARListTable from "../../components/ARListTable";
 import CeoMessage from "../../components/CeoMessage";
 import LiveClock from "../../components/LiveClock";
-import TgjuTickersBlock from "../../components/TgjuTickersBlock";
+import RatesStrip from "../../components/RatesStrip";
 import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
 
@@ -385,7 +385,7 @@ function PublicGroupDashboard({ groupKey }) {
           <NewsTicker />
         </div>
         <div className="news-block" style={{ marginBottom: 20 }}>
-          <TgjuTickersBlock />
+          <RatesStrip />
         </div>
       </section>
 
