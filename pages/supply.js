@@ -388,17 +388,6 @@ export default function SupplyDashboard() {
               >
                 <LiveClock />
               </div>
-              {publishDate ? (
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#334155",
-                    fontWeight: 700,
-                  }}
-                >
-                  Data as of {publishDate}
-                </div>
-              ) : null}
             </div>
           </div>
 
@@ -416,6 +405,12 @@ export default function SupplyDashboard() {
                   marginBottom: 16,
                 }}
               >
+                <StatCard
+                  label="Last updated (week)"
+                  value={publishDate || "-"}
+                  Icon={FiCalendar}
+                  accent="#0ea5e9"
+                />
                 <StatCard
                   label="Deals YTD"
                   value={fmtNum(totals.deals_ytd)}

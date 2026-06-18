@@ -134,18 +134,25 @@ export function mapSupplyHistoryRows(rawRows) {
 
 export default async function handler(req, res) {
   const empty = { rows: [], weeks: [], managers: [], configured: false };
-  try {
-    const sheetUrl = process.env.SHEET_SUPPLY_HISTORY_CSV_URL;
-    if (!sheetUrl) {
-      res.status(200).json(empty);
-      return;
-    }
 
+  // The history reads the same supply tab the live dashboard uses (it just keeps
+  // ALL weeks instead of only the latest). A dedicated SHEET_SUPPLY_HISTORY_CSV_URL
+  // takes priority if you ever want a separate tab.
+  const fallbackUrl =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRXsGTD45h3nBYxHI4VBfTnBQdE7roWfm3coN4Ful7hdV7fcshPd2lg5Ueymf_I5sgGVIr9bl77LA2a/pub?gid=1845248185&single=true&output=csv";
+  const sheetUrl =
+    process.env.SHEET_SUPPLY_HISTORY_CSV_URL ||
+    process.env.SHEET_SUPPLY_SIDE_DASHBOARD_CSV_URL ||
+    fallbackUrl;
+
+  try {
     const response = await fetch(sheetUrl);
     if (!response.ok) throw new Error(`CSV HTTP ${response.status}`);
 
     const parsed = mapSupplyHistoryRows(parseCSV(await response.text()));
-    res.status(200).json({ ...parsed, configured: true });
+    // "configured" is true only once we actually find weekly rows, so the UI
+    // shows the setup hint until a week column with data exists.
+    res.status(200).json({ ...parsed, configured: parsed.weeks.length > 0 });
   } catch (error) {
     console.warn("API /api/supply-history failed:", String(error.message || error));
     res.status(200).json(empty);

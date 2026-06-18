@@ -76,6 +76,12 @@ const toNum = (value) => {
   return Number.isFinite(n) ? n : 0;
 };
 
+// "Week 21", "21" -> 21 ; null when there is no number (no week column).
+const toWeek = (value) => {
+  const m = String(value || "").match(/\d+/);
+  return m ? Number(m[0]) : null;
+};
+
 const defaultRows = [
   {
     manager: "Albert Kunafin",
@@ -241,7 +247,10 @@ export default async function handler(req, res) {
     const fallbackUrl =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vRXsGTD45h3nBYxHI4VBfTnBQdE7roWfm3coN4Ful7hdV7fcshPd2lg5Ueymf_I5sgGVIr9bl77LA2a/pub?gid=1845248185&single=true&output=csv";
 
-    const sheetUrl = process.env.SHEET_SUPPLY_CSV_URL || fallbackUrl;
+    const sheetUrl =
+      process.env.SHEET_SUPPLY_CSV_URL ||
+      process.env.SHEET_SUPPLY_SIDE_DASHBOARD_CSV_URL ||
+      fallbackUrl;
 
     const response = await fetch(sheetUrl);
     if (!response.ok) {
@@ -252,6 +261,8 @@ export default async function handler(req, res) {
     const rawRows = parseCSV(csvText);
 
     const rows = rawRows.map((r) => ({
+      week: toWeek(pickField(r, ["week", "Week", "هفته"])),
+      date: String(pickField(r, ["date", "Date", "تاریخ"]) || "").trim(),
       manager: pickField(r, [
         "Supply side manager",
         "Supply Side manager",
@@ -259,7 +270,9 @@ export default async function handler(req, res) {
         "manager",
       ]),
       deals_ytd: toNum(pickField(r, ["Deals YTD", "deals_ytd"])),
-      deals_last_30_days: toNum(pickField(r, ["Deals last 30 days", "deals_last_30_days"])),
+      deals_last_30_days: toNum(
+        pickField(r, ["Deals last 30 days", "Last 30 Days", "last 30 days", "deals_last_30_days"]),
+      ),
       deals_last_week: toNum(pickField(r, ["Deals last week", "deals_last_week"])),
       deals_in_supply_side_stage_now: toNum(
         pickField(r, [
@@ -279,12 +292,19 @@ export default async function handler(req, res) {
       out_not_delivered: toNum(pickField(r, ["Out not delivered", "out_not_delivered"])),
     }));
 
-    const cleanRows = rows.filter((r) => r.manager);
+    const withManager = rows.filter((r) => r.manager);
 
-    // Publish date is read from a "Publish date" column in the sheet (first
-    // non-empty value wins). The header match is case-insensitive and tolerant
-    // of spacing, so "Publish date", "Publish Date", "published", "تاریخ انتشار"
-    // all work. Shown as "Data as of ..." on the dashboard.
+    // The sheet may accumulate many weeks (one row per manager per week). The
+    // LIVE dashboard should only reflect the most recent week, so keep just the
+    // rows for the highest week number. When there is no week column at all
+    // (legacy snapshot sheet), keep every row.
+    const weekNumbers = withManager.map((r) => r.week).filter((w) => w != null);
+    const latestWeek = weekNumbers.length ? Math.max(...weekNumbers) : null;
+    const cleanRows =
+      latestWeek == null ? withManager : withManager.filter((r) => r.week === latestWeek);
+
+    // "Data as of" date: an explicit "Publish date" column wins; otherwise fall
+    // back to the `date` column of the latest week.
     const PUBLISH_RE = /^(publish ?_?date|published|تاریخ ?انتشار)$/i;
     const publishDate =
       rawRows
@@ -292,7 +312,9 @@ export default async function handler(req, res) {
           const key = Object.keys(r).find((k) => PUBLISH_RE.test(String(k).trim()));
           return key ? String(r[key] || "").trim() : "";
         })
-        .find(Boolean) || "";
+        .find(Boolean) ||
+      cleanRows.map((r) => r.date).find(Boolean) ||
+      "";
 
     const totals = calcTotals(cleanRows);
     res.status(200).json({ rows: cleanRows, totals, publishDate, source: sheetUrl, fallback: false });
