@@ -1,4 +1,27 @@
+import { useEffect, useState } from "react";
 import useSWR from "swr";
+
+// TGJU widget item IDs (free-market group and NIMA/transfer group).
+// We render these hidden in the browser — where TGJU works — and read the
+// rendered numbers to get the exact NIMA (تالار دوم) rate, then compute the gap.
+const TGJU_NIMA_ITEMS = "398097,398096,535605,398115,398102"; // nima: usd, eur, ...
+
+const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+const normDigits = (s) =>
+  String(s || "")
+    .replace(/[۰-۹]/g, (d) => PERSIAN_DIGITS.indexOf(d))
+    .replace(/[٬،]/g, ",");
+
+// Pull the USD/EUR numbers out of a rendered TGJU ticker's text.
+const parseTgju = (text) => {
+  const t = normDigits(text);
+  const out = {};
+  const usd = t.match(/دلار[^\d]{0,15}?([\d,]{5,})/); // first "دلار ... number" = US dollar
+  const eur = t.match(/یورو[^\d]{0,15}?([\d,]{5,})/);
+  if (usd) out.usd = Number(usd[1].replace(/,/g, ""));
+  if (eur) out.eur = Number(eur[1].replace(/,/g, ""));
+  return out;
+};
 
 const fetcher = async (url) => {
   const r = await fetch(url);
@@ -56,6 +79,36 @@ export default function RatesStrip() {
   const items = data?.items || {};
   const nimaRates = nimaData?.rates || {};
 
+  // NIMA rates read live from a hidden TGJU widget in the browser.
+  const [tgjuNima, setTgjuNima] = useState({});
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!document.querySelector('script[data-tgju="widget"]')) {
+      const s = document.createElement("script");
+      s.src = "https://api.tgju.org/v1/widget/v2";
+      s.defer = true;
+      s.dataset.tgju = "widget";
+      document.body.appendChild(s);
+    }
+
+    const read = () => {
+      const box = document.getElementById("tgju-nima-hidden");
+      if (!box) return;
+      const text = box.innerText || box.textContent || "";
+      if (!text.trim()) return;
+      const parsed = parseTgju(text);
+      // eslint-disable-next-line no-console
+      console.log("[NimaWidget] raw text:", text, "parsed:", parsed);
+      if (Number.isFinite(parsed.usd) || Number.isFinite(parsed.eur)) {
+        setTgjuNima((prev) => ({ ...prev, ...parsed }));
+      }
+    };
+
+    const timer = setInterval(read, 2000);
+    return () => clearInterval(timer);
+  }, []);
+
   const segData = ITEMS.map((it) => {
     const val = toNum(items?.[it.key]?.value);
     const chg = toNum(items?.[it.key]?.change);
@@ -63,12 +116,16 @@ export default function RatesStrip() {
 
     let spread = NaN;
     if (it.nimaKey) {
-      // Prefer the sheet's second-hall rate (from TGJU/ice.ir); fall back to
-      // Navasan's exchange-center rate. matchScale handles Rial vs Toman either way.
+      // Priority for the NIMA rate: live TGJU widget → sheet → Navasan center.
+      // matchScale handles Rial vs Toman either way.
+      const widgetNima = tgjuNima[it.key];
       const sheetNima = nimaRates[it.key];
-      const rawNima = Number.isFinite(sheetNima) && sheetNima > 0
-        ? sheetNima
-        : toNum(items?.[it.nimaKey]?.value);
+      const rawNima =
+        Number.isFinite(widgetNima) && widgetNima > 0
+          ? widgetNima
+          : Number.isFinite(sheetNima) && sheetNima > 0
+            ? sheetNima
+            : toNum(items?.[it.nimaKey]?.value);
       const [f, n] = matchScale(val, rawNima);
       if (f > 0 && n > 0) spread = ((f - n) / n) * 100;
     }
@@ -114,6 +171,17 @@ export default function RatesStrip() {
       <div className="fxbar">
         <div className="fxtrack">{loop.map(renderSeg)}</div>
       </div>
+
+      {/* Hidden TGJU widget — rendered off-screen so we can read the live NIMA
+          rate from the browser (where TGJU works) and compute the real gap. */}
+      <div
+        aria-hidden
+        style={{ position: "absolute", left: -99999, top: 0, width: 600, height: 60 }}
+        id="tgju-nima-hidden"
+        dangerouslySetInnerHTML={{
+          __html: `<tgju type="ticker-tap" items="${TGJU_NIMA_ITEMS}" columns="dot" speed="35" token="webservice"></tgju>`,
+        }}
+      />
 
       <style jsx>{`
         .fxwrap {
