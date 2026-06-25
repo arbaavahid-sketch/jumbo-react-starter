@@ -14,6 +14,7 @@ import {
 
 import LiveClock from "../components/LiveClock";
 import NewsTickerEn from "../components/NewsTickerEn";
+import CeoMessage from "../components/CeoMessage";
 import {
   FiShoppingBag,
   FiCalendar,
@@ -305,10 +306,16 @@ export default function SupplyDashboard() {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
+  const { data: mainData } = useSWR("/api/data", fetcher, {
+    revalidateOnFocus: false,
+    refreshInterval: 60_000,
+  });
 
   const rows = Array.isArray(data?.rows) ? data.rows : [];
   const totals = data?.totals || {};
   const publishDate = data?.publishDate || "";
+  const ceoMessages = mainData?.ceo_messages || {};
+  const supplyCeoMessage = ceoMessages.SUPPLY || ceoMessages.Supply || "";
 
   // Which card's per-manager breakdown popup is open (null = closed)
   const [modal, setModal] = useState(null);
@@ -390,6 +397,12 @@ export default function SupplyDashboard() {
               </div>
             </div>
           </div>
+
+          {supplyCeoMessage ? (
+            <div style={{ marginBottom: 14 }}>
+              <CeoMessage text={supplyCeoMessage} />
+            </div>
+          ) : null}
 
           {error ? <div style={errorStyle}>Error loading supply data.</div> : null}
 

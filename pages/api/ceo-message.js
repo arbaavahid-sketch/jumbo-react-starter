@@ -2,6 +2,11 @@
 // این فقط درخواست را به Google Apps Script فوروارد می‌کند
 
 export default async function handler(req, res) {
+  if (req.cookies?.dashboard_auth !== "ok") {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const webhook = process.env.CEO_MSG_WEBHOOK_URL;
   if (!webhook) {
     res.status(500).json({ error: "CEO_MSG_WEBHOOK_URL not set" });

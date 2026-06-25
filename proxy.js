@@ -17,7 +17,6 @@ export function proxy(req) {
     pathname.startsWith("/api/news") || // همین خط همه‌ی news و news-en را پوشش می‌دهد
     pathname.startsWith("/api/rates") ||
     pathname.startsWith("/api/technical") ||
-    pathname.startsWith("/api/ceo-message") ||
     pathname.startsWith("/api/supply") ||
     pathname.startsWith("/_next");
 
