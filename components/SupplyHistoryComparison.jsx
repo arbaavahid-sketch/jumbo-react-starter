@@ -9,6 +9,19 @@ const fetcher = async (url) => {
 
 const fmt = (n) => new Intl.NumberFormat("en-US").format(Number(n) || 0);
 
+const formatDateLabel = (value) => {
+  const raw = String(value || "").trim();
+  const parts = raw.match(/^(\d{1,4})[/-](\d{1,2})[/-](\d{1,4})$/);
+  if (!parts) return raw;
+
+  const [, a, b, c] = parts;
+  if (a.length === 4) {
+    return `${String(c).padStart(2, "0")}/${String(b).padStart(2, "0")}/${a}`;
+  }
+
+  return `${String(a).padStart(2, "0")}/${String(b).padStart(2, "0")}/${c}`;
+};
+
 const SUPPLY_KPIS = [
   { key: "deals_in_supply_side_stage_now", label: "Deals waiting for supply approval" },
   { key: "late_items", label: "Late items (ERP)" },
@@ -54,6 +67,22 @@ export default function SupplyHistoryComparison() {
     for (const r of rows) m.set(`${r.week}|${r.manager}`, r);
     return m;
   }, [rows]);
+
+  const weekDates = useMemo(() => {
+    const m = new Map();
+    for (const r of rows) {
+      const week = Number(r.week);
+      const date = formatDateLabel(r.date);
+      if (Number.isFinite(week) && date && !m.has(week)) m.set(week, date);
+    }
+    return m;
+  }, [rows]);
+
+  const getWeekDate = (week) => (week == null ? "" : weekDates.get(Number(week)) || "");
+  const weekLabel = (week) => {
+    const date = getWeekDate(week);
+    return date ? `Week ${week} - ${date}` : `Week ${week}`;
+  };
 
   const managers = useMemo(() => {
     const set = new Set();
@@ -107,10 +136,11 @@ export default function SupplyHistoryComparison() {
               >
                 {weeks.map((w) => (
                   <option key={w} value={w}>
-                    Week {w}
+                    {weekLabel(w)}
                   </option>
                 ))}
               </select>
+              {getWeekDate(weekA) ? <span style={weekDateHint}>{getWeekDate(weekA)}</span> : null}
             </Field>
             <Field label="Week B">
               <select
@@ -120,10 +150,11 @@ export default function SupplyHistoryComparison() {
               >
                 {weeks.map((w) => (
                   <option key={w} value={w}>
-                    Week {w}
+                    {weekLabel(w)}
                   </option>
                 ))}
               </select>
+              {getWeekDate(weekB) ? <span style={weekDateHint}>{getWeekDate(weekB)}</span> : null}
             </Field>
           </div>
         ) : null}
@@ -152,6 +183,8 @@ export default function SupplyHistoryComparison() {
           <SummaryCard
             weekA={weekA}
             weekB={weekB}
+            weekADate={getWeekDate(weekA)}
+            weekBDate={getWeekDate(weekB)}
             valueA={totalA}
             valueB={totalB}
             label={`Total — ${kpiMeta.label}`}
@@ -162,6 +195,8 @@ export default function SupplyHistoryComparison() {
               title={r.manager}
               weekA={weekA}
               weekB={weekB}
+              weekADate={getWeekDate(weekA)}
+              weekBDate={getWeekDate(weekB)}
               valueA={r.valueA}
               valueB={r.valueB}
               label={kpiMeta.label}
@@ -190,7 +225,7 @@ function deltaMeta(valueA, valueB) {
   };
 }
 
-function ManagerCard({ title, label, weekA, weekB, valueA, valueB, strong }) {
+function ManagerCard({ title, label, weekA, weekB, weekADate, weekBDate, valueA, valueB, strong }) {
   const d = deltaMeta(valueA, valueB);
   return (
     <div style={{ ...managerCard, borderTop: `4px solid ${d.accent}` }}>
@@ -203,8 +238,8 @@ function ManagerCard({ title, label, weekA, weekB, valueA, valueB, strong }) {
       </div>
       <div style={cardKpi}>{label}</div>
       <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
-        <WeekRow color={WEEK_A_COLOR} week={weekA} value={valueA} />
-        <WeekRow color={WEEK_B_COLOR} week={weekB} value={valueB} />
+        <WeekRow color={WEEK_A_COLOR} week={weekA} date={weekADate} value={valueA} />
+        <WeekRow color={WEEK_B_COLOR} week={weekB} date={weekBDate} value={valueB} />
       </div>
     </div>
   );
@@ -214,11 +249,14 @@ function SummaryCard(props) {
   return <ManagerCard {...props} title={props.label} strong />;
 }
 
-function WeekRow({ color, week, value }) {
+function WeekRow({ color, week, date, value }) {
   return (
     <div style={weekRow}>
       <span style={{ ...dot, background: color }} />
-      <span style={{ color: "#475569", fontWeight: 700 }}>Week {week}</span>
+      <span style={weekLabelText}>
+        <span>Week {week}</span>
+        {date ? <span style={weekDateText}> - {date}</span> : null}
+      </span>
       <span style={weekVal}>{fmt(value)}</span>
     </div>
   );
@@ -267,6 +305,12 @@ const select = {
   color: "#0f172a",
 };
 
+const weekDateHint = {
+  fontSize: 11,
+  fontWeight: 800,
+  color: "#475569",
+};
+
 const grid = {
   display: "grid",
   gap: 12,
@@ -304,9 +348,24 @@ const pill = {
 
 const weekRow = { display: "flex", alignItems: "center", gap: 8, fontSize: 14 };
 
+const weekLabelText = {
+  color: "#475569",
+  fontWeight: 700,
+  display: "inline-flex",
+  flexWrap: "wrap",
+  minWidth: 0,
+};
+
+const weekDateText = { color: "#64748b", fontWeight: 600 };
+
 const dot = { width: 9, height: 9, borderRadius: 999, display: "inline-block", flex: "0 0 auto" };
 
-const weekVal = { marginLeft: "auto", fontWeight: 900, color: "#0f172a", fontVariantNumeric: "tabular-nums" };
+const weekVal = {
+  marginLeft: "auto",
+  fontWeight: 900,
+  color: "#0f172a",
+  fontVariantNumeric: "tabular-nums",
+};
 
 const note = {
   padding: 14,

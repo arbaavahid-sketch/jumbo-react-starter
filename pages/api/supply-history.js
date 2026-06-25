@@ -97,6 +97,7 @@ export function mapSupplyHistoryRows(rawRows) {
   const rows = rawRows
     .map((r) => ({
       week: toWeek(pickField(r, ["week", "Week", "هفته"])),
+      date: String(pickField(r, ["date", "Date", "publish_date", "Publish date"]) || "").trim(),
       manager: cleanManager(
         pickField(r, ["Supply side manager", "Supply Side manager", "Supply Manager", "manager"]),
       ),
