@@ -13,6 +13,9 @@ const LIMIT_DAYS = {
   customs: 14,
 };
 
+const LOGISTIC_AA_SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1ZyDZyZyeBiKL98Pm8ty9i1kUVDCtoYihV7B4kgfeWNs/edit?gid=0#gid=0";
+
 const displayOrBlank = (v) => {
   if (!hasMeaningful(v)) return "";
   return pretty(v);
@@ -230,7 +233,18 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
   return (
     <div style={outerCard}>
       <div style={innerCard}>
-        <div style={titleStyle}>LOGISTIC AA</div>
+        <div style={titleStyle}>
+          <span>LOGISTIC AA</span>
+          <a
+            href={LOGISTIC_AA_SHEET_URL}
+            target="_blank"
+            rel="noreferrer"
+            style={moreLinkStyle}
+            aria-label="Open Logistic AA sheet"
+          >
+            more
+          </a>
+        </div>
 
         <div
           ref={scrollRef}
@@ -364,12 +378,36 @@ const innerCard = {
 const titleStyle = {
   padding: "10px 14px",
   borderBottom: "1px solid #e5e7eb",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
   fontSize: 14,
   fontWeight: 800,
   color: "#ffffff",
   textTransform: "uppercase",
   letterSpacing: "0.08em",
   background: "linear-gradient(90deg, rgba(96,120,150,0.55), rgba(119,165,255,0.55))",
+};
+
+const moreLinkStyle = {
+  flex: "0 0 auto",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: 24,
+  padding: "3px 10px",
+  borderRadius: 999,
+  border: "1px solid rgba(255,255,255,0.58)",
+  background: "rgba(255,255,255,0.18)",
+  color: "#0f172a",
+  fontSize: 12,
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: 0,
+  textDecoration: "none",
+  textTransform: "none",
+  boxShadow: "0 1px 6px rgba(15,23,42,0.12)",
 };
 
 const tableStyle = {
