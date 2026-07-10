@@ -77,14 +77,15 @@ function parseCSV(text) {
 
   if (!rows.length) return [];
 
-  const headers = rows[0].map((h) => h.trim());
+  const headers = rows[0].map((h, idx) => h.trim() || `__col_${idx}`);
   return rows
     .slice(1)
     .filter((r) => r.some(Boolean))
     .map((r) => {
       const obj = {};
       headers.forEach((h, idx) => {
-        obj[h] = r[idx];
+        if (obj[h] == null) obj[h] = r[idx];
+        else obj[`${h}_${idx}`] = r[idx];
       });
       return obj;
     });
@@ -103,6 +104,7 @@ function mapSheetsToPayload({
   megaDealsSheet = [],
   weeklyTripsSheet = [], // ✅ اضافه شد
   logisticAASheet = [], // ✅ اضافه شد
+  groupOffersSheet = [],
 }) {
   const normKey = (s) =>
     String(s || "")
@@ -236,6 +238,74 @@ function mapSheetsToPayload({
       customs_parts: splitDeal(customs),
     };
   });
+
+  const parseAmount = (value) => {
+    const numeric = Number(
+      String(value || "")
+        .replace(/,/g, "")
+        .replace(/[^\d.-]/g, ""),
+    );
+    return Number.isFinite(numeric) ? numeric : 0;
+  };
+
+  const parsePercent = (value) => {
+    const numeric = Number(
+      String(value || "")
+        .replace("%", "")
+        .replace("٪", "")
+        .trim(),
+    );
+    return Number.isFinite(numeric) ? numeric / 100 : null;
+  };
+
+  const normalizeGroupKey = (value) => {
+    const cleaned = String(value || "")
+      .replace(/group/gi, "")
+      .replace(/[^a-z0-9]/gi, "")
+      .toUpperCase();
+
+    if (["1", "A"].includes(cleaned)) return "A";
+    if (["2", "B"].includes(cleaned)) return "B";
+    if (["3", "C"].includes(cleaned)) return "C";
+
+    return cleaned;
+  };
+
+  const groupOfferSummary = {};
+  groupOffersSheet.forEach((r) => {
+    const summaryGroup = pickField(r, ["__col_6", "summary_group"]);
+    const groupKey = normalizeGroupKey(summaryGroup);
+    if (!["A", "B", "C"].includes(groupKey)) return;
+
+    const count = Number(String(pickField(r, ["__col_7", "summary_count"])).replace(/,/g, ""));
+    const share = parsePercent(pickField(r, ["__col_8", "summary_percent"]));
+    groupOfferSummary[groupKey] = {
+      count: Number.isFinite(count) ? count : null,
+      share,
+    };
+  });
+
+  const group_offers = groupOffersSheet
+    .map((r, index) => {
+      const group = pickField(r, ["Group", "group"]);
+      const owner = pickField(r, ["Deal owner", "deal owner", "deal_owner", "Owner"]);
+      const assignedGroup = /mona\s+ghorbanpour/i.test(owner) ? "Group A" : group;
+      const amountLabel = pickField(r, ["Amount", "amount"]);
+
+      return {
+        index,
+        deal_name: pickField(r, ["Deal Name", "deal name", "deal_name", "Deal"]),
+        close_date: pickField(r, ["Close Date", "close date", "close_date"]),
+        owner,
+        group: assignedGroup,
+        group_key: normalizeGroupKey(assignedGroup),
+        amount_label: amountLabel,
+        amount_eur: parseAmount(amountLabel),
+        group_count: groupOfferSummary[normalizeGroupKey(assignedGroup)]?.count ?? null,
+        group_share: groupOfferSummary[normalizeGroupKey(assignedGroup)]?.share ?? null,
+      };
+    })
+    .filter((row) => row.deal_name && row.group_key);
   // members (فقط آخرین snapshot هر گروه)
   const members = {};
   const membersByGroup = {};
@@ -425,6 +495,7 @@ function mapSheetsToPayload({
     mega_deals_details, // 👈 این
     weekly_trips_details: weekly_trips_details_latest,
     logistic_aa,
+    group_offers,
   };
 }
 
@@ -443,6 +514,7 @@ export default async function handler(req, res) {
       SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
       SHEET_MEGA_DEALS_CSV_URL,
       SHEET_LOGISTIC_AA_CSV_URL,
+      SHEET_GROUP_OFFERS_CSV_URL,
     } = process.env;
 
     const fetchCSV = async (url) => {
@@ -451,6 +523,16 @@ export default async function handler(req, res) {
       if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
       return parseCSV(await r.text());
     };
+
+    const fetchOptionalCSV = async (url, label) => {
+      try {
+        return await fetchCSV(url);
+      } catch (e) {
+        console.warn(`${label} CSV fetch failed`, e);
+        return [];
+      }
+    };
+
     let weeklySheet = [],
       membersSheet = [],
       latestSheet = [],
@@ -461,7 +543,8 @@ export default async function handler(req, res) {
       techQueueSheet = [],
       megaDealsSheet = [],
       weeklyTripsSheet = [],
-      logisticAASheet = []; // ✅ اینجا باید باشد
+      logisticAASheet = [], // ✅ اینجا باید باشد
+      groupOffersSheet = [];
 
     try {
       weeklySheet = await fetchCSV(SHEET_WEEKLY_CSV_URL);
@@ -475,6 +558,7 @@ export default async function handler(req, res) {
       megaDealsSheet = await fetchCSV(SHEET_MEGA_DEALS_CSV_URL); // 👈 این
       weeklyTripsSheet = await fetchCSV(SHEET_WEEKLY_TRIPS_CSV_URL);
       logisticAASheet = await fetchCSV(SHEET_LOGISTIC_AA_CSV_URL);
+      groupOffersSheet = await fetchOptionalCSV(SHEET_GROUP_OFFERS_CSV_URL, "GROUP OFFERS");
       console.log("LOGISTIC URL:", SHEET_LOGISTIC_AA_CSV_URL);
       console.log("LOGISTIC rows:", logisticAASheet.length);
       console.log(
@@ -521,6 +605,7 @@ export default async function handler(req, res) {
       megaDealsSheet,
       weeklyTripsSheet, // ✅ اضافه شد
       logisticAASheet, // ✅ حتماً این هم باشه
+      groupOffersSheet,
     });
 
     res.status(200).json(payload);

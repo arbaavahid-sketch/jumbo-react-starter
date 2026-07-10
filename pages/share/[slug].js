@@ -1,5 +1,10 @@
 // pages/share/[slug].js — داشبورد عمومی گروه/تکنیکال بر اساس slug (مثلاً /share/...)
 import LogisticAATable from "../../components/LogisticAATable";
+import GroupOffersTable, {
+  GROUP_VIEWS,
+  GroupViewToggle,
+  useScheduledGroupView,
+} from "../../components/GroupOffersTable";
 
 import Head from "next/head";
 import useSWR from "swr";
@@ -252,6 +257,8 @@ function PublicGroupDashboard({ groupKey }) {
     refreshInterval: 60_000,
   });
 
+  const { activeView, scheduledView, isManual, toggleView } = useScheduledGroupView();
+
   if (error)
     return (
       <div style={{ padding: 16, color: "#d44800" }}>
@@ -268,6 +275,7 @@ function PublicGroupDashboard({ groupKey }) {
   const ceoMessages = raw.ceo_messages || {};
   const arAll = ensureArray(raw.ar_list);
   const logisticRows = ensureArray(raw.logistic_aa);
+  const groupOfferRows = ensureArray(raw.group_offers);
 
   const arForGroup = arAll.filter((r) => toStr(r.group).toUpperCase() === groupKey);
 
@@ -347,6 +355,73 @@ function PublicGroupDashboard({ groupKey }) {
     return { label: g.name || `Group ${k}`, value: Number(row.total_sales_eur || 0) };
   });
 
+  const viewToggle = (
+    <GroupViewToggle
+      activeView={activeView}
+      scheduledView={scheduledView}
+      isManual={isManual}
+      onToggle={toggleView}
+    />
+  );
+
+  if (activeView === GROUP_VIEWS.OFFERS) {
+    return (
+      <main className="container">
+        <Head>
+          <title>{pageTitle} - Offers</title>
+          <meta name="description" content={`Offers sent for group ${groupKey}.`} />
+        </Head>
+
+        <div className="dashboard-header">
+          <h1 className="dashboard-title">{pageTitle}</h1>
+          <div className="dashboard-brand">
+            <img
+              src="/company-logo.png"
+              alt="company logo"
+              style={{ width: 160, height: 80, objectFit: "contain", display: "block" }}
+            />
+            <div
+              style={{
+                fontSize: 12,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "#4b5563",
+              }}
+            >
+              <LiveClock />
+            </div>
+            {viewToggle}
+          </div>
+        </div>
+
+        <section className="section news-section">
+          <div className="news-block" style={{ marginBottom: 20 }}>
+            <NewsTicker />
+          </div>
+          <div className="news-block" style={{ marginBottom: 20 }}>
+            <RatesStrip />
+          </div>
+        </section>
+
+        {hasCeoMessage && (
+          <section className="section" style={{ marginTop: 16 }}>
+            <CeoMessage text={rawCeoText} />
+          </section>
+        )}
+
+        <section className="section" style={{ marginTop: 0 }}>
+          <GroupOffersTable rows={groupOfferRows} groupKey={groupKey} />
+        </section>
+
+        <section className="section">
+          <div className="news-block" style={{ marginTop: 24 }}>
+            <NewsTickerEn />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="container">
       <Head>
@@ -376,6 +451,7 @@ function PublicGroupDashboard({ groupKey }) {
           >
             <LiveClock />
           </div>
+          {viewToggle}
         </div>
       </div>
 
