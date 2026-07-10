@@ -1,117 +1,110 @@
+import { useEffect } from "react";
 import useSWR from "swr";
 
+const TGJU_SCRIPT_ID = "tgju-widget-script";
+const TGJU_ITEMS =
+  "398096,398110,137139,137140,137121,137137,523798,523796,137203,137205,137206,137214";
+
 const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
 };
 
-const toNum = (v) => {
-  if (v == null) return NaN;
-  const n = Number(String(v).replace(/,/g, "").trim());
-  return Number.isFinite(n) ? n : NaN;
+const toNum = (value) => {
+  const numeric = Number(
+    String(value ?? "")
+      .replace(/,/g, "")
+      .trim(),
+  );
+  return Number.isFinite(numeric) ? numeric : NaN;
 };
 
-const fmt = (n) =>
-  Number.isFinite(n) ? new Intl.NumberFormat("fa-IR").format(Math.round(n)) : "—";
-
-// Navasan returns most items in Toman; show everything in Rial (×10).
-const rial = (toman) => (Number.isFinite(toman) ? toman * 10 : NaN);
-
-// Bring the NIMA value to the free-market scale (mex_* is Rial, free is Toman →
-// a ~10x gap is a unit mismatch; the real spread is always well under 1.5x).
-const matchScale = (free, nima) => {
+const matchScale = (free, official) => {
   let f = free;
-  let n = nima;
-  if (f > 0 && n > 0) {
-    while (n / f >= 3) n /= 10;
-    while (f / n >= 3) n *= 10;
+  let o = official;
+  if (f > 0 && o > 0) {
+    while (f / o >= 3) o *= 10;
+    while (o / f >= 3) f *= 10;
   }
-  return [f, n];
+  return [f, o];
 };
 
-const ITEMS = [
-  { label: "دلار", key: "usd", nimaKey: "mex_usd_sell" },
-  { label: "یورو", key: "eur", nimaKey: "mex_eur_sell" },
-  { label: "روبل", key: "rub" },
-  { label: "درهم", key: "aed" },
-  { label: "طلای ۱۸", key: "18ayar" },
-  { label: "بیت‌کوین", key: "btc" },
-  { label: "تتر", key: "usdt" },
-];
+const calcSpread = (free, official) => {
+  const [f, o] = matchScale(free, official);
+  return f > 0 && o > 0 ? ((f - o) / o) * 100 : NaN;
+};
+
+const spreadTone = (spread) => {
+  if (!Number.isFinite(spread)) return spreadMuted;
+  if (spread >= 20) return spreadDanger;
+  if (spread >= 10) return spreadWarn;
+  return spreadGood;
+};
 
 export default function RatesStrip() {
-  const { data } = useSWR("/api/rates", fetcher, {
+  const { data: tgjuData } = useSWR("/api/tgju-rates", fetcher, {
     revalidateOnFocus: false,
-    // Navasan free plan is only 120 calls/month, so poll conservatively.
-    refreshInterval: 30 * 60 * 1000,
+    refreshInterval: 15 * 60 * 1000,
   });
-
-  // Second-hall ("تالار دوم") rates entered in the sheet (ice.ir values).
   const { data: nimaData } = useSWR("/api/nima", fetcher, {
     revalidateOnFocus: false,
-    refreshInterval: 30 * 60 * 1000,
+    refreshInterval: 60 * 60 * 1000,
   });
 
-  const items = data?.items || {};
-  const nimaRates = nimaData?.rates || {};
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
 
-  const segData = ITEMS.map((it) => {
-    const val = toNum(items?.[it.key]?.value);
-    const chg = toNum(items?.[it.key]?.change);
-    const pct = Number.isFinite(chg) && val > 0 ? (chg / val) * 100 : NaN;
-
-    let spread = NaN;
-    if (it.nimaKey) {
-      const sheetNima = nimaRates[it.key];
-      const rawNima =
-        Number.isFinite(sheetNima) && sheetNima > 0
-          ? sheetNima
-          : toNum(items?.[it.nimaKey]?.value);
-      const [f, n] = matchScale(val, rawNima);
-      if (f > 0 && n > 0) spread = ((f - n) / n) * 100;
+    if (!document.getElementById(TGJU_SCRIPT_ID)) {
+      const script = document.createElement("script");
+      script.id = TGJU_SCRIPT_ID;
+      script.src = "https://api.tgju.org/v1/widget/v2";
+      script.defer = true;
+      document.body.appendChild(script);
     }
 
-    return { label: it.label, valRial: rial(val), pct, spread };
-  });
+    const interval = window.setInterval(() => {
+      document.querySelectorAll("*").forEach((el) => {
+        if (el.textContent?.trim() === "By TGJU") {
+          el.style.display = "none";
+        }
+      });
+    }, 500);
 
-  const renderSeg = (d, i) => {
-    const up = d.pct > 0;
-    const down = d.pct < 0;
-    const chgColor = up ? "#0a7f2e" : down ? "#c92a2a" : "#64748b";
-    const arrow = up ? "▲" : down ? "▼" : "•";
-    return (
-      <span className="seg" key={i}>
-        <span className="dot" />
-        <b className="lbl">{d.label}</b>
-        <span className="val">{fmt(d.valRial)}</span>
-        {Number.isFinite(d.pct) && (
-          <span className="chg" style={{ color: chgColor }}>
-            {arrow} {Math.abs(d.pct).toFixed(2)}٪
-          </span>
-        )}
-        {Number.isFinite(d.spread) && (
-          <span
-            className="badge"
-            style={{
-              background: d.spread >= 20 ? "#fee2e2" : d.spread >= 10 ? "#fef3c7" : "#dcfce7",
-              color: d.spread >= 20 ? "#991b1b" : d.spread >= 10 ? "#92400e" : "#166534",
-            }}
-          >
-            اختلاف نیما {d.spread.toFixed(1)}٪
-          </span>
-        )}
-      </span>
-    );
-  };
+    return () => window.clearInterval(interval);
+  }, []);
 
-  const loop = [...segData, ...segData];
+  const tgjuRates = tgjuData?.rates || {};
+  const nimaRates = nimaData?.rates || {};
+  const spreads = [
+    {
+      label: "اختلاف دلار با حواله فروش",
+      value: calcSpread(toNum(tgjuRates.usd?.value), toNum(nimaRates.usd)),
+    },
+    {
+      label: "اختلاف یورو با حواله فروش",
+      value: calcSpread(toNum(tgjuRates.eur?.value), toNum(nimaRates.eur)),
+    },
+  ];
 
   return (
     <div className="fxwrap" dir="ltr">
-      <span className="fxtag">نرخ ارز • LIVE Navasan</span>
+      <span className="fxtag">نرخ ارز • LIVE TGJU</span>
+      <div className="spreadbar" dir="rtl">
+        {spreads.map((item) => (
+          <span key={item.label} className="spread" style={spreadTone(item.value)}>
+            {item.label}: {Number.isFinite(item.value) ? `${item.value.toFixed(1)}٪` : "—"}
+          </span>
+        ))}
+      </div>
       <div className="fxbar">
-        <div className="fxtrack">{loop.map(renderSeg)}</div>
+        <tgju
+          type="ticker-tap"
+          items={TGJU_ITEMS}
+          columns="dot"
+          speed="95"
+          token="webservice"
+        ></tgju>
       </div>
 
       <style jsx>{`
@@ -123,7 +116,9 @@ export default function RatesStrip() {
           padding: 4px 12px;
           font-family: "Vazirmatn", system-ui, sans-serif;
           background: #ffffff;
-          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(148, 163, 184, 0.35);
+          box-shadow:
+            0 10px 30px rgba(15, 23, 42, 0.1),
+            0 0 0 1px rgba(148, 163, 184, 0.35);
           border-top: 3px solid #3b82f6;
           color: #0f172a;
           overflow: hidden;
@@ -139,70 +134,64 @@ export default function RatesStrip() {
           padding-right: 12px;
           border-right: 1px solid rgba(148, 163, 184, 0.4);
         }
+        .spreadbar {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .spread {
+          display: inline-flex;
+          align-items: center;
+          min-height: 24px;
+          border-radius: 999px;
+          padding: 3px 10px;
+          font-size: 12px;
+          font-weight: 900;
+          white-space: nowrap;
+          border: 1px solid transparent;
+        }
         .fxbar {
           flex: 1 1 auto;
+          min-height: 42px;
           overflow: hidden;
           position: relative;
           direction: ltr;
-        }
-        .fxtrack {
           display: flex;
           align-items: center;
-          gap: 34px;
-          width: max-content;
-          padding: 10px 0;
-          /* مدت‌زمان = سرعت اسکرول؛ عددِ کمتر سریع‌تر، عددِ بیشتر کندتر */
-          animation: fxscroll 35s linear infinite;
-          will-change: transform;
-        }
-        .fxwrap:hover .fxtrack {
-          animation-play-state: paused;
-        }
-        @keyframes fxscroll {
-          from {
-            transform: translateX(-50%);
-          }
-          to {
-            transform: translateX(0);
-          }
         }
       `}</style>
       <style jsx global>{`
-        .fxtrack .seg {
-          display: inline-flex;
-          align-items: center;
-          gap: 9px;
-          white-space: nowrap;
-        }
-        .fxtrack .seg .dot {
-          width: 9px;
-          height: 9px;
-          border-radius: 999px;
-          background: #f59e0b;
-          flex: 0 0 auto;
-        }
-        .fxtrack .seg .lbl {
-          color: #0f172a;
-          font-weight: 900;
-          font-size: 15px;
-        }
-        .fxtrack .seg .val {
-          color: #0f172a;
-          font-weight: 800;
-          font-size: 15px;
-          font-variant-numeric: tabular-nums;
-        }
-        .fxtrack .seg .chg {
-          font-weight: 800;
-          font-size: 13px;
-        }
-        .fxtrack .seg .badge {
-          font-weight: 900;
-          font-size: 12px;
-          border-radius: 999px;
-          padding: 2px 10px;
+        .fxbar tgju {
+          width: 100%;
+          display: block;
         }
       `}</style>
     </div>
   );
 }
+
+const spreadMuted = {
+  background: "#f1f5f9",
+  color: "#64748b",
+  borderColor: "#e2e8f0",
+};
+
+const spreadGood = {
+  background: "#dcfce7",
+  color: "#166534",
+  borderColor: "#bbf7d0",
+};
+
+const spreadWarn = {
+  background: "#fef3c7",
+  color: "#92400e",
+  borderColor: "#fde68a",
+};
+
+const spreadDanger = {
+  background: "#fee2e2",
+  color: "#991b1b",
+  borderColor: "#fecaca",
+};

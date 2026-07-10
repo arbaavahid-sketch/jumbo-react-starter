@@ -1,11 +1,43 @@
 // pages/api/rates.js
 
+const SUCCESS_CACHE_SECONDS = 60 * 60;
+const STALE_CACHE_SECONDS = 6 * 60 * 60;
+const ERROR_CACHE_SECONDS = 60;
+
+const memoryCache = {
+  items: null,
+  fetchedAt: 0,
+};
+
+const send = (res, payload, cacheSeconds = ERROR_CACHE_SECONDS) => {
+  res.setHeader(
+    "Cache-Control",
+    `public, s-maxage=${cacheSeconds}, stale-while-revalidate=${STALE_CACHE_SECONDS}`,
+  );
+  return res.status(200).json(payload);
+};
+
 export default async function handler(req, res) {
   const key = process.env.NAVASAN_API_KEY;
 
   if (!key) {
     // اگر تو .env.local ست نشده باشد
-    return res.status(500).json({ error: "NAVASAN_API_KEY not set", items: {} });
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(200).json({ error: "NAVASAN_API_KEY_NOT_SET", items: {} });
+  }
+
+  const cacheAgeSeconds = Math.floor((Date.now() - memoryCache.fetchedAt) / 1000);
+  if (memoryCache.items && cacheAgeSeconds >= 0 && cacheAgeSeconds < SUCCESS_CACHE_SECONDS) {
+    return send(
+      res,
+      {
+        items: memoryCache.items,
+        error: null,
+        cache: "memory",
+        cache_age_seconds: cacheAgeSeconds,
+      },
+      SUCCESS_CACHE_SECONDS - cacheAgeSeconds,
+    );
   }
 
   // آیتم‌هایی که خودت گفتی می‌خوای:
@@ -29,7 +61,7 @@ export default async function handler(req, res) {
     "mex_eur_buy",
   ];
 
-  const url = `http://api.navasan.tech/latest/?api_key=${encodeURIComponent(
+  const url = `https://api.navasan.tech/latest/?api_key=${encodeURIComponent(
     key,
   )}&item=${itemList.join(",")}`;
 
@@ -42,26 +74,51 @@ export default async function handler(req, res) {
       console.error("NAVASAN ERROR:", r.status, text);
 
       // به فرانت هم برگردونیم تا بفهمیم چی شده
-      return res.status(200).json({
+      if (memoryCache.items) {
+        return send(res, {
+          items: memoryCache.items,
+          error: r.status === 429 ? "NAVASAN_RATE_LIMITED" : `HTTP_${r.status}`,
+          stale: true,
+          cache_age_seconds: cacheAgeSeconds,
+        });
+      }
+
+      return send(res, {
         items: {},
-        error: `HTTP_${r.status}`,
+        error: r.status === 429 ? "NAVASAN_RATE_LIMITED" : `HTTP_${r.status}`,
         raw: text,
       });
     }
 
     // اگر 200 بود، دیتا JSON عادی نوسان است
     const data = JSON.parse(text);
+    memoryCache.items = data;
+    memoryCache.fetchedAt = Date.now();
 
     // همون آبجکت را زیر کلید items برمی‌گردونیم
-    return res.status(200).json({
-      items: data,
-      error: null,
-    });
+    return send(
+      res,
+      {
+        items: data,
+        error: null,
+        cache: "fresh",
+      },
+      SUCCESS_CACHE_SECONDS,
+    );
   } catch (e) {
     console.error("Rates API error:", e);
-    return res.status(200).json({
+    if (memoryCache.items) {
+      return send(res, {
+        items: memoryCache.items,
+        error: "NAVASAN_FETCH_FAILED",
+        stale: true,
+        cache_age_seconds: cacheAgeSeconds,
+      });
+    }
+    return send(res, {
       items: {},
-      error: e.message || "fetch_failed",
+      error: "NAVASAN_FETCH_FAILED",
+      detail: e.message || "fetch_failed",
     });
   }
 }

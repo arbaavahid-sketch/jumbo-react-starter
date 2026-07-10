@@ -43,7 +43,11 @@ function parseCSV(text) {
     rows.push(row);
   }
   if (!rows.length) return [];
-  const headers = rows[0].map((h) => String(h || "").trim().toLowerCase());
+  const headers = rows[0].map((h) =>
+    String(h || "")
+      .trim()
+      .toLowerCase(),
+  );
   return rows
     .slice(1)
     .filter((r) => r.some(Boolean))
@@ -58,6 +62,24 @@ const toNum = (v) => {
   if (v == null || v === "") return NaN;
   const n = Number(String(v).replace(/,/g, "").trim());
   return Number.isFinite(n) ? n : NaN;
+};
+
+const normalizeCurrency = (value) => {
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (!raw) return "";
+  if (raw === "usd" || raw.includes("دلار")) return "usd";
+  if (raw === "eur" || raw.includes("یورو")) return "eur";
+  return raw;
+};
+
+const pickValue = (row, keys) => {
+  for (const key of keys) {
+    const value = row[key];
+    if (value != null && String(value).trim() !== "") return value;
+  }
+  return "";
 };
 
 export default async function handler(req, res) {
@@ -75,8 +97,22 @@ export default async function handler(req, res) {
     const rows = parseCSV(await r.text());
     const rates = {};
     for (const row of rows) {
-      const cur = String(row.currency || row.symbol || row.code || "").trim().toLowerCase();
-      const val = toNum(row.second_hall ?? row.nima ?? row.rate ?? row.value);
+      const cur = normalizeCurrency(
+        pickValue(row, ["currency", "symbol", "code", "نرخ ارزها", "نرخ ارز"]),
+      );
+      const val = toNum(
+        pickValue(row, [
+          "فروش / نیما",
+          "فروش/نیما",
+          "مرکز مبادله / حواله فروش",
+          "مرکز مبادله/حواله فروش",
+          "second_hall",
+          "nima_sell",
+          "nima",
+          "rate",
+          "value",
+        ]),
+      );
       if (cur && Number.isFinite(val)) rates[cur] = val;
     }
 

@@ -35,6 +35,7 @@ import {
   YAxis,
 } from "recharts";
 import RatesStrip from "../../components/RatesStrip";
+import GroupOffersTable, { normalizeGroupKey } from "../../components/GroupOffersTable";
 
 const fetcher = async (url) => {
   const r = await fetch(url);
@@ -104,6 +105,7 @@ export default function Admin() {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
+  const [selectedOfferGroup, setSelectedOfferGroup] = useState("A");
 
   if (error) {
     return <LoadState tone="danger" title="Admin data could not load" detail={String(error)} />;
@@ -132,6 +134,22 @@ export default function Admin() {
   const dealsExec = ensureArray(data.deals_exec);
   const arList = ensureArray(data.ar_list);
   const megaDeals = ensureArray(data.mega_deals_details || data.mega_deals);
+  const groupOffers = ensureArray(data.group_offers);
+  const groupOfferModels = ["A", "B", "C"].map((key) => {
+    const rows = groupOffers.filter((row) => normalizeGroupKey(row.group_key || row.group) === key);
+    const summary = rows.find(
+      (row) => Number.isFinite(row.group_count) || Number.isFinite(row.group_share),
+    );
+    const amount = rows.reduce((sum, row) => sum + num(row.amount_eur), 0);
+    return {
+      key,
+      count: Number.isFinite(Number(summary?.group_count))
+        ? Number(summary.group_count)
+        : rows.length,
+      share: Number.isFinite(Number(summary?.group_share)) ? Number(summary.group_share) : null,
+      amount,
+    };
+  });
 
   const groupModels = groups.map((g, idx) => {
     const key = normGroup(g.key || g.code || g.group || g.name);
@@ -318,6 +336,55 @@ export default function Admin() {
             {groupModels.map((g) => (
               <GroupAdminCard key={g.key} group={g} />
             ))}
+          </section>
+
+          <SectionTitle
+            title="Group Offers"
+            detail="Morning offers board with the same sheet summary and group filtering."
+          />
+          <section style={overviewGrid}>
+            {groupOfferModels.map((group) => (
+              <MetricCard
+                key={group.key}
+                label={`Group ${group.key} Share`}
+                value={
+                  group.share == null
+                    ? "-"
+                    : new Intl.NumberFormat("en-US", {
+                        style: "percent",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(group.share)
+                }
+                Icon={FiSend}
+                tone={selectedOfferGroup === group.key ? "good" : "default"}
+              />
+            ))}
+          </section>
+          <section style={panel}>
+            <div style={offerToolbar}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {groupOfferModels.map((group) => (
+                  <button
+                    type="button"
+                    key={group.key}
+                    onClick={() => setSelectedOfferGroup(group.key)}
+                    style={{
+                      ...offerTab,
+                      ...(selectedOfferGroup === group.key ? offerTabActive : null),
+                    }}
+                  >
+                    Group {group.key}
+                  </button>
+                ))}
+              </div>
+              <div style={offerToolbarMeta}>
+                {fmtInt(groupOfferModels.find((g) => g.key === selectedOfferGroup)?.count)} deals
+                {" · "}€{" "}
+                {fmtEUR(groupOfferModels.find((g) => g.key === selectedOfferGroup)?.amount)}
+              </div>
+            </div>
+            <GroupOffersTable rows={groupOffers} groupKey={selectedOfferGroup} />
           </section>
 
           <SectionTitle title="Supply" detail="Same supply KPI set plus manager-level workload." />
@@ -840,6 +907,38 @@ const panelLink = {
   fontWeight: 900,
   textDecoration: "none",
   whiteSpace: "nowrap",
+};
+
+const offerToolbar = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  marginBottom: 12,
+};
+
+const offerTab = {
+  border: "1px solid #cbd5e1",
+  borderRadius: 10,
+  background: "#f8fafc",
+  color: "#334155",
+  padding: "9px 12px",
+  fontSize: 13,
+  fontWeight: 900,
+  cursor: "pointer",
+};
+
+const offerTabActive = {
+  background: "#2563eb",
+  borderColor: "#2563eb",
+  color: "#ffffff",
+};
+
+const offerToolbarMeta = {
+  color: "#475569",
+  fontSize: 13,
+  fontWeight: 900,
 };
 
 const sectionTitle = {
