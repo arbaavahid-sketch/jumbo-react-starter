@@ -57,6 +57,14 @@ function parseCSV(text) {
     });
 }
 
+function firstText(row, keys) {
+  for (const key of keys) {
+    const value = row[key];
+    if (value != null && String(value).trim()) return String(value).trim();
+  }
+  return "";
+}
+
 export default async function handler(req, res) {
   try {
     const SHEET_URL = process.env.SHEET_TECH_CSV_URL;
@@ -146,6 +154,34 @@ export default async function handler(req, res) {
           r["Installed deals IDs"] ||
           ""
         ).trim(),
+
+        repairing_ids: firstText(r, [
+          "repairing_ids",
+          "repairing",
+          "under_repair_ids",
+          "under repair",
+          "under repair ids",
+          "devices under repair",
+          "repairing devices",
+          "in repair",
+          "در حال تعمیر",
+          "درحال تعمیر",
+          "در حال تعمییر",
+        ]),
+
+        serviced_ids: firstText(r, [
+          "serviced_ids",
+          "serviced",
+          "serviced_devices",
+          "serviced devices",
+          "repaired_ids",
+          "repaired",
+          "service done",
+          "service_done",
+          "سرویس شده",
+          "تعمیر شده",
+          "تعمییر شده",
+        ]),
       };
 
       return obj;

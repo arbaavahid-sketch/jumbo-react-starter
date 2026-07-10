@@ -131,6 +131,8 @@ export default function Admin() {
 
   const installedRows = parseTextList(tech.installed_ids);
   const waitingRows = parseTextList(tech.waiting_installation_ids);
+  const repairingRows = parseTextList(tech.repairing_ids);
+  const servicedRows = parseTextList(tech.serviced_ids);
   const dealsExec = ensureArray(data.deals_exec);
   const arList = ensureArray(data.ar_list);
   const megaDeals = ensureArray(data.mega_deals_details || data.mega_deals);
@@ -501,6 +503,18 @@ export default function Admin() {
               tone="good"
             />
             <MetricCard
+              label="Under Repair"
+              value={fmtInt(repairingRows.length)}
+              Icon={FiTool}
+              tone="danger"
+            />
+            <MetricCard
+              label="Serviced / Repaired"
+              value={fmtInt(servicedRows.length)}
+              Icon={FiCheckSquare}
+              tone="good"
+            />
+            <MetricCard
               label="Promotion Trips"
               value={fmtInt(tech.promotion_trips)}
               Icon={FiUsers}
@@ -576,6 +590,18 @@ export default function Admin() {
               <DataTable
                 columns={["ID", "Center / Subject"]}
                 rows={waitingRows.map((row) => [row.id, row.description || "-"])}
+              />
+            </Panel>
+            <Panel title={`Under Repair (${repairingRows.length})`} Icon={FiTool}>
+              <DataTable
+                columns={["ID", "Center / Subject"]}
+                rows={repairingRows.map((row) => [row.id, row.description || "-"])}
+              />
+            </Panel>
+            <Panel title={`Serviced / Repaired (${servicedRows.length})`} Icon={FiCheckSquare}>
+              <DataTable
+                columns={["ID", "Center / Subject"]}
+                rows={servicedRows.map((row) => [row.id, row.description || "-"])}
               />
             </Panel>
           </section>

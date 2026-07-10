@@ -28,6 +28,7 @@ import {
   FiBookOpen,
   FiLink,
   FiCheckSquare,
+  FiTool,
 } from "react-icons/fi";
 
 const fetcher = async (url) => {
@@ -76,6 +77,17 @@ function pctDelta(curr, prev) {
 }
 
 // Badge کوچک زیر عدد کارت
+function parseTextList(value = "") {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [idPart, ...rest] = line.split("-");
+      return { id: idPart.trim(), description: rest.join("-").trim() };
+    });
+}
+
 function DeltaBadge({ delta }) {
   if (!delta) return null;
   const { pct, dir, inf } = delta;
@@ -189,23 +201,10 @@ export default function TechnicalDashboard() {
       waiting: pctDelta(curr?.waiting_installation, prev?.waiting_installation),
     };
 
-    const waitingRows = (t.waiting_installation_ids || "")
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [idPart, ...rest] = line.split("-");
-        return { id: idPart.trim(), description: rest.join("-").trim() };
-      });
-
-    const installedRows = (t.installed_ids || "")
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [idPart, ...rest] = line.split("-");
-        return { id: idPart.trim(), description: rest.join("-").trim() };
-      });
+    const waitingRows = parseTextList(t.waiting_installation_ids);
+    const installedRows = parseTextList(t.installed_ids);
+    const repairingRows = parseTextList(t.repairing_ids);
+    const servicedRows = parseTextList(t.serviced_ids);
 
     const installedCount = installedRows.length;
 
@@ -291,6 +290,18 @@ export default function TechnicalDashboard() {
                 label="INSTALLED DEALS AT 2026"
                 value={installedCount}
                 delta={installedDelta}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiTool />}
+                label="UNDER REPAIR / SERVICE"
+                value={repairingRows.length}
+                isMobile={isMobile}
+              />
+              <TechCard
+                icon={<FiCheckSquare />}
+                label="SERVICED / REPAIRED"
+                value={servicedRows.length}
                 isMobile={isMobile}
               />
               <TechCard
@@ -387,7 +398,7 @@ export default function TechnicalDashboard() {
           style={{
             marginTop: 24,
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1.1fr 1.1fr 1fr",
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit,minmax(280px,1fr))",
             gap: 20,
             alignItems: "stretch",
           }}
@@ -407,6 +418,44 @@ export default function TechnicalDashboard() {
                 }}
               >
                 <SimpleTable rows={installedRows} />
+              </AutoScrollContainer>
+            )}
+          </TableCard>
+
+          {/* Repairing */}
+          <TableCard title="UNDER REPAIR / SERVICE" height={tableHeight}>
+            {repairingRows.length === 0 ? (
+              <EmptyBox text="No devices are under repair/service." />
+            ) : (
+              <AutoScrollContainer
+                height={tableHeight}
+                speed={1}
+                containerStyle={{
+                  borderRadius: 16,
+                  background: "#ffffff",
+                  boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
+                }}
+              >
+                <SimpleTable rows={repairingRows} />
+              </AutoScrollContainer>
+            )}
+          </TableCard>
+
+          {/* Serviced */}
+          <TableCard title="SERVICED / REPAIRED" height={tableHeight}>
+            {servicedRows.length === 0 ? (
+              <EmptyBox text="No serviced devices recorded yet." />
+            ) : (
+              <AutoScrollContainer
+                height={tableHeight}
+                speed={1}
+                containerStyle={{
+                  borderRadius: 16,
+                  background: "#ffffff",
+                  boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
+                }}
+              >
+                <SimpleTable rows={servicedRows} />
               </AutoScrollContainer>
             )}
           </TableCard>

@@ -49,6 +49,7 @@ import {
   FiBriefcase,
   FiCamera,
   FiBookOpen,
+  FiTool,
 } from "react-icons/fi";
 
 // ---------- getServerSideProps ----------
@@ -142,6 +143,17 @@ function pctDelta(curr, prev) {
 
   const diff = ((c - p) / Math.abs(p)) * 100;
   return { pct: diff, dir: diff === 0 ? 0 : diff > 0 ? 1 : -1 };
+}
+
+function parseTextList(value = "") {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [idPart, ...rest] = line.split("-");
+      return { id: idPart.trim(), description: rest.join("-").trim() };
+    });
 }
 
 // ---------- DeltaBadge ----------
@@ -697,6 +709,9 @@ function PublicTechnicalDashboard() {
       waiting: pctDelta(curr?.waiting_installation, prev?.waiting_installation),
     };
 
+    const repairingRows = parseTextList(t.repairing_ids);
+    const servicedRows = parseTextList(t.serviced_ids);
+
     const dealsChartData = [
       { name: "Aref", weeklyDeals: t.aref_deals_done ?? 0, totalDeals: t.aref ?? 0 },
       { name: "Golsanam", weeklyDeals: t.golsanam_deals_done ?? 0, totalDeals: t.golsanam ?? 0 },
@@ -742,6 +757,12 @@ function PublicTechnicalDashboard() {
             label="Waiting for Installation"
             value={t.waiting_installation}
             delta={deltas.waiting}
+          />
+          <TechCard icon={<FiTool />} label="Under Repair / Service" value={repairingRows.length} />
+          <TechCard
+            icon={<FiCheckCircle />}
+            label="Serviced / Repaired"
+            value={servicedRows.length}
           />
           <TechCard
             icon={<FiBriefcase />}
@@ -812,6 +833,28 @@ function PublicTechnicalDashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 28,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+            gap: 18,
+          }}
+        >
+          <TechnicalListPanel title={`Under Repair / Service (${repairingRows.length})`}>
+            <TechnicalSimpleTable
+              rows={repairingRows}
+              emptyText="No devices are under repair/service."
+            />
+          </TechnicalListPanel>
+          <TechnicalListPanel title={`Serviced / Repaired (${servicedRows.length})`}>
+            <TechnicalSimpleTable
+              rows={servicedRows}
+              emptyText="No serviced devices recorded yet."
+            />
+          </TechnicalListPanel>
         </div>
 
         {/* Tech Queue */}
@@ -1086,6 +1129,104 @@ function PublicTechnicalDashboard() {
         {body}
       </div>
     </main>
+  );
+}
+
+function TechnicalListPanel({ title, children }) {
+  return (
+    <div
+      style={{
+        borderRadius: 20,
+        background: "#ffffff",
+        boxShadow: "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+        padding: 12,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          color: "#6b7280",
+          marginBottom: 10,
+        }}
+      >
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function TechnicalSimpleTable({ rows, emptyText }) {
+  if (!rows.length) {
+    return (
+      <div
+        style={{
+          fontSize: 13,
+          padding: 10,
+          borderRadius: 16,
+          background: "rgba(148,163,184,0.1)",
+          color: "#6b7280",
+          border: "1px dashed rgba(148,163,184,0.6)",
+        }}
+      >
+        {emptyText}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        borderRadius: 16,
+        maxHeight: 260,
+        overflow: "auto",
+        boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
+      }}
+    >
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
+          <tr>
+            <th
+              style={{
+                padding: "8px 10px",
+                textAlign: "left",
+                fontWeight: 700,
+                color: "#0f172a",
+                borderBottom: "1px solid rgba(148,163,184,0.6)",
+                background: "#e0f2fe",
+                width: 80,
+                whiteSpace: "nowrap",
+              }}
+            >
+              ID
+            </th>
+            <th
+              style={{
+                padding: "8px 10px",
+                textAlign: "left",
+                fontWeight: 700,
+                color: "#0f172a",
+                borderBottom: "1px solid rgba(148,163,184,0.6)",
+                background: "#e0f2fe",
+              }}
+            >
+              Center / Subject
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, idx) => (
+            <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
+              <td style={{ padding: "7px 10px", color: "#111827", fontWeight: 600 }}>{row.id}</td>
+              <td style={{ padding: "7px 10px", color: "#374151" }}>{row.description || "-"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
