@@ -154,12 +154,48 @@ export default function RatesStrip() {
         }
         .fxbar {
           flex: 1 1 auto;
+          min-width: 180px;
           min-height: 42px;
           overflow: hidden;
           position: relative;
           direction: ltr;
           display: flex;
           align-items: center;
+        }
+        @media (max-width: 760px) {
+          .fxwrap {
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+          }
+          .fxtag {
+            font-size: 11px;
+            min-height: 28px;
+            padding-right: 8px;
+          }
+          .spreadbar {
+            flex: 1 1 160px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+          .spreadbar::-webkit-scrollbar {
+            display: none;
+          }
+          .spread {
+            min-height: 26px;
+            padding: 3px 8px;
+            font-size: 11px;
+          }
+          .fxbar {
+            flex: 1 0 100%;
+            width: 100%;
+            min-width: 100%;
+            min-height: 44px;
+            order: 3;
+          }
         }
       `}</style>
       <style jsx global>{`
