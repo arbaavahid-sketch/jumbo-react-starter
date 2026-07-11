@@ -891,11 +891,14 @@ function PublicTechnicalDashboard() {
           style={{
             marginTop: 28,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+            gridTemplateColumns: "repeat(auto-fit,minmax(360px,1fr))",
             gap: 18,
           }}
         >
-          <TechnicalListPanel title={`Under Repair / Service (${repairingRows.length})`}>
+          <TechnicalListPanel
+            title={`Under Repair / Service (${repairingRows.length})`}
+            style={{ gridColumn: "1 / -1" }}
+          >
             <TechnicalSimpleTable
               rows={repairingRows}
               showQueueAge
@@ -1185,7 +1188,7 @@ function PublicTechnicalDashboard() {
   );
 }
 
-function TechnicalListPanel({ title, children }) {
+function TechnicalListPanel({ title, children, style }) {
   return (
     <div
       style={{
@@ -1193,6 +1196,7 @@ function TechnicalListPanel({ title, children }) {
         background: "#ffffff",
         boxShadow: "0 22px 60px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
         padding: 12,
+        ...style,
       }}
     >
       <div

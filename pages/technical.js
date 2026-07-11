@@ -475,23 +475,25 @@ export default function TechnicalDashboard() {
           </TableCard>
 
           {/* Repairing */}
-          <TableCard title="UNDER REPAIR / SERVICE" height={tableHeight}>
-            {repairingRows.length === 0 ? (
-              <EmptyBox text="No devices are under repair/service." />
-            ) : (
-              <AutoScrollContainer
-                height={tableHeight}
-                speed={1}
-                containerStyle={{
-                  borderRadius: 16,
-                  background: "#ffffff",
-                  boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
-                }}
-              >
-                <RepairQueueTable rows={repairingRows} />
-              </AutoScrollContainer>
-            )}
-          </TableCard>
+          <div style={{ gridColumn: isMobile ? "auto" : "span 2" }}>
+            <TableCard title="UNDER REPAIR / SERVICE" height={tableHeight}>
+              {repairingRows.length === 0 ? (
+                <EmptyBox text="No devices are under repair/service." />
+              ) : (
+                <AutoScrollContainer
+                  height={tableHeight}
+                  speed={1}
+                  containerStyle={{
+                    borderRadius: 16,
+                    background: "#ffffff",
+                    boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
+                  }}
+                >
+                  <RepairQueueTable rows={repairingRows} />
+                </AutoScrollContainer>
+              )}
+            </TableCard>
+          </div>
 
           {/* Serviced */}
           <TableCard title="SERVICED / REPAIRED" height={tableHeight}>
@@ -817,13 +819,13 @@ function SimpleTable({ rows }) {
 
 function RepairQueueTable({ rows }) {
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 520 }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, minWidth: 520 }}>
       <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
         <tr>
           {[
-            ["ID", 70],
-            ["Date In", 100],
-            ["Days", 64],
+            ["ID", 76],
+            ["Date In", 112],
+            ["Days", 70],
             ["Center / Subject", "auto"],
           ].map(([title, width]) => (
             <th
