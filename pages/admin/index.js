@@ -64,14 +64,66 @@ const GROUP_COLORS = {
 
 const FALLBACK_COLORS = ["#2563eb", "#f97316", "#14b8a6", "#7c3aed", "#dc2626", "#0891b2"];
 
-const parseTextList = (value = "") =>
+function parseQueueDate(value) {
+  const raw = text(value).trim();
+  if (!raw) return null;
+  const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
+  const parts = normalized.split("/").map((part) => Number(part.trim()));
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return null;
+
+  const [a, b, c] = parts;
+  const year = String(a).length === 4 ? a : c;
+  const month = b;
+  const day = String(a).length === 4 ? c : a;
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function daysInQueue(dateText) {
+  const date = parseQueueDate(dateText);
+  if (!date) return null;
+  const today = new Date();
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.max(0, Math.floor((end - start) / 86_400_000));
+}
+
+const parseTextList = (value = "", { withQueueAge = false } = {}) =>
   text(value)
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
+      const pipeParts = line.split("|").map((part) => part.trim());
+      if (pipeParts.length >= 3) {
+        const [id, entryDate, ...descriptionParts] = pipeParts;
+        return {
+          id,
+          entryDate,
+          daysInQueue: daysInQueue(entryDate),
+          description: descriptionParts.join(" | ").trim(),
+        };
+      }
+
+      const dated = line.match(
+        /^(.+?)\s+-\s+(\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{4})\s+-\s+(.*)$/,
+      );
+      if (dated) {
+        return {
+          id: dated[1].trim(),
+          entryDate: dated[2].trim(),
+          daysInQueue: daysInQueue(dated[2]),
+          description: dated[3].trim(),
+        };
+      }
+
       const [idPart, ...rest] = line.split("-");
-      return { id: idPart.trim(), description: rest.join("-").trim() };
+      return {
+        id: idPart.trim(),
+        entryDate: "",
+        daysInQueue: withQueueAge ? null : undefined,
+        description: rest.join("-").trim(),
+      };
     });
 
 const normGroup = (value) => text(value).trim().toUpperCase();
@@ -131,7 +183,7 @@ export default function Admin() {
 
   const installedRows = parseTextList(tech.installed_ids);
   const waitingRows = parseTextList(tech.waiting_installation_ids);
-  const repairingRows = parseTextList(tech.repairing_ids);
+  const repairingRows = parseTextList(tech.repairing_ids, { withQueueAge: true });
   const servicedRows = parseTextList(tech.serviced_ids);
   const dealsExec = ensureArray(data.deals_exec);
   const arList = ensureArray(data.ar_list);
@@ -594,8 +646,13 @@ export default function Admin() {
             </Panel>
             <Panel title={`Under Repair (${repairingRows.length})`} Icon={FiTool}>
               <DataTable
-                columns={["ID", "Center / Subject"]}
-                rows={repairingRows.map((row) => [row.id, row.description || "-"])}
+                columns={["ID", "Date In", "Days", "Center / Subject"]}
+                rows={repairingRows.map((row) => [
+                  row.id,
+                  row.entryDate || "-",
+                  Number.isFinite(row.daysInQueue) ? row.daysInQueue : "-",
+                  row.description || "-",
+                ])}
               />
             </Panel>
             <Panel title={`Serviced / Repaired (${servicedRows.length})`} Icon={FiCheckSquare}>

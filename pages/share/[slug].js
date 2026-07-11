@@ -145,14 +145,66 @@ function pctDelta(curr, prev) {
   return { pct: diff, dir: diff === 0 ? 0 : diff > 0 ? 1 : -1 };
 }
 
-function parseTextList(value = "") {
+function parseQueueDate(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
+  const parts = normalized.split("/").map((part) => Number(part.trim()));
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return null;
+
+  const [a, b, c] = parts;
+  const year = String(a).length === 4 ? a : c;
+  const month = b;
+  const day = String(a).length === 4 ? c : a;
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function daysInQueue(dateText) {
+  const date = parseQueueDate(dateText);
+  if (!date) return null;
+  const today = new Date();
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.max(0, Math.floor((end - start) / 86_400_000));
+}
+
+function parseTextList(value = "", { withQueueAge = false } = {}) {
   return String(value || "")
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
+      const pipeParts = line.split("|").map((part) => part.trim());
+      if (pipeParts.length >= 3) {
+        const [id, entryDate, ...descriptionParts] = pipeParts;
+        return {
+          id,
+          entryDate,
+          daysInQueue: daysInQueue(entryDate),
+          description: descriptionParts.join(" | ").trim(),
+        };
+      }
+
+      const dated = line.match(
+        /^(.+?)\s+-\s+(\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{4})\s+-\s+(.*)$/,
+      );
+      if (dated) {
+        return {
+          id: dated[1].trim(),
+          entryDate: dated[2].trim(),
+          daysInQueue: daysInQueue(dated[2]),
+          description: dated[3].trim(),
+        };
+      }
+
       const [idPart, ...rest] = line.split("-");
-      return { id: idPart.trim(), description: rest.join("-").trim() };
+      return {
+        id: idPart.trim(),
+        entryDate: "",
+        daysInQueue: withQueueAge ? null : undefined,
+        description: rest.join("-").trim(),
+      };
     });
 }
 
@@ -709,7 +761,7 @@ function PublicTechnicalDashboard() {
       waiting: pctDelta(curr?.waiting_installation, prev?.waiting_installation),
     };
 
-    const repairingRows = parseTextList(t.repairing_ids);
+    const repairingRows = parseTextList(t.repairing_ids, { withQueueAge: true });
     const servicedRows = parseTextList(t.serviced_ids);
 
     const dealsChartData = [
@@ -846,6 +898,7 @@ function PublicTechnicalDashboard() {
           <TechnicalListPanel title={`Under Repair / Service (${repairingRows.length})`}>
             <TechnicalSimpleTable
               rows={repairingRows}
+              showQueueAge
               emptyText="No devices are under repair/service."
             />
           </TechnicalListPanel>
@@ -1159,7 +1212,7 @@ function TechnicalListPanel({ title, children }) {
   );
 }
 
-function TechnicalSimpleTable({ rows, emptyText }) {
+function TechnicalSimpleTable({ rows, emptyText, showQueueAge = false }) {
   if (!rows.length) {
     return (
       <div
@@ -1189,38 +1242,48 @@ function TechnicalSimpleTable({ rows, emptyText }) {
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
         <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
           <tr>
-            <th
-              style={{
-                padding: "8px 10px",
-                textAlign: "left",
-                fontWeight: 700,
-                color: "#0f172a",
-                borderBottom: "1px solid rgba(148,163,184,0.6)",
-                background: "#e0f2fe",
-                width: 80,
-                whiteSpace: "nowrap",
-              }}
-            >
-              ID
-            </th>
-            <th
-              style={{
-                padding: "8px 10px",
-                textAlign: "left",
-                fontWeight: 700,
-                color: "#0f172a",
-                borderBottom: "1px solid rgba(148,163,184,0.6)",
-                background: "#e0f2fe",
-              }}
-            >
-              Center / Subject
-            </th>
+            {[
+              ["ID", 80],
+              ...(showQueueAge
+                ? [
+                    ["Date In", 100],
+                    ["Days", 64],
+                  ]
+                : []),
+              ["Center / Subject", "auto"],
+            ].map(([title, width]) => (
+              <th
+                key={title}
+                style={{
+                  padding: "8px 10px",
+                  textAlign: "left",
+                  fontWeight: 700,
+                  color: "#0f172a",
+                  borderBottom: "1px solid rgba(148,163,184,0.6)",
+                  background: "#e0f2fe",
+                  width,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {title}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, idx) => (
             <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
               <td style={{ padding: "7px 10px", color: "#111827", fontWeight: 600 }}>{row.id}</td>
+              {showQueueAge ? (
+                <>
+                  <td style={{ padding: "7px 10px", color: "#374151", whiteSpace: "nowrap" }}>
+                    {row.entryDate || "-"}
+                  </td>
+                  <td style={{ padding: "7px 10px", color: "#b45309", fontWeight: 800 }}>
+                    {Number.isFinite(row.daysInQueue) ? row.daysInQueue : "-"}
+                  </td>
+                </>
+              ) : null}
               <td style={{ padding: "7px 10px", color: "#374151" }}>{row.description || "-"}</td>
             </tr>
           ))}

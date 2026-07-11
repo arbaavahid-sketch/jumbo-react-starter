@@ -77,14 +77,66 @@ function pctDelta(curr, prev) {
 }
 
 // Badge کوچک زیر عدد کارت
-function parseTextList(value = "") {
+function parseQueueDate(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const normalized = raw.replace(/[.]/g, "/").replace(/-/g, "/");
+  const parts = normalized.split("/").map((part) => Number(part.trim()));
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return null;
+
+  const [a, b, c] = parts;
+  const year = String(a).length === 4 ? a : c;
+  const month = String(a).length === 4 ? b : b;
+  const day = String(a).length === 4 ? c : a;
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function daysInQueue(dateText) {
+  const date = parseQueueDate(dateText);
+  if (!date) return null;
+  const today = new Date();
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.max(0, Math.floor((end - start) / 86_400_000));
+}
+
+function parseTextList(value = "", { withQueueAge = false } = {}) {
   return String(value || "")
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean)
     .map((line) => {
+      const pipeParts = line.split("|").map((part) => part.trim());
+      if (pipeParts.length >= 3) {
+        const [id, entryDate, ...descriptionParts] = pipeParts;
+        return {
+          id,
+          entryDate,
+          daysInQueue: daysInQueue(entryDate),
+          description: descriptionParts.join(" | ").trim(),
+        };
+      }
+
+      const dated = line.match(
+        /^(.+?)\s+-\s+(\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{4})\s+-\s+(.*)$/,
+      );
+      if (dated) {
+        return {
+          id: dated[1].trim(),
+          entryDate: dated[2].trim(),
+          daysInQueue: daysInQueue(dated[2]),
+          description: dated[3].trim(),
+        };
+      }
+
       const [idPart, ...rest] = line.split("-");
-      return { id: idPart.trim(), description: rest.join("-").trim() };
+      return {
+        id: idPart.trim(),
+        entryDate: "",
+        daysInQueue: withQueueAge ? null : undefined,
+        description: rest.join("-").trim(),
+      };
     });
 }
 
@@ -203,7 +255,7 @@ export default function TechnicalDashboard() {
 
     const waitingRows = parseTextList(t.waiting_installation_ids);
     const installedRows = parseTextList(t.installed_ids);
-    const repairingRows = parseTextList(t.repairing_ids);
+    const repairingRows = parseTextList(t.repairing_ids, { withQueueAge: true });
     const servicedRows = parseTextList(t.serviced_ids);
 
     const installedCount = installedRows.length;
@@ -436,7 +488,7 @@ export default function TechnicalDashboard() {
                   boxShadow: "inset 0 0 0 1px rgba(226,232,240,0.9)",
                 }}
               >
-                <SimpleTable rows={repairingRows} />
+                <RepairQueueTable rows={repairingRows} />
               </AutoScrollContainer>
             )}
           </TableCard>
@@ -756,6 +808,53 @@ function SimpleTable({ rows }) {
               {row.id}
             </td>
             <td style={{ padding: "7px 10px", color: "#374151" }}>{row.description}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function RepairQueueTable({ rows }) {
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 520 }}>
+      <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
+        <tr>
+          {[
+            ["ID", 70],
+            ["Date In", 100],
+            ["Days", 64],
+            ["Center / Subject", "auto"],
+          ].map(([title, width]) => (
+            <th
+              key={title}
+              style={{
+                padding: "8px 10px",
+                textAlign: "left",
+                fontWeight: 700,
+                color: "#0f172a",
+                borderBottom: "1px solid rgba(148,163,184,0.6)",
+                background: "#e0f2fe",
+                width,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {title}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, idx) => (
+          <tr key={idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
+            <td style={{ padding: "7px 10px", color: "#111827", fontWeight: 600 }}>{row.id}</td>
+            <td style={{ padding: "7px 10px", color: "#374151", whiteSpace: "nowrap" }}>
+              {row.entryDate || "-"}
+            </td>
+            <td style={{ padding: "7px 10px", color: "#b45309", fontWeight: 800 }}>
+              {Number.isFinite(row.daysInQueue) ? row.daysInQueue : "-"}
+            </td>
+            <td style={{ padding: "7px 10px", color: "#374151" }}>{row.description || "-"}</td>
           </tr>
         ))}
       </tbody>
