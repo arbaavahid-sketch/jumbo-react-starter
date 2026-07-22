@@ -275,13 +275,18 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
                     <span style={thBadgeStack}>Countdown: 14→0</span>
                   </div>
                 </th>
+                <th style={th}>
+                  <div style={thLabelStack}>
+                    <span>10% of these shipments are still in customs</span>
+                  </div>
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {safeRows.length === 0 ? (
                 <tr>
-                  <td colSpan={3} style={emptyCell}>
+                  <td colSpan={4} style={emptyCell}>
                     No Logistic items.
                   </td>
                 </tr>
@@ -305,6 +310,12 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
                       key: "customs",
                       parts: row.customs_parts || splitDeal(row.customs_within_2_week),
                       st: status.customs || {},
+                    },
+                    {
+                      key: "still-in-customs",
+                      parts:
+                        row.still_in_customs_parts || splitDeal(row.shipments_still_in_customs),
+                      st: {},
                     },
                   ];
 
@@ -412,7 +423,7 @@ const moreLinkStyle = {
 
 const tableStyle = {
   width: "100%",
-  minWidth: 760,
+  minWidth: 1040,
   borderCollapse: "collapse",
   fontSize: 13,
   tableLayout: "fixed",
@@ -485,7 +496,7 @@ const tdSub = {
 
 const tdMain = {
   ...tdBase,
-  width: "33.33%",
+  width: "25%",
 };
 
 const partRow = {

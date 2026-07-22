@@ -92,7 +92,7 @@ function parseCSV(text) {
 }
 
 // ----------------- MAPPER -----------------
-function mapSheetsToPayload({
+export function mapSheetsToPayload({
   weeklySheet = [],
   membersSheet = [],
   latestSheet = [],
@@ -226,16 +226,24 @@ function mapSheetsToPayload({
 
     const customs = pickField(r, ["customs(within 2 week)", "customs_within_2_week", "customs"]);
 
+    const stillInCustoms = pickField(r, [
+      "10% of these shipments are still in customs",
+      "shipments_still_in_customs",
+      "still in customs",
+    ]);
+
     return {
       // Raw sheet values (kept for backward compatibility / countdown checks)
       plane_dispatch_within_2_months: planeDispatch,
       deal_number: dealNumber,
       on_the_way_to_iran_within_1_month: onTheWay,
       customs_within_2_week: customs,
+      shipments_still_in_customs: stillInCustoms,
       // Pre-parsed { center, dealNumber, item } for each stage
       plane_parts: splitDeal(planeDispatch, dealNumber),
       iran_parts: splitDeal(onTheWay),
       customs_parts: splitDeal(customs),
+      still_in_customs_parts: splitDeal(stillInCustoms),
     };
   });
 
