@@ -21,6 +21,7 @@ import LiveClock from "../../components/LiveClock";
 import RatesStrip from "../../components/RatesStrip";
 import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
+import TotalDealsIcon from "../../components/TotalDealsIcon";
 
 import {
   ResponsiveContainer,
@@ -34,7 +35,6 @@ import {
 } from "recharts";
 
 import {
-  FiTrendingUp,
   FiSend,
   FiShoppingBag,
   FiTruck,
@@ -362,6 +362,10 @@ function PublicGroupDashboard({ groupKey }) {
   let megaDealsForGroup = megaDealsAll.filter((r) => normalizeGroup(r.group) === groupKey);
   if (!megaDealsForGroup.length) megaDealsForGroup = megaDealsAll;
 
+  const totalDealsForGroup = ensureArray(raw.total_deals_details).filter(
+    (r) => normalizeGroup(r.group) === groupKey,
+  );
+
   // ✅ Weekly Trips details
   const tripsAll = ensureArray(raw.weekly_trips_details);
   const weeklyTripsForGroup = tripsAll.filter((r) => normalizeGroup(r.group) === groupKey);
@@ -545,8 +549,8 @@ function PublicGroupDashboard({ groupKey }) {
             label="Total Sales (2025)"
             value={fmtEUR(latest?.total_sales_eur)}
             delta={deltas.total_sales_eur}
-            Icon={FiTrendingUp}
             accent="#0ea5e9"
+            actionIcon={<TotalDealsIcon deals={totalDealsForGroup} />}
           />
 
           <StatCard

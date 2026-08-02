@@ -102,6 +102,7 @@ export function mapSheetsToPayload({
   arListSheet = [],
   techQueueSheet = [],
   megaDealsSheet = [],
+  totalDealsSheet = [],
   weeklyTripsSheet = [], // ✅ اضافه شد
   logisticAASheet = [], // ✅ اضافه شد
   groupOffersSheet = [],
@@ -490,6 +491,22 @@ export function mapSheetsToPayload({
     }))
     .filter((r) => r.group && r.mega_deal_id);
 
+  const total_deals_details = totalDealsSheet
+    .map((r) => {
+      const salesAmountLabel = pickField(r, ["Sales Amount", "sales_amount", "Amount"]);
+
+      return {
+        group: normalizeGroupKey(pickField(r, ["Group", "group"])),
+        month: pickField(r, ["Mounth", "Month", "month"]),
+        center: pickField(r, ["Center", "center"]),
+        product: pickField(r, ["Product", "product"]),
+        deal_id: pickField(r, ["Deal ID", "deal_id", "Deal No", "deal_no"]),
+        sales_amount_label: salesAmountLabel,
+        sales_amount_eur: parseAmount(salesAmountLabel),
+      };
+    })
+    .filter((r) => r.group && r.deal_id);
+
   return {
     groups,
     weekly_reports,
@@ -501,6 +518,7 @@ export function mapSheetsToPayload({
     ar_list,
     technical_queue,
     mega_deals_details, // 👈 این
+    total_deals_details,
     weekly_trips_details: weekly_trips_details_latest,
     logistic_aa,
     group_offers,
@@ -521,6 +539,7 @@ export default async function handler(req, res) {
       SHEET_AR_LIST_CSV_URL,
       SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
       SHEET_MEGA_DEALS_CSV_URL,
+      SHEET_TOTAL_DEALS_CSV_URL,
       SHEET_LOGISTIC_AA_CSV_URL,
       SHEET_GROUP_OFFERS_CSV_URL,
     } = process.env;
@@ -550,6 +569,7 @@ export default async function handler(req, res) {
       arListSheet = [],
       techQueueSheet = [],
       megaDealsSheet = [],
+      totalDealsSheet = [],
       weeklyTripsSheet = [],
       logisticAASheet = [], // ✅ اینجا باید باشد
       groupOffersSheet = [];
@@ -601,6 +621,12 @@ export default async function handler(req, res) {
       techQueueSheet = j.technical_queue || [];
     }
 
+    totalDealsSheet = await fetchOptionalCSV(
+      SHEET_TOTAL_DEALS_CSV_URL ||
+        "https://docs.google.com/spreadsheets/d/1MoxTz0EYrrNlmNsY62ugfdQxQq9t-LmHO1KPKTQx3vQ/export?format=csv&gid=0",
+      "TOTAL DEALS",
+    );
+
     const payload = mapSheetsToPayload({
       weeklySheet,
       membersSheet,
@@ -611,6 +637,7 @@ export default async function handler(req, res) {
       arListSheet,
       techQueueSheet,
       megaDealsSheet,
+      totalDealsSheet,
       weeklyTripsSheet, // ✅ اضافه شد
       logisticAASheet, // ✅ حتماً این هم باشه
       groupOffersSheet,

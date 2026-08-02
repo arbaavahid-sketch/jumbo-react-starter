@@ -20,9 +20,9 @@ import LiveClock from "../../components/LiveClock";
 import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
 import EventSlideshow from "../../components/EventSlideshow";
+import TotalDealsIcon from "../../components/TotalDealsIcon";
 
 import {
-  FiTrendingUp,
   FiSend,
   FiShoppingBag,
   FiTruck,
@@ -293,6 +293,9 @@ export default function GroupDashboard() {
 
   const megaDealsAll = ensureArray(raw.mega_deals_details || raw.mega_deals); // هر کدوم تو API هست
   const megaDealsForGroup = megaDealsAll.filter((r) => toStr(r.group).toUpperCase() === groupKey);
+  const totalDealsForGroup = ensureArray(raw.total_deals_details).filter(
+    (r) => normalizeGroup(r.group) === groupKey,
+  );
   const tripsAll = ensureArray(raw.weekly_trips_details);
   const weeklyTripsForGroup = tripsAll.filter((r) => normalizeGroup(r.group) === groupKey);
 
@@ -540,8 +543,8 @@ export default function GroupDashboard() {
             label="Total Sales (2026)"
             value={fmtEUR(latest?.total_sales_eur)}
             delta={deltas.total_sales_eur}
-            Icon={FiTrendingUp}
             accent="#0ea5e9"
+            actionIcon={<TotalDealsIcon deals={totalDealsForGroup} />}
           />
           <StatCard
             label="Offers Sent"

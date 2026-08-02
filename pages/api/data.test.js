@@ -21,3 +21,40 @@ describe("logistic sheet mapping", () => {
     });
   });
 });
+
+describe("total deals sheet mapping", () => {
+  it("maps the provided sheet headers and normalizes group values", () => {
+    const payload = mapSheetsToPayload({
+      totalDealsSheet: [
+        {
+          Group: "Group A",
+          Mounth: "01/2026",
+          Center: "PGSOC-IVKAZ",
+          Product: "IVKAZ(2.5)",
+          "Deal ID": "8730",
+          "Sales Amount": "€85,401.63",
+        },
+      ],
+    });
+
+    expect(payload.total_deals_details).toEqual([
+      {
+        group: "A",
+        month: "01/2026",
+        center: "PGSOC-IVKAZ",
+        product: "IVKAZ(2.5)",
+        deal_id: "8730",
+        sales_amount_label: "€85,401.63",
+        sales_amount_eur: 85401.63,
+      },
+    ]);
+  });
+
+  it("ignores placeholder rows without a deal id", () => {
+    const payload = mapSheetsToPayload({
+      totalDealsSheet: [{ Group: "B" }],
+    });
+
+    expect(payload.total_deals_details).toEqual([]);
+  });
+});
