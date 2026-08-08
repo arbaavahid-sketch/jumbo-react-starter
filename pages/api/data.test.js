@@ -58,3 +58,21 @@ describe("total deals sheet mapping", () => {
     expect(payload.total_deals_details).toEqual([]);
   });
 });
+
+describe("weekly trips sheet mapping", () => {
+  it("keeps the complete trip history for year-to-date reporting", () => {
+    const payload = mapSheetsToPayload({
+      weeklyTripsSheet: [
+        { group: "A", date: "28/01/2026", company_name: "Dacom", owner: "Afshar" },
+        { group: "A", date: "05/08/2026", company_name: "Iotco", owner: "Ali" },
+        { group: "B", date: "04/08/2026", company_name: "NIGC", owner: "Mahnaz" },
+      ],
+    });
+
+    expect(payload.weekly_trips_details).toEqual([
+      { group: "A", date: "28/01/2026", company_name: "Dacom", owner: "Afshar" },
+      { group: "B", date: "04/08/2026", company_name: "NIGC", owner: "Mahnaz" },
+      { group: "A", date: "05/08/2026", company_name: "Iotco", owner: "Ali" },
+    ]);
+  });
+});

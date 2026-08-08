@@ -22,6 +22,7 @@ import RatesStrip from "../../components/RatesStrip";
 import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
 import TotalDealsIcon from "../../components/TotalDealsIcon";
+import YearToDateTripsIcon from "../../components/YearToDateTripsIcon";
 
 import {
   ResponsiveContainer,
@@ -382,8 +383,22 @@ function PublicGroupDashboard({ groupKey }) {
     const currTripsCount = Number(curr?.weekly_trips || 0);
     if (!curr || currTripsCount <= 0) return [];
     const currDate = normDate(curr?.date);
-    if (!currDate) return [];
-    return weeklyTripsForGroup.filter((t) => normDate(t?.date) === currDate);
+    const matchingTrips = currDate
+      ? weeklyTripsForGroup.filter((t) => normDate(t?.date) === currDate)
+      : [];
+    if (matchingTrips.length) return matchingTrips;
+
+    const latestTripDate = weeklyTripsForGroup
+      .map((trip) => trip?.date)
+      .filter(Boolean)
+      .sort((a, b) => dateSortValue(a) - dateSortValue(b))
+      .at(-1);
+
+    return latestTripDate
+      ? weeklyTripsForGroup.filter(
+          (trip) => dateSortValue(trip?.date) === dateSortValue(latestTripDate),
+        )
+      : [];
   })();
 
   // momLink
@@ -644,7 +659,12 @@ function PublicGroupDashboard({ groupKey }) {
             value={latest?.weekly_trips ?? 0}
             delta={deltas.weekly_trips}
             accent="#0d9488"
-            actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
+            actionIcon={
+              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />
+                <YearToDateTripsIcon trips={weeklyTripsForGroup} referenceDate={curr?.date} />
+              </div>
+            }
           />
         </div>
         {/* Charts row: same height */}

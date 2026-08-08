@@ -130,7 +130,8 @@ export function mapSheetsToPayload({
 
     return "";
   };
-  // ✅ weekly_trips_details: فقط آخرین تاریخ برای هر گروه
+  // Keep the complete trips history. The dashboard derives both the current
+  // week and the year-to-date summary from this single normalized collection.
   const weekly_trips_details = weeklyTripsSheet
     .map((r) => ({
       date: (r.date || r.Date || "").trim(),
@@ -140,23 +141,8 @@ export function mapSheetsToPayload({
       company_name: (r.company_name || r.Company_Name || r.company || r.Company || "").trim(),
       owner: (r.owner || r.Owner || "").trim(),
     }))
-    .filter((r) => r.group && r.date);
-
-  // ✅ انتخاب آخرین تاریخ برای هر گروه
-  const tripsByGroup = {};
-  for (const row of weekly_trips_details) {
-    if (!tripsByGroup[row.group]) tripsByGroup[row.group] = [];
-    tripsByGroup[row.group].push(row);
-  }
-
-  const weekly_trips_details_latest = Object.entries(tripsByGroup).flatMap(([g, arr]) => {
-    // مرتب‌سازی بر اساس تاریخ (بهتره تاریخ‌ها YYYY/MM/DD یا YYYY-MM-DD باشن)
-    arr.sort((a, b) => dateSortValue(a.date) - dateSortValue(b.date));
-    const lastDateValue = dateSortValue(arr[arr.length - 1]?.date);
-
-    // فقط ردیف‌های همان آخرین تاریخ را نگه دار (با نرمال‌سازی تاریخ)
-    return arr.filter((x) => dateSortValue(x.date) === lastDateValue);
-  });
+    .filter((r) => r.group && r.date)
+    .sort((a, b) => dateSortValue(a.date) - dateSortValue(b.date));
 
   // weekly_reports
   const weekly_reports = weeklySheet
@@ -519,7 +505,7 @@ export function mapSheetsToPayload({
     technical_queue,
     mega_deals_details, // 👈 این
     total_deals_details,
-    weekly_trips_details: weekly_trips_details_latest,
+    weekly_trips_details,
     logistic_aa,
     group_offers,
   };

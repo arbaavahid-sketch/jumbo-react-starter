@@ -21,6 +21,7 @@ import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
 import EventSlideshow from "../../components/EventSlideshow";
 import TotalDealsIcon from "../../components/TotalDealsIcon";
+import YearToDateTripsIcon from "../../components/YearToDateTripsIcon";
 
 import {
   FiSend,
@@ -335,13 +336,11 @@ export default function GroupDashboard() {
       .sort((a, b) => dateSortValue(a) - dateSortValue(b));
     const latestTripDate = tripDates.length ? tripDates[tripDates.length - 1] : null;
 
-    // اگر تاریخ weekly_reports موجود و مطابق بود، اون رو برگردون،
-    // در غیر این صورت از آخرین تاریخ موجود در weekly_trips استفاده کن
+    // Prefer the reporting week's exact rows. If the sheets are a little out
+    // of sync, fall back to the most recent trip date for this group.
     if (currDate) {
-      return weeklyTripsForGroup.filter((t) => {
-        const td = normDate(t?.date);
-        return td === currDate || (latestTripDate && td === latestTripDate);
-      });
+      const matchingTrips = weeklyTripsForGroup.filter((t) => normDate(t?.date) === currDate);
+      if (matchingTrips.length) return matchingTrips;
     }
 
     return latestTripDate
@@ -631,7 +630,12 @@ export default function GroupDashboard() {
             value={latest?.weekly_trips ?? 0}
             delta={deltas.weekly_trips}
             accent="#0d9488"
-            actionIcon={<WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />}
+            actionIcon={
+              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />
+                <YearToDateTripsIcon trips={weeklyTripsForGroup} referenceDate={curr?.date} />
+              </div>
+            }
           />
         </div>
 
