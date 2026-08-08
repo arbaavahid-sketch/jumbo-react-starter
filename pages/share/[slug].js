@@ -594,7 +594,7 @@ function PublicGroupDashboard({ groupKey }) {
           />
 
           <StatCard
-            label="Last Group Meeting"
+            label="Last Group Planning meeting"
             value={latest?.last_meeting || "-"}
             accent="#3b82f6"
             actionIcon={
