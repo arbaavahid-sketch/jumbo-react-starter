@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiCalendar } from "react-icons/fi";
+import { FiCalendar, FiExternalLink, FiFolder } from "react-icons/fi";
+
+const GROUP_MOM_FOLDERS = {
+  A: "https://drive.google.com/drive/folders/166dZWumx0-fqaeVtreRKrY5Kn7VHVkfm?usp=drive_link",
+  B: "https://drive.google.com/drive/folders/1abqSeyjYoYYmRFhvbfzfldpPhy_vSHeQ?usp=drive_link",
+  C: "https://drive.google.com/drive/folders/1uNvxet8ED945TIv6Dj-epkpICAhGS6lQ?usp=drive_link",
+};
 
 function parseTripDate(value) {
   const raw = String(value || "").trim();
@@ -36,9 +42,11 @@ function companyKey(value) {
     .toLocaleLowerCase();
 }
 
-export default function YearToDateTripsIcon({ trips, referenceDate }) {
+export default function YearToDateTripsIcon({ trips, referenceDate, groupKey }) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const normalizedGroupKey = String(groupKey || "").trim().toUpperCase();
+  const momFolderUrl = GROUP_MOM_FOLDERS[normalizedGroupKey];
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -210,6 +218,36 @@ export default function YearToDateTripsIcon({ trips, referenceDate }) {
                 </div>
               ))}
             </div>
+
+            {momFolderUrl ? (
+              <a
+                href={momFolderUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Open Group ${normalizedGroupKey} MOM folder in Google Drive`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  marginBottom: 12,
+                  padding: "9px 11px",
+                  borderRadius: 12,
+                  border: "1px solid #bfdbfe",
+                  background: "#eff6ff",
+                  color: "#1d4ed8",
+                  textDecoration: "none",
+                  fontSize: 12,
+                  fontWeight: 800,
+                }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <FiFolder size={16} />
+                  Group {normalizedGroupKey} MOM Folder
+                </span>
+                <FiExternalLink size={14} aria-hidden="true" />
+              </a>
+            ) : null}
 
             {summary.destinations.length === 0 ? (
               <div style={{ fontSize: 12, color: "#64748b" }}>

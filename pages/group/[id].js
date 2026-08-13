@@ -633,7 +633,11 @@ export default function GroupDashboard() {
             actionIcon={
               <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />
-                <YearToDateTripsIcon trips={weeklyTripsForGroup} referenceDate={curr?.date} />
+                <YearToDateTripsIcon
+                  trips={weeklyTripsForGroup}
+                  referenceDate={curr?.date}
+                  groupKey={groupKey}
+                />
               </div>
             }
           />
