@@ -7,6 +7,7 @@ import GroupOffersTable, {
 } from "../../components/GroupOffersTable";
 
 import Head from "next/head";
+import { useRouter } from "next/router";
 import useSWR from "swr";
 import React, { useEffect, useState } from "react";
 
@@ -23,6 +24,7 @@ import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
 import TotalDealsIcon from "../../components/TotalDealsIcon";
 import YearToDateTripsIcon from "../../components/YearToDateTripsIcon";
+import TvModeFrame from "../../components/TvModeFrame";
 
 import {
   ResponsiveContainer,
@@ -313,6 +315,9 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
 }
 
 function PublicGroupDashboard({ groupKey }) {
+  const { query } = useRouter();
+  const isTvMode = query.tv === "1" || query.tv === "true";
+
   const {
     data: raw,
     error,
@@ -449,7 +454,8 @@ function PublicGroupDashboard({ groupKey }) {
 
   if (activeView === GROUP_VIEWS.OFFERS) {
     return (
-      <main className="container">
+      <TvModeFrame enabled={isTvMode}>
+        <main className={`container${isTvMode ? " tv-dashboard" : ""}`}>
         <Head>
           <title>{pageTitle} - Offers</title>
           <meta name="description" content={`Offers sent for group ${groupKey}.`} />
@@ -501,12 +507,14 @@ function PublicGroupDashboard({ groupKey }) {
             <NewsTickerEn />
           </div>
         </section>
-      </main>
+        </main>
+      </TvModeFrame>
     );
   }
 
   return (
-    <main className="container">
+    <TvModeFrame enabled={isTvMode}>
+      <main className={`container${isTvMode ? " tv-dashboard" : ""}`}>
       <Head>
         <title>{pageTitle}</title>
         <meta
@@ -686,11 +694,11 @@ function PublicGroupDashboard({ groupKey }) {
       <section className="section" style={{ marginTop: 14, paddingTop: 0 }}>
         {/* Row 1: Deal Exec + AR (same size) */}
         <div className="dashboard-two-col-grid">
-          <div style={{ height: 360 }}>
+          <div className="dashboard-table-panel" style={{ height: 360 }}>
             <DealsExecTable rows={dealsForGroup} />
           </div>
 
-          <div style={{ height: 360 }}>
+          <div className="dashboard-table-panel" style={{ height: 360 }}>
             <ARListTable rows={arForGroup} />
           </div>
           <div style={{ marginTop: 14 }}></div>
@@ -708,7 +716,8 @@ function PublicGroupDashboard({ groupKey }) {
           <NewsTickerEn />
         </div>
       </section>
-    </main>
+      </main>
+    </TvModeFrame>
   );
 }
 

@@ -283,3 +283,51 @@ body {
     max-width: 1900px;
   }
 }
+
+/* حالت اختیاری تلویزیون؛ فقط با ?tv=1 فعال می‌شود. */
+.tv-mode-viewport {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.tv-mode-stage {
+  flex: 0 0 1920px;
+  width: 1920px;
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.tv-dashboard.container {
+  width: 100%;
+  max-width: none !important;
+  margin: 0;
+  padding: 12px 18px 18px;
+}
+
+.tv-dashboard .dashboard-header {
+  flex-wrap: nowrap;
+}
+
+.tv-dashboard .dashboard-brand {
+  width: auto;
+}
+
+.tv-dashboard .dashboard-kpi-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.tv-dashboard .dashboard-two-col-grid {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+.tv-dashboard .dashboard-table-panel {
+  height: auto !important;
+}

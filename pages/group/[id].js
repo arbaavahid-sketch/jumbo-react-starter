@@ -22,6 +22,7 @@ import GroupSalesBars from "../../components/GroupSalesBars";
 import EventSlideshow from "../../components/EventSlideshow";
 import TotalDealsIcon from "../../components/TotalDealsIcon";
 import YearToDateTripsIcon from "../../components/YearToDateTripsIcon";
+import TvModeFrame from "../../components/TvModeFrame";
 
 import {
   FiSend,
@@ -225,6 +226,7 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
 // ---------- GroupDashboard ----------
 export default function GroupDashboard() {
   const { isReady, query } = useRouter();
+  const isTvMode = query.tv === "1" || query.tv === "true";
 
   // 🔴 حالت نمایش: "dashboard" یا "events"
   const [mode, setMode] = useState("dashboard");
@@ -399,11 +401,12 @@ export default function GroupDashboard() {
 
   if (activeView === GROUP_VIEWS.OFFERS) {
     return (
-      <main className="container">
-        <Head>
-          <title>{pageTitle} - Offers</title>
-          <meta name="description" content={`Offers sent for group ${groupKey}.`} />
-        </Head>
+      <TvModeFrame enabled={isTvMode}>
+        <main className={`container${isTvMode ? " tv-dashboard" : ""}`}>
+          <Head>
+            <title>{pageTitle} - Offers</title>
+            <meta name="description" content={`Offers sent for group ${groupKey}.`} />
+          </Head>
 
         <div className="dashboard-header">
           <h1 className="dashboard-title">{pageTitle}</h1>
@@ -452,12 +455,13 @@ export default function GroupDashboard() {
           <GroupOffersTable rows={groupOfferRows} groupKey={groupKey} />
         </section>
 
-        <section className="section">
-          <div className="news-block" style={{ marginTop: 24 }}>
-            <NewsTickerEn />
-          </div>
-        </section>
-      </main>
+          <section className="section">
+            <div className="news-block" style={{ marginTop: 24 }}>
+              <NewsTickerEn />
+            </div>
+          </section>
+        </main>
+      </TvModeFrame>
     );
   }
 
@@ -479,14 +483,15 @@ export default function GroupDashboard() {
 
   // 🔹 حالت عادی: داشبورد
   return (
-    <main className="container">
-      <Head>
-        <title>{pageTitle}</title>
-        <meta
-          name="description"
-          content={`KPIs, members and weekly deals for group ${groupKey}.`}
-        />
-      </Head>
+    <TvModeFrame enabled={isTvMode}>
+      <main className={`container${isTvMode ? " tv-dashboard" : ""}`}>
+        <Head>
+          <title>{pageTitle}</title>
+          <meta
+            name="description"
+            content={`KPIs, members and weekly deals for group ${groupKey}.`}
+          />
+        </Head>
 
       {/* هدر بالا: عنوان + لوگو + ساعت */}
       <div className="dashboard-header">
@@ -675,12 +680,13 @@ export default function GroupDashboard() {
       </div>
 
       {/* Bloomberg News پایین صفحه */}
-      <section className="section">
-        <div className="news-block" style={{ marginTop: 24 }}>
-          <NewsTickerEn />
-        </div>
-      </section>
-    </main>
+        <section className="section">
+          <div className="news-block" style={{ marginTop: 24 }}>
+            <NewsTickerEn />
+          </div>
+        </section>
+      </main>
+    </TvModeFrame>
   );
 }
 // ---------- MegaDealsIcon (آیکون + پنل ثابت گوشه صفحه) ----------
