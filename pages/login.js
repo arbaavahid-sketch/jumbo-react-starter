@@ -1,3 +1,5 @@
+import Image from "next/image";
+import companyLogo from "../public/company-logo.png";
 // pages/login.js
 import { useState } from "react";
 import { useRouter } from "next/router";
@@ -32,7 +34,9 @@ export default function LoginPage() {
       // اگر پارامتر next داشتیم، برگرد همونجا، وگرنه برو روی Portal (/)
       const params = new URLSearchParams(window.location.search);
       const next = params.get("next") || "/";
-      router.push(next.startsWith("/") && !next.startsWith("//") && !/[\\\r\n]/.test(next) ? next : "/");
+      router.push(
+        next.startsWith("/") && !next.startsWith("//") && !/[\\\r\n]/.test(next) ? next : "/",
+      );
     } catch (err) {
       console.error(err);
       setError("خطا در ارتباط با سرور.");
@@ -69,10 +73,10 @@ export default function LoginPage() {
             marginBottom: 12,
           }}
         >
-          <img
-            src="/company-logo.png"
+          <Image
+            src={companyLogo}
             alt="Artin Azma"
-            style={{ height: 46, objectFit: "contain" }}
+            style={{ width: "auto", height: 46, objectFit: "contain" }}
           />
         </div>
 

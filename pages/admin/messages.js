@@ -1,6 +1,6 @@
 import { fetchJson } from "../../lib/fetch-json";
 // pages/admin/messages.js
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -30,7 +30,7 @@ export default function AdminMessages() {
     refreshInterval: 60_000,
   });
 
-  const messages = data?.ceo_messages || {};
+  const messages = useMemo(() => data?.ceo_messages || {}, [data?.ceo_messages]);
   const [localMessages, setLocalMessages] = useState({});
   const [touched, setTouched] = useState({});
   const [saveState, setSaveState] = useState({});

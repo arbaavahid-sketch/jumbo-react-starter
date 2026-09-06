@@ -1,3 +1,5 @@
+import Image from "next/image";
+import companyLogo from "../public/company-logo.png";
 import { fetchJson } from "../lib/fetch-json";
 // pages/technical.js — داشبورد Technical (Responsive)
 
@@ -659,8 +661,8 @@ export default function TechnicalDashboard() {
                 boxShadow: "0 10px 25px rgba(15,23,42,0.08)",
               }}
             >
-              <img
-                src="/company-logo.png"
+              <Image
+                src={companyLogo}
                 style={{ width: isMobile ? 120 : 150, height: 70, objectFit: "contain" }}
                 alt="Company logo"
               />
@@ -896,23 +898,24 @@ function AutoScrollContainer({ children, height = 280, speed = 1, containerStyle
 }
 
 // کارت‌ها
+function TechIconWrap({ children, iconLink }) {
+  return iconLink ? (
+    <a
+      href={iconLink}
+      target="_blank"
+      rel="noreferrer"
+      title="Open MOM"
+      style={{ display: "inline-flex" }}
+    >
+      {children}
+    </a>
+  ) : (
+    children
+  );
+}
+
 function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
   const hasLink = !!link;
-
-  const IconWrap = ({ children }) =>
-    iconLink ? (
-      <a
-        href={iconLink}
-        target="_blank"
-        rel="noreferrer"
-        title="Open MOM"
-        style={{ display: "inline-flex" }}
-      >
-        {children}
-      </a>
-    ) : (
-      children
-    );
 
   return (
     <div
@@ -929,7 +932,7 @@ function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <IconWrap>
+        <TechIconWrap iconLink={iconLink}>
           <div
             style={{
               width: 32,
@@ -945,7 +948,7 @@ function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
           >
             <span style={{ fontSize: 18, color: "#005F9E" }}>{icon}</span>
           </div>
-        </IconWrap>
+        </TechIconWrap>
 
         <span
           style={{

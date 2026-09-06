@@ -1,3 +1,5 @@
+import Image from "next/image";
+import companyLogo from "../../public/company-logo.png";
 import { fetchJson } from "../../lib/fetch-json";
 // pages/share/[slug].js — داشبورد عمومی گروه/تکنیکال بر اساس slug (مثلاً /share/...)
 import LogisticAATable from "../../components/LogisticAATable";
@@ -461,8 +463,8 @@ function PublicGroupDashboard({ groupKey }) {
         <div className="dashboard-header">
           <h1 className="dashboard-title">{pageTitle}</h1>
           <div className="dashboard-brand">
-            <img
-              src="/company-logo.png"
+            <Image
+              src={companyLogo}
               alt="company logo"
               style={{ width: 160, height: 80, objectFit: "contain", display: "block" }}
             />
@@ -524,8 +526,8 @@ function PublicGroupDashboard({ groupKey }) {
       <div className="dashboard-header">
         <h1 className="dashboard-title">{pageTitle}</h1>
         <div className="dashboard-brand">
-          <img
-            src="/company-logo.png"
+          <Image
+            src={companyLogo}
             alt="company logo"
             style={{ width: 160, height: 80, objectFit: "contain", display: "block" }}
           />
@@ -1184,8 +1186,8 @@ function PublicTechnicalDashboard() {
                 boxShadow: "0 10px 25px rgba(15,23,42,0.08)",
               }}
             >
-              <img
-                src="/company-logo.png"
+              <Image
+                src={companyLogo}
                 style={{ width: 150, height: 70, objectFit: "contain" }}
                 alt="Company logo"
               />

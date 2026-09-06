@@ -1,9 +1,13 @@
 // components/EventSlideshow.js
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function EventSlideshow({ files = [], onSkip }) {
   const all = Array.isArray(files) ? files : [];
+  return <EventPlayback key={JSON.stringify(all)} files={all} onSkip={onSkip} />;
+}
 
+function EventPlayback({ files: all, onSkip }) {
   const videos = all.filter((src) => /\.mp4$|\.webm$/i.test(src));
   const images = all.filter((src) => !/\.mp4$|\.webm$/i.test(src));
 
@@ -12,15 +16,8 @@ export default function EventSlideshow({ files = [], onSkip }) {
   const hasImages = images.length > 0;
 
   // mode: "video" یا "images"
-  const [mode, setMode] = useState(() => (hasVideo ? "video" : "images"));
+  const mode = hasVideo ? "video" : "images";
   const [currentImage, setCurrentImage] = useState(0);
-
-  // وقتی لیست مدیا عوض شد، حالت رو ری‌ست کن
-  useEffect(() => {
-    if (!hasEvents) return;
-    setMode(hasVideo ? "video" : "images");
-    setCurrentImage(0);
-  }, [hasEvents, hasVideo]);
 
   // اسلایدشو عکس‌ها – هر ۶ ثانیه
   useEffect(() => {
@@ -96,6 +93,7 @@ export default function EventSlideshow({ files = [], onSkip }) {
       <div
         style={{
           flex: 1,
+          position: "relative",
           borderRadius: 20,
           overflow: "hidden",
           background: "black",
@@ -120,7 +118,9 @@ export default function EventSlideshow({ files = [], onSkip }) {
           />
         ) : (
           activeImage && (
-            <img
+            <Image
+              fill
+              sizes="100vw"
               key={activeImage}
               src={activeImage}
               alt=""

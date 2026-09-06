@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { splitDeal, hasMeaningful, dealKey } from "../lib/logistic";
 
 const pretty = (s) =>
@@ -73,25 +73,40 @@ const toUtcStartOfDayTs = (input) => {
 // restarts the deals whose content changed; the rest keep their original date.
 const LEDGER_KEY = "logisticAA:firstSeenV1";
 
-const startOfTodayTs = () => {
-  const d = new Date();
+const startOfTodayTs = (now) => {
+  const d = new Date(now);
   return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
 };
 
-const loadLedger = () => {
-  if (typeof window === "undefined") return {};
+const ledgerSnapshot = () => {
+  if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(LEDGER_KEY);
-    return raw ? JSON.parse(raw) : {};
+    return window.localStorage.getItem(LEDGER_KEY) || "{}";
   } catch {
-    return {};
+    return "{}";
   }
+};
+
+const serverLedgerSnapshot = () => null;
+const subscribeLedger = (onChange) => {
+  const onStorage = (event) => {
+    if (event.key === LEDGER_KEY || event.key === null) onChange();
+  };
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(LEDGER_KEY, onChange);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(LEDGER_KEY, onChange);
+  };
 };
 
 const saveLedger = (ledger) => {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+    const serialized = JSON.stringify(ledger);
+    if (window.localStorage.getItem(LEDGER_KEY) === serialized) return;
+    window.localStorage.setItem(LEDGER_KEY, serialized);
+    window.dispatchEvent(new Event(LEDGER_KEY));
   } catch {
     /* ignore quota / private-mode write errors */
   }
@@ -127,15 +142,15 @@ const buildCountdown = (isActive, now, limitDays, baselineTs) => {
 };
 
 export default function LogisticAATable({ rows = [], datasetDate = "" }) {
-  const safeRows = Array.isArray(rows) ? rows : [];
+  const safeRows = useMemo(() => (Array.isArray(rows) ? rows : []), [rows]);
 
   const scrollRef = useRef(null);
   const autoScrollIntervalRef = useRef(null);
   const userInteractingRef = useRef(false);
   const resumeTimeoutRef = useRef(null);
 
-  const [rowStatusMap, setRowStatusMap] = useState({});
-  const [clockTick, setClockTick] = useState(Date.now());
+  const storedLedger = useSyncExternalStore(subscribeLedger, ledgerSnapshot, serverLedgerSnapshot);
+  const [clockTick, setClockTick] = useState(() => Date.now());
 
   useEffect(() => {
     const timer = setInterval(() => setClockTick(Date.now()), 60 * 60 * 1000);
@@ -187,14 +202,21 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
     };
   }, [safeRows]);
 
-  useEffect(() => {
+  const { rowStatusMap, nextLedger } = useMemo(() => {
+    if (storedLedger === null) return { rowStatusMap: {}, nextLedger: {} };
     const now = clockTick;
-    const today = startOfTodayTs();
+    const today = startOfTodayTs(now);
     // datasetDate is only a last-resort fallback now; each deal is anchored
     // individually below.
     const datasetStartTs = toUtcStartOfDayTs(datasetDate);
 
-    const ledger = loadLedger();
+    let ledger = {};
+    try {
+      const parsed = JSON.parse(storedLedger);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) ledger = parsed;
+    } catch {
+      /* Ignore an invalid browser ledger. */
+    }
     const nextLedger = {};
     const nextRowStatusMap = {};
 
@@ -222,13 +244,15 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
       nextRowStatusMap[idx] = { plane, iran, customs };
     });
 
+    return { rowStatusMap: nextRowStatusMap, nextLedger };
+  }, [safeRows, clockTick, datasetDate, storedLedger]);
+
+  useEffect(() => {
     // nextLedger only holds keys still present, so stale deals are pruned and a
     // removed-then-re-added deal correctly restarts. Guard against wiping the
     // ledger when rows are momentarily empty (e.g. a failed data refresh).
-    if (safeRows.length > 0) saveLedger(nextLedger);
-
-    setRowStatusMap(nextRowStatusMap);
-  }, [safeRows, clockTick, datasetDate]);
+    if (storedLedger !== null && safeRows.length > 0) saveLedger(nextLedger);
+  }, [safeRows, nextLedger, storedLedger]);
 
   return (
     <div style={outerCard}>

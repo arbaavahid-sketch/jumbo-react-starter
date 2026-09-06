@@ -32,7 +32,7 @@ export default function DealsChart({ data, groupName }) {
       </div>
 
       <ResponsiveContainer width="100%" height="88%">
-        <LineChart data={data} key={Date.now()}>
+        <LineChart data={data}>
           <CartesianGrid strokeDasharray="4 4" stroke="#dbe3f0" />
           <XAxis dataKey="week" axisLine={false} tickLine={false} />
           <YAxis axisLine={false} tickLine={false} />

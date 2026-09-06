@@ -1,3 +1,5 @@
+import Image from "next/image";
+import companyLogo from "../public/company-logo.png";
 import { fetchJson } from "../lib/fetch-json";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
@@ -376,8 +378,8 @@ export default function SupplyDashboard() {
             </h1>
 
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-              <img
-                src="/company-logo.png"
+              <Image
+                src={companyLogo}
                 alt="company logo"
                 style={{ width: 180, height: 80, objectFit: "contain", display: "block" }}
               />
@@ -401,10 +403,20 @@ export default function SupplyDashboard() {
             </div>
           ) : null}
 
-          {error ? <div role="alert" style={errorStyle}>{error.message}</div> : null}
-          {mainError ? <div role="alert" style={errorStyle}>پیام مدیریت دریافت نشد. لطفاً کمی بعد دوباره تلاش کنید.</div> : null}
+          {error ? (
+            <div role="alert" style={errorStyle}>
+              {error.message}
+            </div>
+          ) : null}
+          {mainError ? (
+            <div role="alert" style={errorStyle}>
+              پیام مدیریت دریافت نشد. لطفاً کمی بعد دوباره تلاش کنید.
+            </div>
+          ) : null}
 
-          {!error && (isLoading || !data) ? <div style={loadingStyle}>Loading supply data...</div> : null}
+          {!error && (isLoading || !data) ? (
+            <div style={loadingStyle}>Loading supply data...</div>
+          ) : null}
 
           {!error && !isLoading && data ? (
             <>

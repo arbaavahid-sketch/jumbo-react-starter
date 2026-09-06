@@ -1,5 +1,5 @@
 import { fetchJson } from "../lib/fetch-json";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 
 const fetcher = fetchJson;
@@ -40,22 +40,17 @@ export default function SupplyHistoryComparison() {
     refreshInterval: 120_000,
   });
 
-  const rows = Array.isArray(data?.rows) ? data.rows : [];
+  const rows = useMemo(() => (Array.isArray(data?.rows) ? data.rows : []), [data]);
   const weeks = Array.isArray(data?.weeks) ? data.weeks : [];
   const configured = data?.configured;
 
   const [kpi, setKpi] = useState("deals_in_supply_side_stage_now");
-  const [weekA, setWeekA] = useState(null);
-  const [weekB, setWeekB] = useState(null);
-
-  // Default to the two most recent weeks once data arrives.
-  useEffect(() => {
-    if (!weeks.length) return;
-    const last = weeks[weeks.length - 1];
-    const prev = weeks.length > 1 ? weeks[weeks.length - 2] : last;
-    setWeekA((w) => (w != null && weeks.includes(w) ? w : prev));
-    setWeekB((w) => (w != null && weeks.includes(w) ? w : last));
-  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [selectedWeekA, setWeekA] = useState(null);
+  const [selectedWeekB, setWeekB] = useState(null);
+  // Derive defaults from the available data without another render.
+  const lastWeek = weeks.at(-1) ?? null;
+  const weekA = weeks.includes(selectedWeekA) ? selectedWeekA : (weeks.at(-2) ?? lastWeek);
+  const weekB = weeks.includes(selectedWeekB) ? selectedWeekB : lastWeek;
 
   const kpiMeta = SUPPLY_KPIS.find((k) => k.key === kpi) || SUPPLY_KPIS[0];
 
@@ -157,7 +152,11 @@ export default function SupplyHistoryComparison() {
         ) : null}
       </div>
 
-      {error ? <div role="alert" style={note}>{error.message}</div> : null}
+      {error ? (
+        <div role="alert" style={note}>
+          {error.message}
+        </div>
+      ) : null}
       {!error && isLoading && !data ? <div style={note}>Loading supply history…</div> : null}
 
       {!error && data && configured === false ? (

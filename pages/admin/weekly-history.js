@@ -599,8 +599,8 @@ export default function WeeklyHistory() {
     dedupingInterval: 30_000,
   });
 
-  const weekly = data?.weekly_reports || [];
-  const groups = data?.groups || [];
+  const weekly = useMemo(() => data?.weekly_reports || [], [data?.weekly_reports]);
+  const groups = useMemo(() => data?.groups || [], [data?.groups]);
 
   const availableWeeks = useMemo(() => {
     const ws = weekly.map((x) => Number(x.week)).filter((x) => Number.isFinite(x));

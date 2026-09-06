@@ -1,3 +1,5 @@
+import Image from "next/image";
+import companyLogo from "../../public/company-logo.png";
 import { fetchJson } from "../../lib/fetch-json";
 // pages/group/[id].js — داشبورد گروه با پیام CEO + KPI + چارت‌ها + NewsTicker
 import LogisticAATable from "../../components/LogisticAATable";
@@ -408,8 +410,8 @@ export default function GroupDashboard() {
         <div className="dashboard-header">
           <h1 className="dashboard-title">{pageTitle}</h1>
           <div className="dashboard-brand">
-            <img
-              src="/company-logo.png"
+            <Image
+              src={companyLogo}
               alt="company logo"
               style={{
                 width: 160,
@@ -494,8 +496,8 @@ export default function GroupDashboard() {
       <div className="dashboard-header">
         <h1 className="dashboard-title">{pageTitle}</h1>
         <div className="dashboard-brand">
-          <img
-            src="/company-logo.png"
+          <Image
+            src={companyLogo}
             alt="company logo"
             style={{
               width: 160,
