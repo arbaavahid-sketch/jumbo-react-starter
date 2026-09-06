@@ -1,6 +1,6 @@
 // pages/api/data.js
-import fs from "fs/promises";
-import path from "path";
+import { fetchSheetText, sheetUnavailable } from "../../lib/sheet-fetch";
+
 import { splitDeal } from "../../lib/logistic";
 import { requireReadAccess, scopePayload } from "../../lib/access";
 function dateSortValue(input) {
@@ -517,124 +517,31 @@ export default async function handler(req, res) {
   const access = requireReadAccess(req, res, "/api/data");
   if (!access) return;
   try {
-    const {
-      SHEET_WEEKLY_TRIPS_CSV_URL,
-      SHEET_WEEKLY_CSV_URL,
-      SHEET_MEMBERS_CSV_URL,
-      SHEET_LATEST_CSV_URL,
-      SHEET_GROUPS_CSV_URL,
-      SHEET_DEALS_CSV_URL,
-      SHEET_CEO_MSG_CSV_URL,
-      SHEET_AR_LIST_CSV_URL,
-      SHEET_TECH_QUEUE_CSV_URL, // 👈 از env
-      SHEET_MEGA_DEALS_CSV_URL,
-      SHEET_TOTAL_DEALS_CSV_URL,
-      SHEET_LOGISTIC_AA_CSV_URL,
-      SHEET_GROUP_OFFERS_CSV_URL,
-    } = process.env;
-
-    const fetchCSV = async (url) => {
-      if (!url) return [];
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
-      return parseCSV(await r.text());
-    };
-
-    const fetchOptionalCSV = async (url, label) => {
-      try {
-        return await fetchCSV(url);
-      } catch (e) {
-        console.warn(`${label} CSV fetch failed`, e);
-        return [];
-      }
-    };
-
-    let weeklySheet = [],
-      membersSheet = [],
-      latestSheet = [],
-      groupsSheet = [],
-      dealsSheet = [],
-      ceoSheet = [],
-      arListSheet = [],
-      techQueueSheet = [],
-      megaDealsSheet = [],
-      totalDealsSheet = [],
-      weeklyTripsSheet = [],
-      logisticAASheet = [], // ✅ اینجا باید باشد
-      groupOffersSheet = [];
-
-    try {
-      weeklySheet = await fetchCSV(SHEET_WEEKLY_CSV_URL);
-      membersSheet = await fetchCSV(SHEET_MEMBERS_CSV_URL);
-      latestSheet = await fetchCSV(SHEET_LATEST_CSV_URL);
-      groupsSheet = await fetchCSV(SHEET_GROUPS_CSV_URL);
-      dealsSheet = await fetchCSV(SHEET_DEALS_CSV_URL);
-      ceoSheet = await fetchCSV(SHEET_CEO_MSG_CSV_URL);
-      arListSheet = await fetchCSV(SHEET_AR_LIST_CSV_URL);
-      techQueueSheet = await fetchCSV(SHEET_TECH_QUEUE_CSV_URL);
-      megaDealsSheet = await fetchCSV(SHEET_MEGA_DEALS_CSV_URL); // 👈 این
-      weeklyTripsSheet = await fetchCSV(SHEET_WEEKLY_TRIPS_CSV_URL);
-      logisticAASheet = await fetchCSV(SHEET_LOGISTIC_AA_CSV_URL);
-      groupOffersSheet = await fetchOptionalCSV(SHEET_GROUP_OFFERS_CSV_URL, "GROUP OFFERS");
-      console.log("LOGISTIC URL:", SHEET_LOGISTIC_AA_CSV_URL);
-      console.log("LOGISTIC rows:", logisticAASheet.length);
-      console.log(
-        "LOGISTIC first row keys:",
-        logisticAASheet[0] ? Object.keys(logisticAASheet[0]) : null,
-      );
-      console.log("LOGISTIC first row:", logisticAASheet[0] || null);
-    } catch (e) {
-      console.warn("CSV fetch failed — using sample.json", e);
-
-      const raw = await fs.readFile(
-        path.join(process.cwd(), "public", "data", "sample.json"),
-        "utf8",
-      );
-      const j = JSON.parse(raw);
-
-      weeklySheet = j.weekly_reports || [];
-      membersSheet = Object.entries(j.members || {}).flatMap(([g, arr]) =>
-        arr.map((m) => ({ group: g, ...m })),
-      );
-      latestSheet = Object.entries(j.latest || {}).map(([g, d]) => ({
-        group: g,
-        ...d,
-      }));
-      groupsSheet = j.groups || [];
-      dealsSheet = j.deals_exec || [];
-      ceoSheet = Object.entries(j.ceo_messages || {}).map(([g, msg]) => ({
-        group: g,
-        message: msg,
-      }));
-      arListSheet = j.ar_list || [];
-      techQueueSheet = j.technical_queue || [];
-    }
-
-    totalDealsSheet = await fetchOptionalCSV(
-      SHEET_TOTAL_DEALS_CSV_URL ||
+    // Unconfigured optional tabs remain optional, but a configured tab must load.
+    // Never replace a failed source with demo rows or an empty success response.
+    const sources = {
+      weeklySheet: process.env.SHEET_WEEKLY_CSV_URL,
+      membersSheet: process.env.SHEET_MEMBERS_CSV_URL,
+      latestSheet: process.env.SHEET_LATEST_CSV_URL,
+      groupsSheet: process.env.SHEET_GROUPS_CSV_URL,
+      dealsSheet: process.env.SHEET_DEALS_CSV_URL,
+      ceoSheet: process.env.SHEET_CEO_MSG_CSV_URL,
+      arListSheet: process.env.SHEET_AR_LIST_CSV_URL,
+      techQueueSheet: process.env.SHEET_TECH_QUEUE_CSV_URL,
+      megaDealsSheet: process.env.SHEET_MEGA_DEALS_CSV_URL,
+      weeklyTripsSheet: process.env.SHEET_WEEKLY_TRIPS_CSV_URL,
+      logisticAASheet: process.env.SHEET_LOGISTIC_AA_CSV_URL,
+      groupOffersSheet: process.env.SHEET_GROUP_OFFERS_CSV_URL,
+      totalDealsSheet: process.env.SHEET_TOTAL_DEALS_CSV_URL ||
         "https://docs.google.com/spreadsheets/d/1MoxTz0EYrrNlmNsY62ugfdQxQq9t-LmHO1KPKTQx3vQ/export?format=csv&gid=0",
-      "TOTAL DEALS",
-    );
-
-    const payload = mapSheetsToPayload({
-      weeklySheet,
-      membersSheet,
-      latestSheet,
-      groupsSheet,
-      dealsSheet,
-      ceoSheet,
-      arListSheet,
-      techQueueSheet,
-      megaDealsSheet,
-      totalDealsSheet,
-      weeklyTripsSheet, // ✅ اضافه شد
-      logisticAASheet, // ✅ حتماً این هم باشه
-      groupOffersSheet,
-    });
-
+    };
+    if (!sources.weeklySheet) return sheetUnavailable(res);
+    const sheets = Object.fromEntries(await Promise.all(
+      Object.entries(sources).map(async ([key, url]) => [key, url ? parseCSV(await fetchSheetText(url)) : []]),
+    ));
+    const payload = mapSheetsToPayload(sheets);
     res.status(200).json(scopePayload(payload, access.scope));
-  } catch (err) {
-    console.error("API /api/data error:", err);
-    res.status(500).json({ error: err.message });
+  } catch {
+    return sheetUnavailable(res);
   }
 }

@@ -1,3 +1,4 @@
+import { fetchJson } from "../lib/fetch-json";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
@@ -26,11 +27,7 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 const fmtNum = (n) => new Intl.NumberFormat("en-US").format(Number(n) || 0);
 const cleanManagerName = (value) =>
@@ -306,7 +303,7 @@ export default function SupplyDashboard() {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
-  const { data: mainData } = useSWR("/api/data", fetcher, {
+  const { data: mainData, error: mainError } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60_000,
   });
@@ -398,17 +395,18 @@ export default function SupplyDashboard() {
             </div>
           </div>
 
-          {supplyCeoMessage ? (
+          {!mainError && supplyCeoMessage ? (
             <div style={{ marginBottom: 14 }}>
               <CeoMessage text={supplyCeoMessage} />
             </div>
           ) : null}
 
-          {error ? <div style={errorStyle}>Error loading supply data.</div> : null}
+          {error ? <div role="alert" style={errorStyle}>{error.message}</div> : null}
+          {mainError ? <div role="alert" style={errorStyle}>پیام مدیریت دریافت نشد. لطفاً کمی بعد دوباره تلاش کنید.</div> : null}
 
-          {isLoading || !data ? <div style={loadingStyle}>Loading supply data...</div> : null}
+          {!error && (isLoading || !data) ? <div style={loadingStyle}>Loading supply data...</div> : null}
 
-          {!isLoading && data ? (
+          {!error && !isLoading && data ? (
             <>
               <div
                 style={{

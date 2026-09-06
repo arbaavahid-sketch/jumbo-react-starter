@@ -1,4 +1,5 @@
 import { requireReadAccess } from "../../lib/access";
+import { fetchSheetText, sheetUnavailable } from "../../lib/sheet-fetch";
 // pages/api/supply.js
 // خواندن داشبورد Supply از Google Sheets CSV
 
@@ -83,135 +84,6 @@ const toWeek = (value) => {
   return m ? Number(m[0]) : null;
 };
 
-const defaultRows = [
-  {
-    manager: "Albert Kunafin",
-    deals_ytd: 13,
-    deals_last_30_days: 11,
-    deals_last_week: 3,
-    deals_in_supply_side_stage_now: 1,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Alexander Nikitin",
-    deals_ytd: 12,
-    deals_last_30_days: 11,
-    deals_last_week: 1,
-    deals_in_supply_side_stage_now: 0,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Hesam Abbasi",
-    deals_ytd: 1,
-    deals_last_30_days: 1,
-    deals_last_week: 0,
-    deals_in_supply_side_stage_now: 1,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Karina Shaydullina",
-    deals_ytd: 2,
-    deals_last_30_days: 2,
-    deals_last_week: 1,
-    deals_in_supply_side_stage_now: 0,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Milad Hooshyar",
-    deals_ytd: 1,
-    deals_last_30_days: 1,
-    deals_last_week: 0,
-    deals_in_supply_side_stage_now: 0,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Mostafa Hajivali",
-    deals_ytd: 13,
-    deals_last_30_days: 11,
-    deals_last_week: 0,
-    deals_in_supply_side_stage_now: 5,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Ulyana Smakova",
-    deals_ytd: 8,
-    deals_last_30_days: 8,
-    deals_last_week: 2,
-    deals_in_supply_side_stage_now: 6,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Azat Akhmerov",
-    deals_ytd: 1,
-    deals_last_30_days: 1,
-    deals_last_week: 0,
-    deals_in_supply_side_stage_now: 1,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-  {
-    manager: "Unassigned",
-    deals_ytd: 8,
-    deals_last_30_days: 7,
-    deals_last_week: 0,
-    deals_in_supply_side_stage_now: 0,
-    undelivered_items: 0,
-    nonplaced_items: 0,
-    late_items: 0,
-    open_po_count: 0,
-    po_val_sub_ytd: 0,
-    out_not_billed: 0,
-    out_not_delivered: 0,
-  },
-];
-
 const calcTotals = (rows) =>
   rows.reduce(
     (acc, r) => {
@@ -254,12 +126,7 @@ export default async function handler(req, res) {
       process.env.SHEET_SUPPLY_SIDE_DASHBOARD_CSV_URL ||
       fallbackUrl;
 
-    const response = await fetch(sheetUrl);
-    if (!response.ok) {
-      throw new Error(`CSV HTTP ${response.status}`);
-    }
-
-    const csvText = await response.text();
+    const csvText = await fetchSheetText(sheetUrl);
     const rawRows = parseCSV(csvText);
 
     const rows = rawRows.map((r) => ({
@@ -320,17 +187,7 @@ export default async function handler(req, res) {
 
     const totals = calcTotals(cleanRows);
     res.status(200).json({ rows: cleanRows, totals, publishDate, source: "sheet", fallback: false });
-  } catch (error) {
-    console.warn(
-      "API /api/supply failed, using built-in fallback:",
-      String(error.message || error),
-    );
-    res.status(200).json({
-      rows: defaultRows,
-      totals: calcTotals(defaultRows),
-      publishDate: "",
-      source: "fallback",
-      fallback: true,
-    });
+  } catch {
+    return sheetUnavailable(res);
   }
 }

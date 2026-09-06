@@ -1,3 +1,4 @@
+import { fetchJson } from "../lib/fetch-json";
 // pages/technical.js — داشبورد Technical (Responsive)
 
 import {
@@ -31,11 +32,7 @@ import {
   FiTool,
 } from "react-icons/fi";
 
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 // ✅ Responsive helper
 function useIsMobile(breakpoint = 900) {
@@ -180,7 +177,7 @@ export default function TechnicalDashboard() {
   });
 
   // داده کلی از /api/data (برای CEO message + technical_queue)
-  const { data: mainData } = useSWR("/api/data", fetcher, {
+  const { data: mainData, error: mainError } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
   });
 
@@ -200,7 +197,7 @@ export default function TechnicalDashboard() {
 
   let body;
 
-  if (error) {
+  if (error || mainError) {
     body = (
       <div
         style={{
@@ -211,10 +208,10 @@ export default function TechnicalDashboard() {
           border: "1px solid rgba(248,113,113,0.45)",
         }}
       >
-        Error loading technical data.
+        {(error || mainError).message}
       </div>
     );
-  } else if (isLoading || !data) {
+  } else if (isLoading || !data || !mainData) {
     body = (
       <div
         style={{

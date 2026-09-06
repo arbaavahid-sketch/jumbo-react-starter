@@ -1,4 +1,5 @@
 import { requireReadAccess } from "../../lib/access";
+import { fetchSheetText, sheetUnavailable } from "../../lib/sheet-fetch";
 // pages/api/nima.js
 // Second-hall ("تالار دوم") exchange-center rates, entered manually in a small
 // Google Sheet tab so the spread matches ice.ir exactly. Neither ice.ir nor
@@ -93,10 +94,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
-
-    const rows = parseCSV(await r.text());
+    const rows = parseCSV(await fetchSheetText(url));
     const rates = {};
     for (const row of rows) {
       const cur = normalizeCurrency(
@@ -119,8 +117,7 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({ rates, configured: Object.keys(rates).length > 0 });
-  } catch (error) {
-    console.warn("API /api/nima failed:", String(error.message || error));
-    res.status(200).json(empty);
+  } catch {
+    return sheetUnavailable(res);
   }
 }

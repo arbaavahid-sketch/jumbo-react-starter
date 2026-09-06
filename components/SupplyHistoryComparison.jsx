@@ -1,11 +1,8 @@
+import { fetchJson } from "../lib/fetch-json";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 const fmt = (n) => new Intl.NumberFormat("en-US").format(Number(n) || 0);
 
@@ -117,7 +114,7 @@ export default function SupplyHistoryComparison() {
           <div style={subtitleStyle}>{kpiMeta.label}</div>
         </div>
 
-        {weeks.length > 0 ? (
+        {!error && weeks.length > 0 ? (
           <div style={controls}>
             <Field label="KPI">
               <select value={kpi} onChange={(e) => setKpi(e.target.value)} style={select}>
@@ -160,10 +157,10 @@ export default function SupplyHistoryComparison() {
         ) : null}
       </div>
 
-      {error ? <div style={note}>Could not load supply history.</div> : null}
-      {isLoading && !data ? <div style={note}>Loading supply history…</div> : null}
+      {error ? <div role="alert" style={note}>{error.message}</div> : null}
+      {!error && isLoading && !data ? <div style={note}>Loading supply history…</div> : null}
 
-      {data && configured === false ? (
+      {!error && data && configured === false ? (
         <div style={setupNote}>
           <strong>No supply history connected yet.</strong>
           <div style={{ marginTop: 6 }}>
@@ -174,11 +171,11 @@ export default function SupplyHistoryComparison() {
         </div>
       ) : null}
 
-      {data && configured && weeks.length === 0 ? (
+      {!error && data && configured && weeks.length === 0 ? (
         <div style={note}>No weekly supply rows found in the connected sheet.</div>
       ) : null}
 
-      {weeks.length > 0 ? (
+      {!error && weeks.length > 0 ? (
         <div style={grid}>
           <SummaryCard
             weekA={weekA}

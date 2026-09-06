@@ -1,3 +1,4 @@
+import { fetchJson } from "../../lib/fetch-json";
 // pages/admin/weekly-history.js
 import Link from "next/link";
 import useSWR from "swr";
@@ -17,11 +18,7 @@ import {
   LabelList,
 } from "recharts";
 
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 const normGroup = (v) =>
   String(v || "")

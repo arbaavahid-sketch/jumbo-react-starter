@@ -1,13 +1,10 @@
+import { fetchJson } from "../../lib/fetch-json";
 // pages/admin/messages.js
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 const GROUPS = [
   { key: "A", title: "Group A" },

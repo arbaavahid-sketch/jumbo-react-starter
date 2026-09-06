@@ -1,3 +1,4 @@
+import { fetchJson } from "../../lib/fetch-json";
 // pages/share/[slug].js — داشبورد عمومی گروه/تکنیکال بر اساس slug (مثلاً /share/...)
 import LogisticAATable from "../../components/LogisticAATable";
 import GroupOffersTable, {
@@ -66,11 +67,7 @@ export async function getServerSideProps(context) {
     props: { slug, groupKey },
   };
 }
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 const fmtEUR = (n) => {
   if (typeof n !== "number") return "-";
@@ -730,7 +727,7 @@ function PublicTechnicalDashboard() {
     refreshInterval: 60_000,
   });
 
-  const { data: mainData } = useSWR("/api/data", fetcher, {
+  const { data: mainData, error: mainError } = useSWR("/api/data", fetcher, {
     revalidateOnFocus: false,
   });
 
@@ -749,7 +746,7 @@ function PublicTechnicalDashboard() {
 
   let body;
 
-  if (error) {
+  if (error || mainError) {
     body = (
       <div
         style={{
@@ -760,10 +757,10 @@ function PublicTechnicalDashboard() {
           border: "1px solid rgba(248,113,113,0.45)",
         }}
       >
-        Error loading technical data.
+        {(error || mainError).message}
       </div>
     );
-  } else if (isLoading || !data) {
+  } else if (isLoading || !data || !mainData) {
     body = (
       <div
         style={{

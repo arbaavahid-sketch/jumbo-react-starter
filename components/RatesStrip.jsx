@@ -47,7 +47,7 @@ export default function RatesStrip() {
     revalidateOnFocus: false,
     refreshInterval: 15 * 60 * 1000,
   });
-  const { data: nimaData } = useSWR("/api/nima", fetcher, {
+  const { data: nimaData, error: nimaError } = useSWR("/api/nima", fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60 * 60 * 1000,
   });
@@ -75,7 +75,7 @@ export default function RatesStrip() {
   }, []);
 
   const tgjuRates = tgjuData?.rates || {};
-  const nimaRates = nimaData?.rates || {};
+  const nimaRates = nimaError ? {} : nimaData?.rates || {};
   const spreads = [
     {
       label: "اختلاف دلار با حواله فروش",
@@ -91,6 +91,7 @@ export default function RatesStrip() {
     <div className="fxwrap" dir="ltr">
       <span className="fxtag">نرخ ارز • LIVE TGJU</span>
       <div className="spreadbar" dir="rtl">
+        {nimaError ? <span role="alert">نرخ حواله دریافت نشد.</span> : null}
         {spreads.map((item) => (
           <span key={item.label} className="spread" style={spreadTone(item.value)}>
             {item.label}: {Number.isFinite(item.value) ? `${item.value.toFixed(1)}٪` : "—"}

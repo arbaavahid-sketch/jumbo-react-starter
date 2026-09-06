@@ -1,3 +1,4 @@
+import { fetchJson } from "../../lib/fetch-json";
 // pages/group/[id].js — داشبورد گروه با پیام CEO + KPI + چارت‌ها + NewsTicker
 import LogisticAATable from "../../components/LogisticAATable";
 import GroupOffersTable, {
@@ -36,11 +37,7 @@ import {
 } from "react-icons/fi";
 
 // ---------- Helpers ----------
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 const fmtEUR = (n) =>
   typeof n === "number"

@@ -1,4 +1,5 @@
 import { requireReadAccess } from "../../lib/access";
+import { fetchSheetText, sheetUnavailable } from "../../lib/sheet-fetch";
 // pages/api/technical.js
 // خواندن داشبورد فنی از Google Sheets (شیت technical_dashboard)
 
@@ -74,10 +75,7 @@ export default async function handler(req, res) {
       throw new Error("SHEET_TECH_CSV_URL is not set in env");
     }
 
-    const r = await fetch(SHEET_URL);
-    if (!r.ok) throw new Error(`CSV HTTP ${r.status}`);
-
-    const text = await r.text();
+    const text = await fetchSheetText(SHEET_URL);
     const csvRows = parseCSV(text);
 
     // یک helper کوچک برای تبدیل عدد
@@ -194,8 +192,7 @@ export default async function handler(req, res) {
     const latest = rows.length ? rows[rows.length - 1] : null;
 
     res.status(200).json({ rows, latest });
-  } catch (err) {
-    console.error("API /api/technical error:", err);
-    res.status(500).json({ error: String(err.message || err) });
+  } catch {
+    return sheetUnavailable(res);
   }
 }

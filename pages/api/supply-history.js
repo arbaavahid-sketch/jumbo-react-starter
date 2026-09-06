@@ -1,4 +1,5 @@
 import { requireReadAccess } from "../../lib/access";
+import { fetchSheetText, sheetUnavailable } from "../../lib/sheet-fetch";
 // pages/api/supply-history.js
 // Weekly history for the Supply dashboard.
 //
@@ -136,7 +137,6 @@ export function mapSupplyHistoryRows(rawRows) {
 
 export default async function handler(req, res) {
   if (!requireReadAccess(req, res, "/api/supply-history")) return;
-  const empty = { rows: [], weeks: [], managers: [], configured: false };
 
   // The history reads the same supply tab the live dashboard uses (it just keeps
   // ALL weeks instead of only the latest). A dedicated SHEET_SUPPLY_HISTORY_CSV_URL
@@ -149,15 +149,11 @@ export default async function handler(req, res) {
     fallbackUrl;
 
   try {
-    const response = await fetch(sheetUrl);
-    if (!response.ok) throw new Error(`CSV HTTP ${response.status}`);
-
-    const parsed = mapSupplyHistoryRows(parseCSV(await response.text()));
+    const parsed = mapSupplyHistoryRows(parseCSV(await fetchSheetText(sheetUrl)));
     // "configured" is true only once we actually find weekly rows, so the UI
     // shows the setup hint until a week column with data exists.
     res.status(200).json({ ...parsed, configured: parsed.weeks.length > 0 });
-  } catch (error) {
-    console.warn("API /api/supply-history failed:", String(error.message || error));
-    res.status(200).json(empty);
+  } catch {
+    return sheetUnavailable(res);
   }
 }

@@ -1,3 +1,4 @@
+import { fetchJson } from "../../lib/fetch-json";
 // pages/admin/index.js
 import Head from "next/head";
 import Link from "next/link";
@@ -37,11 +38,7 @@ import {
 import RatesStrip from "../../components/RatesStrip";
 import GroupOffersTable, { normalizeGroupKey } from "../../components/GroupOffersTable";
 
-const fetcher = async (url) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-};
+const fetcher = fetchJson;
 
 const num = (v) => Number(v || 0);
 const ensureArray = (v) => (Array.isArray(v) ? v : []);
@@ -159,11 +156,11 @@ export default function Admin() {
   });
   const [selectedOfferGroup, setSelectedOfferGroup] = useState("A");
 
-  if (error) {
-    return <LoadState tone="danger" title="Admin data could not load" detail={String(error)} />;
+  if (error || technicalError || supplyError) {
+    return <LoadState tone="danger" title="Admin data could not load" detail={String(error || technicalError || supplyError)} />;
   }
 
-  if (isLoading || !data) {
+  if (isLoading || !data || !technicalData || !supplyData) {
     return <LoadState title="Loading admin command center..." />;
   }
 
