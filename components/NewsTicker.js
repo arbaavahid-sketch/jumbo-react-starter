@@ -42,7 +42,7 @@ export default function NewsTicker() {
         }}
       >
         {/* 🔽 ticker */}
-        <div className="ticker-wrapper" style={{ flex: 1 }}>
+        <div className="ticker-wrapper" style={{ flex: 1, minWidth: 0 }}>
           <div className="ticker-content">
             {line} • {line}
           </div>

@@ -396,6 +396,9 @@ export default function LogisticAATable({ rows = [], datasetDate = "" }) {
 }
 
 const outerCard = {
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
   marginTop: 8,
   borderRadius: 18,
   background: "linear-gradient(135deg, #e3f2ff, #f8fafc)",
@@ -405,6 +408,9 @@ const outerCard = {
 };
 
 const innerCard = {
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
   background: "#ffffff",
   borderRadius: 16,
   overflow: "hidden",
