@@ -1,3 +1,4 @@
+import { requireReadAccess } from "../../lib/access";
 // pages/api/technical.js
 // خواندن داشبورد فنی از Google Sheets (شیت technical_dashboard)
 
@@ -66,6 +67,7 @@ function firstText(row, keys) {
 }
 
 export default async function handler(req, res) {
+  if (!requireReadAccess(req, res, "/api/technical")) return;
   try {
     const SHEET_URL = process.env.SHEET_TECH_CSV_URL;
     if (!SHEET_URL) {

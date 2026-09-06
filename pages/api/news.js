@@ -1,3 +1,4 @@
+import { requireReadAccess } from "../../lib/access";
 import { parse } from "rss-to-json";
 
 const SOURCES = [
@@ -40,6 +41,7 @@ const SOURCES = [
 ];
 
 export default async function handler(req, res) {
+  if (!requireReadAccess(req, res, "/api/news")) return;
   try {
     const results = await Promise.all(
       SOURCES.map(async (src) => {

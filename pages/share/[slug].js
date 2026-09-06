@@ -58,7 +58,7 @@ import {
 // ---------- getServerSideProps ----------
 export async function getServerSideProps(context) {
   const { slug } = context.params || {};
-  const groupKey = PUBLIC_SHARE_MAP[slug] || null;
+  const groupKey = typeof slug === "string" && Object.hasOwn(PUBLIC_SHARE_MAP, slug) ? PUBLIC_SHARE_MAP[slug] : null;
 
   if (!groupKey) return { notFound: true };
 
@@ -706,7 +706,9 @@ function PublicGroupDashboard({ groupKey }) {
 
         {/* Row 2: Logistic AA full width */}
         <div style={{ marginTop: 0 }}>
-          <LogisticAATable rows={ensureArray(raw.logistic_aa)} datasetDate={curr?.date || ""} />
+          {ensureArray(raw.logistic_aa).length > 0 && (
+            <LogisticAATable rows={raw.logistic_aa} datasetDate={curr?.date || ""} />
+          )}
         </div>
       </section>
 
@@ -1684,5 +1686,4 @@ export default function PublicSharePage(props) {
   if (normalizedKey === "SUPPLY") return <SupplyDashboard />;
 
   return <PublicGroupDashboard {...props} groupKey={normalizedKey} />;
-  if (props.groupKey === "SUPPLY") return <SupplyDashboard />;
 }

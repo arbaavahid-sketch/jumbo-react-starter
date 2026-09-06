@@ -1,8 +1,9 @@
-// pages/api/ceo-message.js
+import { AUTH_COOKIE, verifySession } from "../../lib/auth";
 // این فقط درخواست را به Google Apps Script فوروارد می‌کند
 
 export default async function handler(req, res) {
-  if (req.cookies?.dashboard_auth !== "ok") {
+  res.setHeader("Cache-Control", "private, no-store");
+  if (!verifySession(req.cookies?.[AUTH_COOKIE])) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }

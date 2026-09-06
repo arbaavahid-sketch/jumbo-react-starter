@@ -1,3 +1,4 @@
+import { requireReadAccess } from "../../lib/access";
 // pages/api/supply.js
 // خواندن داشبورد Supply از Google Sheets CSV
 
@@ -243,6 +244,7 @@ const calcTotals = (rows) =>
   );
 
 export default async function handler(req, res) {
+  if (!requireReadAccess(req, res, "/api/supply")) return;
   try {
     const fallbackUrl =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vRXsGTD45h3nBYxHI4VBfTnBQdE7roWfm3coN4Ful7hdV7fcshPd2lg5Ueymf_I5sgGVIr9bl77LA2a/pub?gid=1845248185&single=true&output=csv";
@@ -317,7 +319,7 @@ export default async function handler(req, res) {
       "";
 
     const totals = calcTotals(cleanRows);
-    res.status(200).json({ rows: cleanRows, totals, publishDate, source: sheetUrl, fallback: false });
+    res.status(200).json({ rows: cleanRows, totals, publishDate, source: "sheet", fallback: false });
   } catch (error) {
     console.warn(
       "API /api/supply failed, using built-in fallback:",

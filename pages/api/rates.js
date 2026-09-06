@@ -1,3 +1,4 @@
+import { requireReadAccess } from "../../lib/access";
 // pages/api/rates.js
 
 const SUCCESS_CACHE_SECONDS = 60 * 60;
@@ -18,6 +19,7 @@ const send = (res, payload, cacheSeconds = ERROR_CACHE_SECONDS) => {
 };
 
 export default async function handler(req, res) {
+  if (!requireReadAccess(req, res, "/api/rates")) return;
   const key = process.env.NAVASAN_API_KEY;
 
   if (!key) {

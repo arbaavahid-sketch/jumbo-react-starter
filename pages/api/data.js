@@ -2,6 +2,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { splitDeal } from "../../lib/logistic";
+import { requireReadAccess, scopePayload } from "../../lib/access";
 function dateSortValue(input) {
   const raw = String(input || "").trim();
   if (!raw) return 0;
@@ -513,6 +514,8 @@ export function mapSheetsToPayload({
 
 // ----------------- HANDLER -----------------
 export default async function handler(req, res) {
+  const access = requireReadAccess(req, res, "/api/data");
+  if (!access) return;
   try {
     const {
       SHEET_WEEKLY_TRIPS_CSV_URL,
@@ -629,7 +632,7 @@ export default async function handler(req, res) {
       groupOffersSheet,
     });
 
-    res.status(200).json(payload);
+    res.status(200).json(scopePayload(payload, access.scope));
   } catch (err) {
     console.error("API /api/data error:", err);
     res.status(500).json({ error: err.message });

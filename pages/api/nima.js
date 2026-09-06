@@ -1,3 +1,4 @@
+import { requireReadAccess } from "../../lib/access";
 // pages/api/nima.js
 // Second-hall ("تالار دوم") exchange-center rates, entered manually in a small
 // Google Sheet tab so the spread matches ice.ir exactly. Neither ice.ir nor
@@ -83,6 +84,7 @@ const pickValue = (row, keys) => {
 };
 
 export default async function handler(req, res) {
+  if (!requireReadAccess(req, res, "/api/nima")) return;
   const empty = { rates: {}, configured: false };
   try {
     const url = process.env.SHEET_NIMA_CSV_URL;

@@ -1,4 +1,4 @@
-// pages/api/login.js
+import { AUTH_COOKIE, SESSION_SECONDS, authConfigured, constantTimeEqual, createSession } from "../../lib/auth";
 export default function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, message: "Method not allowed" });
@@ -6,17 +6,21 @@ export default function handler(req, res) {
 
   const { username, password } = req.body || {};
 
-  const validUser = process.env.LOGIN_USER || "manager";
-  const validPass = process.env.LOGIN_PASS || "artin123";
+  res.setHeader("Cache-Control", "no-store");
+  if (!authConfigured()) return res.status(503).json({ ok: false, message: "تنظیمات ورود سرور کامل نیست." });
+  const validUser = process.env.LOGIN_USER;
+  const validPass = process.env.LOGIN_PASS;
 
-  if (username === validUser && password === validPass) {
+  const userMatches = constantTimeEqual(username, validUser);
+  const passwordMatches = constantTimeEqual(password, validPass);
+  if (userMatches && passwordMatches) {
     // ساختن کوکی بدون نیاز به پکیج اضافه
     const cookie = [
-      "dashboard_auth=ok",
+      `${AUTH_COOKIE}=${createSession()}`,
       "Path=/",
       "HttpOnly",
       "SameSite=Lax",
-      "Max-Age=" + 60 * 60 * 8, // 8 ساعت
+      "Max-Age=" + SESSION_SECONDS,
       process.env.NODE_ENV === "production" ? "Secure" : "",
     ]
       .filter(Boolean)

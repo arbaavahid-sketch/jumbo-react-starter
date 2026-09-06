@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-const AUTH_COOKIE = "dashboard_auth";
+import { AUTH_COOKIE, verifySession } from "./lib/auth";
+import { canShareRead, shareScope } from "./lib/access";
 
 export function proxy(req) {
   const { pathname, search } = req.nextUrl;
@@ -12,24 +13,24 @@ export function proxy(req) {
     // --- مسیرهای لینک عمومی ---
     pathname.startsWith("/share/") ||
     // --- APIهای لازم برای داشبورد آزاد ---
-    pathname.startsWith("/api/data") ||
-    pathname.startsWith("/api/tgju") ||
-    pathname.startsWith("/api/news") || // همین خط همه‌ی news و news-en را پوشش می‌دهد
-    pathname.startsWith("/api/rates") ||
-    pathname.startsWith("/api/technical") ||
-    pathname.startsWith("/api/supply") ||
-    pathname.startsWith("/_next");
+    pathname.startsWith("/_next/");
 
   if (isPublicPath) {
     return NextResponse.next();
   }
 
+  const slug = req.nextUrl.searchParams.get("share");
+  if (pathname.startsWith("/api/") && slug !== null) {
+    if (req.method === "GET" && canShareRead(shareScope(slug), pathname)) return NextResponse.next();
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   // --- مسیرهای محافظت‌شده ---
   const auth = req.cookies.get(AUTH_COOKIE)?.value;
-  if (auth === "ok") {
+  if (verifySession(auth)) {
     return NextResponse.next();
   }
 
+  if (pathname.startsWith("/api/")) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const loginUrl = new URL("/login", req.url);
   loginUrl.searchParams.set("next", pathname + search);
   return NextResponse.redirect(loginUrl);

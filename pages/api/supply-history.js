@@ -1,3 +1,4 @@
+import { requireReadAccess } from "../../lib/access";
 // pages/api/supply-history.js
 // Weekly history for the Supply dashboard.
 //
@@ -134,6 +135,7 @@ export function mapSupplyHistoryRows(rawRows) {
 }
 
 export default async function handler(req, res) {
+  if (!requireReadAccess(req, res, "/api/supply-history")) return;
   const empty = { rows: [], weeks: [], managers: [], configured: false };
 
   // The history reads the same supply tab the live dashboard uses (it just keeps

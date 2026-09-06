@@ -32,7 +32,7 @@ export default function LoginPage() {
       // اگر پارامتر next داشتیم، برگرد همونجا، وگرنه برو روی Portal (/)
       const params = new URLSearchParams(window.location.search);
       const next = params.get("next") || "/";
-      router.push(next);
+      router.push(next.startsWith("/") && !next.startsWith("//") && !/[\\\r\n]/.test(next) ? next : "/");
     } catch (err) {
       console.error(err);
       setError("خطا در ارتباط با سرور.");

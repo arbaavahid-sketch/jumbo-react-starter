@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a Next.js dashboard project.
+
+## Authentication and public links
+
+Set `LOGIN_USER`, `LOGIN_PASS`, and `AUTH_SECRET` in the server environment before starting the app. There are no fallback login credentials. Generate a random session secret using `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`; set the generated value as `AUTH_SECRET` (at least 32 characters). Keep it out of Git and configure it separately in the hosting environment before deploying.
+
+Signed login sessions expire after eight hours. Changing the credentials or secret invalidates existing sessions. Older unsigned cookies require signing in again.
+
+Existing `/share/` links grant read access to the corresponding dashboard. Treat those links as access credentials. API requests from these pages carry a `share` query parameter; group responses contain only that group's records. Technical links expose the technical queue and technical message; supply links expose supply data and the supply message. Unassigned logistics records are excluded from public group responses. Signed-in dashboards retain full access. Public group comparisons now contain only the selected group.
+
+Before release, verify login and each public dashboard with the production environment configured. Authentication protects this application's endpoints; it does not change sharing permissions on the source Google Sheets or external Drive links.
 
 ## Getting Started
 

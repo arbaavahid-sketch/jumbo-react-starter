@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapSheetsToPayload } from "./data";
+import { mapSheetsToPayload } from "../pages/api/data";
 
 describe("logistic sheet mapping", () => {
   it("maps the still-in-customs column by its Google Sheets header", () => {

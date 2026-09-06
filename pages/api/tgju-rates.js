@@ -1,3 +1,4 @@
+import { requireReadAccess } from "../../lib/access";
 const CACHE_SECONDS = 15 * 60;
 const TGJU_KEYS = {
   usd: "137203",
@@ -24,6 +25,7 @@ const send = (res, payload, cacheSeconds = CACHE_SECONDS) => {
 };
 
 export default async function handler(req, res) {
+  if (!requireReadAccess(req, res, "/api/tgju-rates")) return;
   const ageSeconds = Math.floor((Date.now() - memoryCache.fetchedAt) / 1000);
   if (memoryCache.payload && ageSeconds >= 0 && ageSeconds < CACHE_SECONDS) {
     return send(
