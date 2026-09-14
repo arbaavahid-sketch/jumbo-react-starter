@@ -526,6 +526,19 @@ a {
   white-space: nowrap;
 }
 
+.group-view-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px 0 18px;
+}
+
+@media (max-width: 640px) {
+  .group-view-toggle-row {
+    justify-content: flex-start;
+    margin-top: -4px;
+  }
+}
+
 .dashboard-inline-alert {
   margin: 0 0 16px;
   padding: 11px 14px;

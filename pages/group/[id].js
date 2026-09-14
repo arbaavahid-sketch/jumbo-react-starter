@@ -27,6 +27,7 @@ import TotalDealsIcon from "../../components/TotalDealsIcon";
 import YearToDateTripsIcon from "../../components/YearToDateTripsIcon";
 import TvModeFrame from "../../components/TvModeFrame";
 import { DashboardNotice, DashboardSkeleton } from "../../components/DashboardState";
+import DashboardPageHeader from "../../components/DashboardPageHeader";
 
 import {
   FiSend,
@@ -37,6 +38,7 @@ import {
   FiCalendar,
   FiNavigation,
   FiLink,
+  FiUsers,
 } from "react-icons/fi";
 
 // ---------- Helpers ----------
@@ -460,33 +462,14 @@ export default function GroupDashboard() {
           />
         </Head>
 
-        {/* هدر بالا: عنوان + لوگو + ساعت */}
-        <div className="dashboard-header">
-          <h1 className="dashboard-title">{pageTitle}</h1>
-          <div className="dashboard-brand">
-            <Image
-              src={companyLogo}
-              alt="company logo"
-              style={{
-                width: 160,
-                height: 80,
-                objectFit: "contain",
-                display: "block",
-              }}
-            />
-            <div
-              style={{
-                fontSize: 12,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: "#4b5563",
-              }}
-            >
-              <LiveClock />
-            </div>
-            {viewToggle}
-          </div>
-        </div>
+        <DashboardPageHeader
+          eyebrow={`GROUP ${groupKey}`}
+          title={pageTitle}
+          description={`Performance, pipeline and weekly activity for Group ${groupKey}.`}
+          Icon={FiUsers}
+          accent="#3478c7"
+        />
+        <div className="group-view-toggle-row">{viewToggle}</div>
 
         {/* خبر فارسی + TGJU */}
         <section className="section news-section">
