@@ -1,5 +1,3 @@
-import Image from "next/image";
-import companyLogo from "../../public/company-logo.png";
 import { fetchJson } from "../../lib/fetch-json";
 // pages/share/[slug].js — داشبورد عمومی گروه/تکنیکال بر اساس slug (مثلاً /share/...)
 import LogisticAATable from "../../components/LogisticAATable";
@@ -21,7 +19,6 @@ import NewsTicker from "../../components/NewsTicker";
 import DealsExecTable from "../../components/DealsExecTable";
 import ARListTable from "../../components/ARListTable";
 import CeoMessage from "../../components/CeoMessage";
-import LiveClock from "../../components/LiveClock";
 import RatesStrip from "../../components/RatesStrip";
 import MembersHistoryChart from "../../components/MembersHistoryChart";
 import GroupSalesBars from "../../components/GroupSalesBars";
@@ -1127,61 +1124,13 @@ function PublicTechnicalDashboard() {
       </Head>
 
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: 20,
-            gap: 16,
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: "0.10em",
-                textTransform: "uppercase",
-                color: "#005F9E",
-              }}
-            >
-              Technical Dashboard
-            </h1>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-            <div
-              style={{
-                padding: 10,
-                borderRadius: 18,
-                background: "#ffffff",
-                border: "1px solid rgba(148,163,184,0.35)",
-                boxShadow: "0 10px 25px rgba(15,23,42,0.08)",
-              }}
-            >
-              <Image
-                src={companyLogo}
-                style={{ width: 150, height: 70, objectFit: "contain" }}
-                alt="Company logo"
-              />
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                padding: "4px 14px",
-                borderRadius: 999,
-                background: "#ffffff",
-                border: "1px solid rgba(148,163,184,0.4)",
-                boxShadow: "0 8px 20px rgba(15,23,42,0.06)",
-                color: "#005F9E",
-              }}
-            >
-              <LiveClock />
-            </div>
-          </div>
-        </div>
+        <DashboardPageHeader
+          eyebrow="PUBLIC SHARE / TECHNICAL"
+          title="Technical Dashboard"
+          description="Technical pipeline, ownership and current queue status."
+          Icon={FiTool}
+          accent="#3478c7"
+        />
 
         <div
           style={{
