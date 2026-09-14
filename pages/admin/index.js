@@ -738,19 +738,21 @@ function SectionTitle({ title, detail }) {
 function MetricCard({ label, value, Icon, tone = "default" }) {
   const accent = tone === "danger" ? "#ef4444" : tone === "good" ? "#16a34a" : "#2563eb";
   return (
-    <div style={metricCard}>
-      <div style={{ ...metricIcon, color: accent, background: `${accent}14` }}>
-        <Icon size={18} />
+    <div className="dashboard-metric-card" style={{ "--metric-accent": accent }}>
+      <div className="dashboard-metric-top">
+        <div className="dashboard-metric-label">{label}</div>
+        <div className="dashboard-metric-icon">
+          <Icon size={18} aria-hidden="true" />
+        </div>
       </div>
-      <div style={metricLabel}>{label}</div>
-      <div style={metricValue}>{value ?? "-"}</div>
+      <div className="dashboard-metric-value">{value ?? "-"}</div>
     </div>
   );
 }
 
 function Panel({ title, Icon, href, children }) {
   return (
-    <section style={panel}>
+    <section className="dashboard-data-card" style={panel}>
       <div style={panelHeader}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Icon size={17} />
@@ -944,27 +946,6 @@ const overviewGrid = {
   marginTop: 14,
 };
 
-const metricCard = {
-  background: "#fff",
-  borderRadius: 12,
-  padding: 14,
-  boxShadow: "0 12px 30px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.18)",
-  minHeight: 105,
-};
-
-const metricIcon = {
-  width: 34,
-  height: 34,
-  borderRadius: 10,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  marginBottom: 10,
-};
-
-const metricLabel = { fontSize: 12, color: "#64748b", fontWeight: 800 };
-const metricValue = { marginTop: 4, fontSize: 21, fontWeight: 950, color: "#0f172a" };
-
 const sectionGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit,minmax(360px,1fr))",
@@ -980,9 +961,10 @@ const groupGrid = {
 
 const panel = {
   background: "#fff",
-  borderRadius: 14,
-  padding: 14,
-  boxShadow: "0 12px 30px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.18)",
+  border: "1px solid #e1e8f0",
+  borderRadius: 18,
+  padding: 18,
+  boxShadow: "0 10px 30px rgba(15,23,42,0.05)",
 };
 
 const panelHeader = {

@@ -77,6 +77,7 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", onClick }) {
   const clickable = typeof onClick === "function";
   return (
     <div
+      className={`dashboard-metric-card${clickable ? " is-clickable" : ""}`}
       onClick={onClick}
       onKeyDown={
         clickable
@@ -90,75 +91,24 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", onClick }) {
       }
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
-      style={{
-        position: "relative",
-        background: "#ffffff",
-        borderRadius: 18,
-        padding: 16,
-        boxShadow: "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
-        overflow: "visible",
-        transition: "box-shadow 160ms ease",
-        cursor: clickable ? "pointer" : "default",
-      }}
+      style={{ "--metric-accent": accent }}
     >
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              color: "#6b7280",
-              marginBottom: 6,
-              fontWeight: 800,
-            }}
-          >
-            {label}
+      <div className="dashboard-metric-top">
+        <div className="dashboard-metric-label">{label}</div>
+        {Icon ? (
+          <div className="dashboard-metric-icon">
+            <Icon size={17} aria-hidden="true" />
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <div style={{ fontWeight: 800, fontSize: 22, color: "#020617" }}>{value}</div>
-            {delta ? <DeltaBadge {...delta} /> : null}
-          </div>
-        </div>
-
-        {Icon && (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(15,23,42,0.06)",
-              color: accent,
-              boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-            }}
-          >
-            <Icon size={16} />
-          </div>
-        )}
+        ) : null}
+      </div>
+      <div className="dashboard-metric-value-row">
+        <div className="dashboard-metric-value">{value}</div>
+        {delta ? <DeltaBadge {...delta} /> : null}
       </div>
 
       {clickable && (
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.04em",
-            color: accent,
-          }}
-        >
-          View by manager →
+        <div className="dashboard-metric-action">
+          View by manager <span aria-hidden="true">→</span>
         </div>
       )}
     </div>
@@ -273,20 +223,22 @@ function TableCard({ title, children }) {
 
   return (
     <section
+      className="dashboard-data-card"
       style={{
         background: "#fff",
-        borderRadius: 20,
-        boxShadow: "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
+        borderRadius: 18,
+        border: "1px solid #e1e8f0",
+        boxShadow: "0 10px 30px rgba(15,23,42,0.05)",
         overflow: "hidden",
       }}
     >
       <div
         style={{
           padding: "14px 16px",
-          borderBottom: "1px solid rgba(148,163,184,0.25)",
-          fontSize: 18,
-          fontWeight: 800,
-          color: "#0f172a",
+          borderBottom: "1px solid #e7edf4",
+          fontSize: 14,
+          fontWeight: 750,
+          color: "#26374d",
         }}
       >
         {title}

@@ -688,10 +688,12 @@ function EmptyBox({ text }) {
 function TableCard({ title, children }) {
   return (
     <div
+      className="dashboard-data-card"
       style={{
-        borderRadius: 20,
+        borderRadius: 18,
         background: "#ffffff",
-        boxShadow: "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
+        border: "1px solid #e1e8f0",
+        boxShadow: "0 10px 30px rgba(15,23,42,0.05)",
         padding: 12,
         display: "flex",
         flexDirection: "column",
@@ -867,65 +869,25 @@ function TechIconWrap({ children, iconLink }) {
   );
 }
 
-function TechCard({ icon, label, value, link, delta, iconLink, isMobile }) {
+function TechCard({ icon, label, value, link, delta, iconLink }) {
   const hasLink = !!link;
 
   return (
     <div
-      style={{
-        borderRadius: 18,
-        padding: 12,
-        background: "linear-gradient(135deg,rgba(0,95,158,0.06),rgba(0,184,148,0.05))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.25)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        minHeight: 90,
-        width: isMobile ? "100%" : "auto",
-      }}
+      className="dashboard-metric-card dashboard-metric-technical"
+      style={{ "--metric-accent": "#1476b8" }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className="dashboard-metric-top">
+        <span className="dashboard-metric-label">{label}</span>
         <TechIconWrap iconLink={iconLink}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              background: "rgba(59,130,246,0.12)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 0 0 1px rgba(59,130,246,0.35)",
-              cursor: iconLink ? "pointer" : "default",
-            }}
-          >
-            <span style={{ fontSize: 18, color: "#005F9E" }}>{icon}</span>
+          <div className="dashboard-metric-icon">
+            <span>{icon}</span>
           </div>
         </TechIconWrap>
-
-        <span
-          style={{
-            fontSize: 11,
-            color: "#374151",
-            fontWeight: 800,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-          }}
-        >
-          {label}
-        </span>
       </div>
 
-      <div
-        style={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 4,
-        }}
-      >
-        <span style={{ fontSize: 20, fontWeight: 800, color: "#0f172a" }}>
+      <div className="dashboard-metric-value-row">
+        <span className="dashboard-metric-value">
           {hasLink ? (
             link ? (
               <a
