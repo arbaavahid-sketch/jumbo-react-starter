@@ -646,6 +646,12 @@ a {
   place-items: center;
 }
 
+.dashboard-metric-icon.is-wide {
+  width: auto;
+  min-width: 34px;
+  padding: 0 4px;
+}
+
 .dashboard-metric-icon span,
 .dashboard-metric-icon svg {
   display: grid;

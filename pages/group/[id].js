@@ -148,7 +148,16 @@ function DeltaBadge({ pct, dir, inf }) {
 }
 
 // ---------- StatCard ----------
-function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon }) {
+function StatCard({
+  label,
+  value,
+  delta,
+  Icon,
+  accent = "#2563eb",
+  actionIcon,
+  actionLabel,
+  actionIconWide = false,
+}) {
   return (
     <div
       className="dashboard-metric-card"
@@ -185,8 +194,18 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
         )}
 
         {/* اگر actionIcon پاس داده شد (مثل لینک MOM) */}
-        {actionIcon ? <span className="dashboard-metric-action">{actionIcon}</span> : null}
+        {actionIcon ? (
+          <span className={`dashboard-metric-icon${actionIconWide ? " is-wide" : ""}`}>
+            {actionIcon}
+          </span>
+        ) : null}
       </div>
+      {actionLabel ? (
+        <div className="dashboard-metric-action">
+          <span>{actionLabel}</span>
+          <span aria-hidden="true">→</span>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -377,32 +396,14 @@ export default function GroupDashboard() {
             <meta name="description" content={`Offers sent for group ${groupKey}.`} />
           </Head>
 
-          <div className="dashboard-header">
-            <h1 className="dashboard-title">{pageTitle}</h1>
-            <div className="dashboard-brand">
-              <Image
-                src={companyLogo}
-                alt="company logo"
-                style={{
-                  width: 160,
-                  height: 80,
-                  objectFit: "contain",
-                  display: "block",
-                }}
-              />
-              <div
-                style={{
-                  fontSize: 12,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "#4b5563",
-                }}
-              >
-                <LiveClock />
-              </div>
-              {viewToggle}
-            </div>
-          </div>
+          <DashboardPageHeader
+            eyebrow={`GROUP ${groupKey} / OFFERS`}
+            title={`${pageTitle} — Offers`}
+            description={`Offers sent and pipeline details for Group ${groupKey}.`}
+            Icon={FiUsers}
+            accent="#3478c7"
+          />
+          <div className="group-view-toggle-row">{viewToggle}</div>
 
           <section className="section news-section">
             <div className="news-block" style={{ marginBottom: 20 }}>
@@ -498,7 +499,8 @@ export default function GroupDashboard() {
               value={fmtEUR(latest?.total_sales_eur)}
               delta={deltas.total_sales_eur}
               accent="#0ea5e9"
-              actionIcon={<TotalDealsIcon deals={totalDealsForGroup} />}
+            actionIcon={<TotalDealsIcon deals={totalDealsForGroup} />}
+            actionLabel="View total deals"
             />
             <StatCard
               label="Offers Sent"
@@ -533,7 +535,8 @@ export default function GroupDashboard() {
               value={latest?.mega_deals ?? 0}
               delta={deltas.mega_deals}
               accent="#eab308"
-              actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
+            actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
+            actionLabel="View mega deals"
             />
             <StatCard
               label="Last Group Planning meeting"
@@ -579,6 +582,7 @@ export default function GroupDashboard() {
                   </div>
                 )
               }
+              actionLabel={momLink ? "View meeting notes" : undefined}
             />
             <StatCard
               label="Weekly Trips"
@@ -595,6 +599,8 @@ export default function GroupDashboard() {
                   />
                 </div>
               }
+              actionIconWide
+              actionLabel="View trip details"
             />
           </div>
 
