@@ -63,7 +63,13 @@ export function GroupViewToggle({ activeView, scheduledView, isManual, onToggle 
   const showingOffers = activeView === GROUP_VIEWS.OFFERS;
 
   return (
-    <button type="button" onClick={onToggle} style={toggleButtonStyle}>
+    <button
+      type="button"
+      onClick={onToggle}
+      style={toggleButtonStyle}
+      aria-pressed={showingOffers}
+      aria-label={showingOffers ? "Show group dashboard" : "Show group offers"}
+    >
       <FiRefreshCw size={15} />
       <span>{showingOffers ? "Show Dashboard" : "Show Offers"}</span>
       <span style={toggleMetaStyle}>
