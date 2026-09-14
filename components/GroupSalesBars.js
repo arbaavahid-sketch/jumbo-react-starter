@@ -1,10 +1,21 @@
 import { DashboardChart } from "./DashboardChart";
+import { DashboardNotice } from "./DashboardState";
 
 export default function GroupSalesBars({ data = [] }) {
   const MAX = Math.max(...data.map((x) => x.value), 1);
   const total = data.reduce((sum, g) => sum + Number(g.value || 0), 0);
 
   const COLORS = ["#2563eb", "#f97316", "#22c55e"];
+
+  if (!data.length) {
+    return (
+      <DashboardNotice
+        tone="empty"
+        title="No group sales data"
+        detail="Sales totals will appear here when the source data is available."
+      />
+    );
+  }
 
   return (
     <DashboardChart
