@@ -1,3 +1,5 @@
+import { DashboardChart } from "./DashboardChart";
+
 export default function GroupSalesBars({ data = [] }) {
   const MAX = Math.max(...data.map((x) => x.value), 1);
   const total = data.reduce((sum, g) => sum + Number(g.value || 0), 0);
@@ -5,45 +7,11 @@ export default function GroupSalesBars({ data = [] }) {
   const COLORS = ["#2563eb", "#f97316", "#22c55e"];
 
   return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: 20,
-        padding: 20,
-        boxShadow: "0 10px 25px rgba(15,23,42,0.10)",
-      }}
+    <DashboardChart
+      title="Total sales"
+      description={`Combined sales across groups: ${total.toLocaleString("en-US")} €`}
+      height={280}
     >
-      {/* عنوان + مجموع کل */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          gap: 8, // 👈 فاصله‌ی کم بین عنوان و مجموع
-          marginBottom: 10,
-        }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            fontSize: 16,
-            color: "#111827",
-            fontWeight: 700,
-          }}
-        >
-          Total Sales
-        </h3>
-
-        <div
-          style={{
-            fontSize: 16, // کمی درشت‌تر از قبل
-            fontWeight: 800,
-            color: "#1e293b",
-            whiteSpace: "nowrap",
-          }}
-        >
-          = {total.toLocaleString("en-US")} €
-        </div>
-      </div>
 
       {/* لیست نوارها */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -117,6 +85,6 @@ export default function GroupSalesBars({ data = [] }) {
           );
         })}
       </div>
-    </div>
+    </DashboardChart>
   );
 }
