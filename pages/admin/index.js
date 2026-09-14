@@ -38,6 +38,7 @@ import {
 import RatesStrip from "../../components/RatesStrip";
 import GroupOffersTable, { normalizeGroupKey } from "../../components/GroupOffersTable";
 import { DashboardNotice, DashboardSkeleton } from "../../components/DashboardState";
+import { DashboardChartTooltip } from "../../components/DashboardChart";
 
 const fetcher = fetchJson;
 
@@ -379,8 +380,15 @@ export default function Admin() {
                         <Cell key={entry.name} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Legend iconType="circle" />
-                    <Tooltip formatter={(_, __, item) => `€ ${fmtEUR(item.payload.sales)}`} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: "#64748b" }} />
+                    <Tooltip
+                      content={
+                        <DashboardChartTooltip
+                          valueSelector={(entry) => entry.payload.sales}
+                          valueFormatter={(value) => `€ ${fmtEUR(value)}`}
+                        />
+                      }
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -599,6 +607,7 @@ export default function Admin() {
               <div style={{ height: 260 }}>
                 <ResponsiveContainer>
                   <BarChart
+                    accessibilityLayer
                     data={[
                       { name: "Aref", weekly: num(tech.aref_deals_done), total: num(tech.aref) },
                       {
@@ -615,13 +624,23 @@ export default function Admin() {
                     ]}
                     margin={{ top: 8, right: 12, left: 0, bottom: 8 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 12 }} />
-                    <YAxis allowDecimals={false} tick={{ fill: "#64748b" }} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="weekly" name="This week" fill="#0ea5e9" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="total" name="Total" fill="#14b8a6" radius={[6, 6, 0, 0]} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<DashboardChartTooltip />} cursor={{ fill: "#eff6ff" }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: "#64748b" }} />
+                    <Bar dataKey="weekly" name="This week" fill="#3478c7" radius={[7, 7, 0, 0]} />
+                    <Bar dataKey="total" name="Total" fill="#0f8a7d" radius={[7, 7, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

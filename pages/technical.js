@@ -17,6 +17,7 @@ import useSWR from "swr";
 import CeoMessage from "../components/CeoMessage";
 import DashboardPageHeader from "../components/DashboardPageHeader";
 import { DashboardNotice, DashboardSkeleton } from "../components/DashboardState";
+import { DashboardChart, DashboardChartTooltip } from "../components/DashboardChart";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -353,64 +354,50 @@ export default function TechnicalDashboard() {
             </div>
           </div>
 
-          {/* نمودار */}
-          <div
-            style={{
-              borderRadius: 20,
-              overflow: "hidden",
-              boxShadow: "0 18px 45px rgba(15,23,42,0.06), 0 0 0 1px rgba(148,163,184,0.35)",
-              background: "#ffffff",
-              padding: "12px 16px",
-              display: "flex",
-              flexDirection: "column",
-            }}
+          <DashboardChart
+            title="Weekly team output"
+            description="Completed deals this week compared with each team member's total."
+            height={isMobile ? 270 : 250}
           >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 800,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "#0f172a",
-                marginBottom: 4,
-              }}
-            >
-              DEALS DONE DURING THE WEEK BY PERSON
-            </div>
-
-            <div style={{ height: isMobile ? 260 : 220, marginTop: 4 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dealsChartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" stroke="#6b7280" />
-                  <YAxis allowDecimals={false} stroke="#6b7280" domain={[0, "dataMax + 2"]} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#ffffff",
-                      border: "1px solid rgba(148,163,184,0.6)",
-                      borderRadius: 8,
-                      color: "#0f172a",
-                    }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="weeklyDeals"
-                    name="Deals this week"
-                    fill="#38bdf8"
-                    radius={[6, 6, 0, 0]}
-                    barSize={30}
-                  />
-                  <Bar
-                    dataKey="totalDeals"
-                    name="Total deals"
-                    fill="#0f766e"
-                    radius={[6, 6, 0, 0]}
-                    barSize={30}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                accessibilityLayer
+                data={dealsChartData}
+                margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: "#64748b", fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: "#64748b", fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, "dataMax + 2"]}
+                />
+                <Tooltip content={<DashboardChartTooltip />} cursor={{ fill: "#eff6ff" }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: "#64748b" }} />
+                <Bar
+                  dataKey="weeklyDeals"
+                  name="Deals this week"
+                  fill="#3478c7"
+                  radius={[7, 7, 0, 0]}
+                  barSize={28}
+                />
+                <Bar
+                  dataKey="totalDeals"
+                  name="Total deals"
+                  fill="#0f8a7d"
+                  radius={[7, 7, 0, 0]}
+                  barSize={28}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </DashboardChart>
         </div>
 
         {/* جدول‌ها */}

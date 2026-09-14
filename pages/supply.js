@@ -17,6 +17,7 @@ import NewsTickerEn from "../components/NewsTickerEn";
 import CeoMessage from "../components/CeoMessage";
 import DashboardPageHeader from "../components/DashboardPageHeader";
 import { DashboardNotice, DashboardSkeleton } from "../components/DashboardState";
+import { DashboardChart, DashboardChartTooltip } from "../components/DashboardChart";
 import {
   FiShoppingBag,
   FiCalendar,
@@ -418,46 +419,40 @@ export default function SupplyDashboard() {
                 />
               </div>
 
-              <section
-                style={{
-                  background: "#fff",
-                  borderRadius: 20,
-                  boxShadow: "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
-                  padding: 12,
-                  marginBottom: 16,
-                }}
+              <DashboardChart
+                title="Supply performance"
+                description="Deals during the last 30 days compared with the current supply queue."
+                height={320}
               >
-                <div
-                  style={{
-                    fontWeight: 800,
-                    fontSize: 18,
-                    color: "#0f172a",
-                    margin: "4px 8px 10px",
-                  }}
-                >
-                  Supply Performance Chart
-                </div>
-                <div style={{ width: "100%", height: 300 }}>
-                  <ResponsiveContainer>
-                    <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 48 }}>
-                      <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
-                      <XAxis
-                        dataKey="manager"
-                        angle={-25}
-                        textAnchor="end"
-                        interval={0}
-                        height={64}
-                        tick={{ fill: "#475569", fontSize: 11 }}
-                      />
-                      <YAxis tick={{ fill: "#64748b" }} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="Deals last 30" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="In supply now" fill="#f97316" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </section>
+                <ResponsiveContainer>
+                  <BarChart
+                    accessibilityLayer
+                    data={chartData}
+                    margin={{ top: 8, right: 16, left: 0, bottom: 48 }}
+                  >
+                    <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+                    <XAxis
+                      dataKey="manager"
+                      angle={-25}
+                      textAnchor="end"
+                      interval={0}
+                      height={64}
+                      tick={{ fill: "#475569", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<DashboardChartTooltip />} cursor={{ fill: "#eff6ff" }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: "#64748b" }} />
+                    <Bar dataKey="Deals last 30" fill="#3478c7" radius={[7, 7, 0, 0]} />
+                    <Bar dataKey="In supply now" fill="#0f8a7d" radius={[7, 7, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </DashboardChart>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
                 <TableCard title="Supply workload (from HS)">
