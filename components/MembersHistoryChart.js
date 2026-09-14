@@ -9,48 +9,9 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { DashboardChart, DashboardChartTooltip } from "./DashboardChart";
 
 const toNumber = (v) => (v == null ? 0 : Number(v) || 0);
-
-function CustomTooltip({ active, payload, label }) {
-  if (!active || !payload || !payload.length) return null;
-
-  const deals = payload.find((p) => p.dataKey === "deals")?.value ?? 0;
-  const offers = payload.find((p) => p.dataKey === "offers")?.value ?? 0;
-
-  return (
-    <div
-      style={{
-        background: "rgba(15,23,42,0.96)",
-        color: "#e5e7eb",
-        padding: "8px 10px",
-        borderRadius: 10,
-        boxShadow: "0 12px 30px rgba(15,23,42,0.45)",
-        fontSize: 11,
-        minWidth: 130,
-      }}
-    >
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          marginBottom: 4,
-          color: "#bae6fd",
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span style={{ color: "#60a5fa" }}>Deals:</span>
-        <span>{deals}</span>
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span style={{ color: "#fb923c" }}>Offers Sent:</span>
-        <span>{offers}</span>
-      </div>
-    </div>
-  );
-}
 
 export default function MembersHistoryChart({ rows = [] }) {
   const data = rows.map((m) => ({
@@ -63,28 +24,17 @@ export default function MembersHistoryChart({ rows = [] }) {
     data.length > 0 ? Math.max(...data.map((d) => Math.max(d.deals || 0, d.offers || 0)), 4) : 4;
 
   return (
-    <div
-      style={{
-        background: "radial-gradient(circle at top, #eff6ff, #f9fafb)",
-        borderRadius: 22,
-        padding: 18,
-        boxShadow: "0 22px 55px rgba(15,23,42,0.12), 0 0 0 1px rgba(148,163,184,0.22)",
-      }}
+    <DashboardChart
+      title="Deals vs offers sent"
+      description="Member activity for the selected group."
+      height={240}
     >
-      <div
-        style={{
-          fontSize: 14,
-          fontWeight: 600,
-          marginBottom: 8,
-          color: "#0f172a",
-        }}
-      >
-        Deals vs Offers Sent
-      </div>
-
-      <div style={{ width: "100%", height: 210 }}>
         <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 8, right: 12, left: -10, bottom: 18 }}>
+          <BarChart
+            accessibilityLayer
+            data={data}
+            margin={{ top: 8, right: 12, left: -10, bottom: 18 }}
+          >
             <defs>
               <linearGradient id="dealsGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#2563eb" stopOpacity={0.9} />
@@ -110,7 +60,7 @@ export default function MembersHistoryChart({ rows = [] }) {
               domain={[0, maxValue]}
               allowDecimals={false}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<DashboardChartTooltip />} />
             <Legend
               verticalAlign="bottom"
               height={28}
@@ -133,7 +83,6 @@ export default function MembersHistoryChart({ rows = [] }) {
             />
           </BarChart>
         </ResponsiveContainer>
-      </div>
-    </div>
+    </DashboardChart>
   );
 }
