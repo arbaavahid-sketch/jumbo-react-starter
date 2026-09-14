@@ -668,6 +668,8 @@ function MegaDealsIcon({ deals }) {
           type="button"
           onClick={() => setOpen((o) => !o)}
           title="نمایش Mega Deals"
+          aria-label="Show Mega Deals"
+          aria-expanded={open}
           style={{
             width: 32,
             height: 32,
@@ -731,7 +733,9 @@ function MegaDealsIcon({ deals }) {
               </div>
 
               <button
+                type="button"
                 onClick={() => setOpen(false)}
+                aria-label="Close Mega Deals"
                 style={{
                   border: "none",
                   background: "transparent",
@@ -825,6 +829,8 @@ function WeeklyTripsIcon({ trips, currDate }) {
           type="button"
           onClick={() => setOpen((o) => !o)}
           title="Weekly Trips Details"
+          aria-label="Show weekly trips details"
+          aria-expanded={open}
           style={{
             width: 32,
             height: 32,
