@@ -70,6 +70,9 @@ export default function AppShell({ children }) {
 
   return (
     <div className="app-shell">
+      <a className="app-skip-link" href="#main-content">
+        Skip to main content
+      </a>
       <header className="app-topbar">
         <div className="app-topbar-inner">
           <Link href="/" className="app-brand" aria-label="Artin Azma dashboard home">
@@ -139,7 +142,9 @@ export default function AppShell({ children }) {
         </div>
       </header>
 
-      <div className="app-content">{children}</div>
+      <div className="app-content" id="main-content" tabIndex="-1">
+        {children}
+      </div>
     </div>
   );
 }

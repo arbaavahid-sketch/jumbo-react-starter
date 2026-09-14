@@ -196,6 +196,26 @@ a {
     radial-gradient(circle at 8% 0%, rgba(219, 234, 254, 0.66), transparent 28rem), var(--bg);
 }
 
+.app-skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 10px;
+  left: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 160ms ease;
+}
+
+.app-skip-link:focus {
+  transform: translateY(0);
+}
+
 .app-topbar {
   position: sticky;
   z-index: 100;
