@@ -1,5 +1,3 @@
-import Image from "next/image";
-import companyLogo from "../public/company-logo.png";
 import { fetchJson } from "../lib/fetch-json";
 // pages/technical.js — داشبورد Technical (Responsive)
 
@@ -16,8 +14,8 @@ import {
 
 import Head from "next/head";
 import useSWR from "swr";
-import LiveClock from "../components/LiveClock";
 import CeoMessage from "../components/CeoMessage";
+import DashboardPageHeader from "../components/DashboardPageHeader";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -199,7 +197,7 @@ export default function TechnicalDashboard() {
 
   let body;
 
-  if (error || mainError) {
+  if (error) {
     body = (
       <div
         style={{
@@ -210,10 +208,10 @@ export default function TechnicalDashboard() {
           border: "1px solid rgba(248,113,113,0.45)",
         }}
       >
-        {(error || mainError).message}
+        {error.message}
       </div>
     );
-  } else if (isLoading || !data || !mainData) {
+  } else if (isLoading || !data) {
     body = (
       <div
         style={{
@@ -624,65 +622,20 @@ export default function TechnicalDashboard() {
           paddingRight: isMobile ? 6 : 0,
         }}
       >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: isMobile ? "center" : "space-between",
-            alignItems: "center",
-            marginBottom: 20,
-            gap: 16,
-            flexDirection: isMobile ? "column" : "row",
-            textAlign: isMobile ? "center" : "left",
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: isMobile ? 20 : 26,
-                fontWeight: 800,
-                letterSpacing: "0.10em",
-                textTransform: "uppercase",
-                color: "#005F9E",
-              }}
-            >
-              Technical Dashboard
-            </h1>
-          </div>
+        <DashboardPageHeader
+          eyebrow="Operations"
+          title="Technical Dashboard"
+          description="Current technical workload, installation queue and service activity."
+          Icon={FiTool}
+          accent="#1476b8"
+        />
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-            <div
-              style={{
-                padding: 10,
-                borderRadius: 18,
-                background: "#ffffff",
-                border: "1px solid rgba(148,163,184,0.35)",
-                boxShadow: "0 10px 25px rgba(15,23,42,0.08)",
-              }}
-            >
-              <Image
-                src={companyLogo}
-                style={{ width: isMobile ? 120 : 150, height: 70, objectFit: "contain" }}
-                alt="Company logo"
-              />
-            </div>
-
-            <div
-              style={{
-                fontSize: 12,
-                padding: "4px 14px",
-                borderRadius: 999,
-                background: "#ffffff",
-                border: "1px solid rgba(148,163,184,0.4)",
-                boxShadow: "0 8px 20px rgba(15,23,42,0.06)",
-                color: "#005F9E",
-              }}
-            >
-              <LiveClock />
-            </div>
+        {mainError ? (
+          <div className="dashboard-inline-alert" role="alert">
+            Management messages and the approval queue are temporarily unavailable. Technical data
+            remains visible.
           </div>
-        </div>
+        ) : null}
 
         {/* CEO message */}
         <div

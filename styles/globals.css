@@ -430,6 +430,114 @@ a {
   min-width: 0;
 }
 
+/* ===== Shared dashboard header ===== */
+.dashboard-page-header {
+  display: flex;
+  margin-bottom: 18px;
+  padding: 22px 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border: 1px solid #dce5f0;
+  border-radius: 20px;
+  background: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--dashboard-accent) 7%, #fff),
+    #fff 58%
+  );
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
+}
+
+.dashboard-page-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 16px;
+}
+
+.dashboard-page-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--dashboard-accent) 12%, #fff);
+  color: var(--dashboard-accent);
+  font-size: 24px;
+  place-items: center;
+}
+
+.dashboard-page-eyebrow {
+  color: var(--dashboard-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dashboard-page-heading h1 {
+  margin: 5px 0 4px;
+  color: #15253b;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.dashboard-page-heading p {
+  margin: 0;
+  color: #74849a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dashboard-page-meta {
+  display: flex;
+  min-width: 150px;
+  padding: 10px 12px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e2e9f2;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--dashboard-accent);
+}
+
+.dashboard-page-meta > svg {
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+
+.dashboard-page-meta div {
+  display: grid;
+  gap: 2px;
+}
+
+.dashboard-page-meta span {
+  color: #8b99ab;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-page-meta strong {
+  color: #31435a;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.dashboard-inline-alert {
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border: 1px solid #fde0a3;
+  border-radius: 11px;
+  background: #fffbeb;
+  color: #925f0a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 /* ===== Portal home ===== */
 .portal-home {
   width: min(100% - 48px, 1360px);
@@ -1264,6 +1372,31 @@ a {
   }
 
   .app-brand-copy small {
+    display: none;
+  }
+
+  .dashboard-page-header {
+    padding: 18px;
+    align-items: flex-start;
+    border-radius: 17px;
+  }
+
+  .dashboard-page-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    font-size: 20px;
+  }
+
+  .dashboard-page-heading h1 {
+    font-size: 22px;
+  }
+
+  .dashboard-page-heading p {
+    margin-top: 7px;
+  }
+
+  .dashboard-page-meta {
     display: none;
   }
 

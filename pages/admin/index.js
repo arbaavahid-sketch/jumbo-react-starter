@@ -156,11 +156,11 @@ export default function Admin() {
   });
   const [selectedOfferGroup, setSelectedOfferGroup] = useState("A");
 
-  if (error || technicalError || supplyError) {
-    return <LoadState tone="danger" title="Admin data could not load" detail={String(error || technicalError || supplyError)} />;
+  if (error) {
+    return <LoadState tone="danger" title="Admin data could not load" detail={String(error)} />;
   }
 
-  if (isLoading || !data || !technicalData || !supplyData) {
+  if (isLoading || !data) {
     return <LoadState title="Loading admin command center..." />;
   }
 
@@ -173,6 +173,9 @@ export default function Admin() {
   const supplyRows = ensureArray(supplyData?.rows);
   const supplyTotals = supplyData?.totals || {};
   const tech = technicalData?.latest || {};
+  const supplyAvailable = Boolean(supplyData) && !supplyError;
+  const technicalAvailable = Boolean(technicalData) && !technicalError;
+  const sourceInt = (available, value) => (available ? fmtInt(value) : "—");
   const techQueue = ensureArray(data.technical_queue).sort((a, b) => {
     const groupCmp = text(a.group).localeCompare(text(b.group));
     return groupCmp || text(a.deal).localeCompare(text(b.deal));
@@ -279,10 +282,11 @@ export default function Admin() {
   const adminAlerts = [
     supplyError && "Supply API is not responding.",
     technicalError && "Technical API is not responding.",
-    !supplyData?.publishDate && "Supply publish date is missing.",
-    !technicalData?.latest && "Technical latest row is missing.",
+    supplyAvailable && !supplyData?.publishDate && "Supply publish date is missing.",
+    technicalAvailable && !technicalData?.latest && "Technical latest row is missing.",
     groupModels.some((g) => !g.ceoMessage) && "Some CEO messages are empty.",
-    num(supplyTotals.late_items) > 0 &&
+    supplyAvailable &&
+      num(supplyTotals.late_items) > 0 &&
       `${fmtInt(supplyTotals.late_items)} late ERP items need review.`,
     techQueue.length > 0 &&
       `${fmtInt(techQueue.length)} deals are waiting in technical approval queue.`,
@@ -442,49 +446,49 @@ export default function Admin() {
           <section style={overviewGrid}>
             <MetricCard
               label="Supply Updated"
-              value={supplyData?.publishDate || "-"}
+              value={supplyAvailable ? supplyData?.publishDate || "-" : "—"}
               Icon={FiClock}
             />
             <MetricCard
               label="Deals YTD"
-              value={fmtInt(supplyTotals.deals_ytd)}
+              value={sourceInt(supplyAvailable, supplyTotals.deals_ytd)}
               Icon={FiShoppingBag}
             />
             <MetricCard
               label="Deals Last 30 Days"
-              value={fmtInt(supplyTotals.deals_last_30_days)}
+              value={sourceInt(supplyAvailable, supplyTotals.deals_last_30_days)}
               Icon={FiBarChart2}
             />
             <MetricCard
               label="Deals Last Week"
-              value={fmtInt(supplyTotals.deals_last_week)}
+              value={sourceInt(supplyAvailable, supplyTotals.deals_last_week)}
               Icon={FiTrendingUp}
             />
             <MetricCard
               label="Waiting Supply Approval"
-              value={fmtInt(supplyTotals.deals_in_supply_side_stage_now)}
+              value={sourceInt(supplyAvailable, supplyTotals.deals_in_supply_side_stage_now)}
               Icon={FiTruck}
               tone="good"
             />
             <MetricCard
               label="Undelivered ERP"
-              value={fmtInt(supplyTotals.undelivered_items)}
+              value={sourceInt(supplyAvailable, supplyTotals.undelivered_items)}
               Icon={FiPackage}
             />
             <MetricCard
               label="Late ERP Items"
-              value={fmtInt(supplyTotals.late_items)}
+              value={sourceInt(supplyAvailable, supplyTotals.late_items)}
               Icon={FiAlertTriangle}
               tone="danger"
             />
             <MetricCard
               label="Open PO Count"
-              value={fmtInt(supplyTotals.open_po_count)}
+              value={sourceInt(supplyAvailable, supplyTotals.open_po_count)}
               Icon={FiClock}
             />
             <MetricCard
               label="PO Val Sub YTD"
-              value={fmtInt(supplyTotals.po_val_sub_ytd)}
+              value={sourceInt(supplyAvailable, supplyTotals.po_val_sub_ytd)}
               Icon={FiDatabase}
             />
           </section>
@@ -523,15 +527,19 @@ export default function Admin() {
             detail="Technical dashboard KPIs, people, installation lists, and queue."
           />
           <section style={overviewGrid}>
-            <MetricCard label="Tech Publish Date" value={tech.date || "-"} Icon={FiClock} />
+            <MetricCard
+              label="Tech Publish Date"
+              value={technicalAvailable ? tech.date || "-" : "—"}
+              Icon={FiClock}
+            />
             <MetricCard
               label="Deals Added This Week"
-              value={fmtInt(tech.deals_added_technical)}
+              value={sourceInt(technicalAvailable, tech.deals_added_technical)}
               Icon={FiTrendingUp}
             />
             <MetricCard
               label="Total Deals Done Week"
-              value={fmtInt(tech.total_deals_week)}
+              value={sourceInt(technicalAvailable, tech.total_deals_week)}
               Icon={FiCheckSquare}
             />
             <MetricCard
@@ -542,41 +550,45 @@ export default function Admin() {
             />
             <MetricCard
               label="Waiting Installation"
-              value={fmtInt(tech.waiting_installation)}
+              value={sourceInt(technicalAvailable, tech.waiting_installation)}
               Icon={FiClock}
             />
             <MetricCard
               label="Installed Deals 2026"
-              value={fmtInt(installedRows.length)}
+              value={sourceInt(technicalAvailable, installedRows.length)}
               Icon={FiCheckSquare}
               tone="good"
             />
             <MetricCard
               label="Under Repair"
-              value={fmtInt(repairingRows.length)}
+              value={sourceInt(technicalAvailable, repairingRows.length)}
               Icon={FiTool}
               tone="danger"
             />
             <MetricCard
               label="Serviced / Repaired"
-              value={fmtInt(servicedRows.length)}
+              value={sourceInt(technicalAvailable, servicedRows.length)}
               Icon={FiCheckSquare}
               tone="good"
             />
             <MetricCard
               label="Promotion Trips"
-              value={fmtInt(tech.promotion_trips)}
+              value={sourceInt(technicalAvailable, tech.promotion_trips)}
               Icon={FiUsers}
             />
-            <MetricCard label="Demo Shows" value={fmtInt(tech.demo_shows)} Icon={FiActivity} />
+            <MetricCard
+              label="Demo Shows"
+              value={sourceInt(technicalAvailable, tech.demo_shows)}
+              Icon={FiActivity}
+            />
             <MetricCard
               label="Internal Trainings"
-              value={fmtInt(tech.internal_trainings)}
+              value={sourceInt(technicalAvailable, tech.internal_trainings)}
               Icon={FiDatabase}
             />
             <MetricCard
               label="Last Meeting"
-              value={tech.last_meeting || "-"}
+              value={technicalAvailable ? tech.last_meeting || "-" : "—"}
               Icon={FiMessageSquare}
             />
           </section>

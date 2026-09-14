@@ -1,5 +1,3 @@
-import Image from "next/image";
-import companyLogo from "../public/company-logo.png";
 import { fetchJson } from "../lib/fetch-json";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
@@ -15,9 +13,9 @@ import {
   Bar,
 } from "recharts";
 
-import LiveClock from "../components/LiveClock";
 import NewsTickerEn from "../components/NewsTickerEn";
 import CeoMessage from "../components/CeoMessage";
+import DashboardPageHeader from "../components/DashboardPageHeader";
 import {
   FiShoppingBag,
   FiCalendar,
@@ -352,50 +350,13 @@ export default function SupplyDashboard() {
             <NewsTickerEn />
           </div>
 
-          <div
-            style={{
-              marginBottom: 14,
-              background: "#e5e7eb",
-              borderRadius: 20,
-              padding: "20px 24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 16,
-              flexWrap: "wrap",
-            }}
-          >
-            <h1
-              style={{
-                margin: 0,
-                fontSize: "clamp(28px,3.2vw,46px)",
-                lineHeight: 1.1,
-                color: "#021d49",
-                fontWeight: 800,
-              }}
-            >
-              Supply Side Dashboard
-            </h1>
-
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-              <Image
-                src={companyLogo}
-                alt="company logo"
-                style={{ width: 180, height: 80, objectFit: "contain", display: "block" }}
-              />
-              <div
-                style={{
-                  fontSize: 12,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "#0f172a",
-                  fontWeight: 700,
-                }}
-              >
-                <LiveClock />
-              </div>
-            </div>
-          </div>
+          <DashboardPageHeader
+            eyebrow="Procurement"
+            title="Supply Side Dashboard"
+            description="Purchasing workload, delivery status and open ERP items by manager."
+            Icon={FiPackage}
+            accent="#0f766e"
+          />
 
           {!mainError && supplyCeoMessage ? (
             <div style={{ marginBottom: 14 }}>
