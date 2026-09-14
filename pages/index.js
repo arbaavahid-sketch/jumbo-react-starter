@@ -1,159 +1,184 @@
-// pages/index.js
+import Head from "next/head";
 import Link from "next/link";
+import useSWR from "swr";
+import {
+  FiActivity,
+  FiArrowRight,
+  FiBarChart2,
+  FiCheckCircle,
+  FiClock,
+  FiGrid,
+  FiMessageSquare,
+  FiPackage,
+  FiRefreshCw,
+  FiUsers,
+} from "react-icons/fi";
+import { fetchJson } from "../lib/fetch-json";
+
+const sections = [
+  {
+    href: "/admin",
+    eyebrow: "Management",
+    title: "Executive overview",
+    description: "Sales, targets, operations and business performance in one view.",
+    icon: FiGrid,
+    tone: "navy",
+  },
+  {
+    href: "/technical",
+    eyebrow: "Operations",
+    title: "Technical dashboard",
+    description: "Follow the technical queue, workload and current service status.",
+    icon: FiActivity,
+    tone: "blue",
+  },
+  {
+    href: "/supply",
+    eyebrow: "Procurement",
+    title: "Supply dashboard",
+    description: "Review supply requests, deliveries and outstanding purchasing work.",
+    icon: FiPackage,
+    tone: "teal",
+  },
+];
+
+const quickLinks = [
+  { href: "/group/1", label: "Group A", icon: FiBarChart2 },
+  { href: "/group/2", label: "Group B", icon: FiBarChart2 },
+  { href: "/group/3", label: "Group C", icon: FiBarChart2 },
+  { href: "/admin/weekly-history", label: "Weekly history", icon: FiClock },
+  { href: "/admin/messages", label: "CEO messages", icon: FiMessageSquare },
+];
+
+function SourceStatus({ label, request }) {
+  const { data, error, isLoading, mutate } = request;
+  const state = error ? "error" : isLoading || !data ? "loading" : "ready";
+  const stateLabel =
+    state === "error" ? "Unavailable" : state === "loading" ? "Checking" : "Connected";
+
+  return (
+    <div className={`portal-status-row is-${state}`}>
+      <span className="portal-status-icon" aria-hidden="true">
+        {state === "ready" ? <FiCheckCircle /> : <FiRefreshCw />}
+      </span>
+      <span className="portal-status-name">{label}</span>
+      <span className="portal-status-value">{stateLabel}</span>
+      {state === "error" && (
+        <button type="button" className="portal-retry" onClick={() => mutate()}>
+          Retry
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function Home() {
+  const sales = useSWR("/api/data", fetchJson, { revalidateOnFocus: false });
+  const technical = useSWR("/api/technical", fetchJson, { revalidateOnFocus: false });
+  const supply = useSWR("/api/supply", fetchJson, { revalidateOnFocus: false });
+
+  const requests = [sales, technical, supply];
+  const readyCount = requests.filter((request) => request.data && !request.error).length;
+  const hasError = requests.some((request) => request.error);
+  const statusSummary = hasError
+    ? "Needs attention"
+    : readyCount < requests.length
+      ? "Checking sources"
+      : `${readyCount} of 3 connected`;
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        fontFamily: "system-ui",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "radial-gradient(circle at top left, #e0f2fe, #f9fafb 55%, #e5e7eb)",
-        color: "#0f172a",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 720,
-          width: "100%",
-          padding: 32,
-          borderRadius: 32,
-          background: "rgba(255,255,255,0.9)",
-          boxShadow: "0 25px 60px rgba(15,23,42,0.18), 0 0 0 1px rgba(148,163,184,0.5)",
-        }}
-      >
-        <h1 style={{ marginTop: 0, marginBottom: 8 }}>Group Dashboard Portal</h1>
-        <p style={{ marginTop: 0, marginBottom: 24, fontSize: 14 }}></p>
+    <>
+      <Head>
+        <title>Management Center | Artin Azma</title>
+        <meta
+          name="description"
+          content="Artin Azma management dashboards for sales, technical operations and supply."
+        />
+      </Head>
 
-        <div
-          style={{
-            display: "grid",
-            gap: 16,
-            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-          }}
-        >
-          <Link href="/admin" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#0f172a,#1e293b,#020617)",
-                color: "#e5e7eb",
-                boxShadow: "0 16px 40px rgba(15,23,42,0.7), 0 0 0 1px rgba(15,23,42,0.9)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Admin Panel</div>
-              <div style={{ fontSize: 13, opacity: 0.8 }}></div>
+      <main className="portal-home">
+        <section className="portal-hero">
+          <div className="portal-hero-copy">
+            <span className="portal-eyebrow">Management Center</span>
+            <h1>A clear view of every active team.</h1>
+            <p>
+              Open the dashboard you need, review current performance and move between teams without
+              losing context.
+            </p>
+            <div className="portal-hero-actions">
+              <Link href="/admin" className="portal-primary-action">
+                Open executive overview <FiArrowRight aria-hidden="true" />
+              </Link>
+              <Link href="/admin/weekly-history" className="portal-secondary-action">
+                Review weekly history
+              </Link>
             </div>
-          </Link>
+          </div>
 
-          <Link href="/technical" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#0369a1,#0ea5e9,#e0f2fe)",
-                color: "#0f172a",
-                boxShadow: "0 16px 40px rgba(15,23,42,0.4), 0 0 0 1px rgba(56,189,248,0.6)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Technical Dashboard</div>
-              <div style={{ fontSize: 13, opacity: 0.8 }}></div>
+          <aside className="portal-health-card" aria-label="Data source status">
+            <div className="portal-health-head">
+              <div>
+                <span>Live data</span>
+                <strong>{statusSummary}</strong>
+              </div>
+              <span
+                className={`portal-live-dot${hasError ? " has-error" : readyCount < 3 ? " is-checking" : ""}`}
+                aria-hidden="true"
+              />
             </div>
-          </Link>
-          <Link href="/supply" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#0f766e,#14b8a6,#ccfbf1)",
-                color: "#042f2e",
-                boxShadow: "0 16px 40px rgba(20,184,166,0.35), 0 0 0 1px rgba(45,212,191,0.7)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Supply Dashboard</div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
-            </div>
-          </Link>
-          <Link href="/admin/messages" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#6b21a8,#9333ea,#e9d5ff)",
-                color: "#f9fafb",
-                boxShadow: "0 16px 40px rgba(88,28,135,0.6), 0 0 0 1px rgba(147,51,234,0.7)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>CEO Messages</div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
-            </div>
-          </Link>
+            <SourceStatus label="Sales & groups" request={sales} />
+            <SourceStatus label="Technical" request={technical} />
+            <SourceStatus label="Supply" request={supply} />
+          </aside>
+        </section>
 
-          {/* ✅ کارت جدید: Weekly History (هم‌استایل بقیه) */}
-          <Link href="/admin/weekly-history" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#10b981,#34d399,#ecfeff)",
-                color: "#022c22",
-                boxShadow: "0 16px 40px rgba(16,185,129,0.35), 0 0 0 1px rgba(52,211,153,0.7)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>📊 Weekly History</div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
+        <section className="portal-section" aria-labelledby="workspace-title">
+          <div className="portal-section-heading">
+            <div>
+              <span className="portal-eyebrow">Workspaces</span>
+              <h2 id="workspace-title">Choose a dashboard</h2>
             </div>
-          </Link>
+            <p>Each workspace keeps the figures and tools for one area together.</p>
+          </div>
 
-          <Link href="/group/1" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#16a34a,#4ade80,#dcfce7)",
-                color: "#022c22",
-                boxShadow: "0 16px 40px rgba(22,163,74,0.4), 0 0 0 1px rgba(74,222,128,0.7)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Group A Dashboard</div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
-            </div>
-          </Link>
+          <div className="portal-card-grid">
+            {sections.map(({ href, eyebrow, title, description, icon: Icon, tone }) => (
+              <Link href={href} className={`portal-card tone-${tone}`} key={href}>
+                <span className="portal-card-icon">
+                  <Icon aria-hidden="true" />
+                </span>
+                <span className="portal-card-copy">
+                  <small>{eyebrow}</small>
+                  <strong>{title}</strong>
+                  <span>{description}</span>
+                </span>
+                <FiArrowRight className="portal-card-arrow" aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+        </section>
 
-          <Link href="/group/2" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#f97316,#fdba74,#fff7ed)",
-                color: "#451a03",
-                boxShadow: "0 16px 40px rgba(234,88,12,0.4), 0 0 0 1px rgba(249,115,22,0.7)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Group B Dashboard</div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
+        <section className="portal-quick-panel" aria-labelledby="quick-title">
+          <div className="portal-quick-heading">
+            <span className="portal-quick-icon">
+              <FiUsers aria-hidden="true" />
+            </span>
+            <div>
+              <span className="portal-eyebrow">Direct access</span>
+              <h2 id="quick-title">Teams and records</h2>
             </div>
-          </Link>
-
-          <Link href="/group/3" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 18,
-                background: "linear-gradient(135deg,#0ea5e9,#38bdf8,#e0f2fe)",
-                color: "#0f172a",
-                boxShadow: "0 16px 40px rgba(14,165,233,0.4), 0 0 0 1px rgba(56,189,248,0.7)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Group C Dashboard</div>
-              <div style={{ fontSize: 13, opacity: 0.9 }}></div>
-            </div>
-          </Link>
-        </div>
-      </div>
-    </main>
+          </div>
+          <div className="portal-quick-links">
+            {quickLinks.map(({ href, label, icon: Icon }) => (
+              <Link href={href} key={href}>
+                <Icon aria-hidden="true" />
+                <span>{label}</span>
+                <FiArrowRight aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
   );
 }

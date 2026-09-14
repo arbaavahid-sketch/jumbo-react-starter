@@ -3,6 +3,7 @@ import Head from "next/head";
 import { SWRConfig } from "swr";
 import { useMemo } from "react";
 import { shareMiddleware } from "../lib/share-client";
+import AppShell from "../components/AppShell";
 import "../styles/globals.css";
 
 export default function MyApp({ Component, pageProps }) {
@@ -14,7 +15,9 @@ export default function MyApp({ Component, pageProps }) {
       </Head>
 
       <SWRConfig value={swrConfig}>
-        <Component {...pageProps} />
+        <AppShell>
+          <Component {...pageProps} />
+        </AppShell>
       </SWRConfig>
     </>
   );

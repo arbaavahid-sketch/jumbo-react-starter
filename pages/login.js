@@ -1,8 +1,9 @@
+import Head from "next/head";
 import Image from "next/image";
-import companyLogo from "../public/company-logo.png";
-// pages/login.js
-import { useState } from "react";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { FiArrowRight, FiLock, FiUser } from "react-icons/fi";
+import companyLogo from "../public/company-logo.png";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,185 +12,101 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const res = await fetch("/api/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
+      const data = await response.json();
 
-      const data = await res.json();
-
-      if (!res.ok || !data.ok) {
-        setError(data.message || "Login failed");
+      if (!response.ok || !data.ok) {
+        setError(data.message || "Login failed. Please check your details.");
         setLoading(false);
         return;
       }
 
-      // اگر پارامتر next داشتیم، برگرد همونجا، وگرنه برو روی Portal (/)
       const params = new URLSearchParams(window.location.search);
       const next = params.get("next") || "/";
       router.push(
         next.startsWith("/") && !next.startsWith("//") && !/[\\\r\n]/.test(next) ? next : "/",
       );
-    } catch (err) {
-      console.error(err);
-      setError("خطا در ارتباط با سرور.");
+    } catch {
+      setError("The server could not be reached. Please try again.");
       setLoading(false);
     }
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "radial-gradient(circle at top left,#e0f2fe,#eff6ff 40%,#dbeafe 70%)",
-        fontFamily: "system-ui",
-      }}
-    >
-      <div
-        style={{
-          width: 380,
-          maxWidth: "90vw",
-          background: "rgba(255,255,255,0.96)",
-          borderRadius: 24,
-          boxShadow: "0 30px 80px rgba(15,23,42,0.35), 0 0 0 1px rgba(148,163,184,0.35)",
-          padding: "26px 28px 30px",
-        }}
-      >
-        {/* لوگو */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 12,
-          }}
-        >
-          <Image
-            src={companyLogo}
-            alt="Artin Azma"
-            style={{ width: "auto", height: 46, objectFit: "contain" }}
-          />
-        </div>
+    <>
+      <Head>
+        <title>Sign in | Artin Azma</title>
+      </Head>
+      <main className="login-page">
+        <section className="login-intro" aria-label="Artin Azma Management Center">
+          <div className="login-intro-content">
+            <span className="login-intro-label">Internal workspace</span>
+            <h1>One place to follow every active operation.</h1>
+            <p>Secure access to sales, technical and supply dashboards for the management team.</p>
+          </div>
+        </section>
 
-        <h1
-          style={{
-            textAlign: "center",
-            margin: "0 0 4px",
-            fontSize: 20,
-            fontWeight: 800,
-            color: "#0f172a",
-          }}
-        >
-          Manager Login
-        </h1>
-        <p
-          style={{
-            textAlign: "center",
-            margin: "0 0 18px",
-            fontSize: 12,
-            color: "#6b7280",
-          }}
-        ></p>
-
-        <form onSubmit={handleSubmit}>
-          <label
-            style={{
-              display: "block",
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#374151",
-              marginBottom: 4,
-            }}
-          >
-            Username
-          </label>
-          <input
-            type="text"
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px 10px",
-              borderRadius: 10,
-              border: "1px solid #d1d5db",
-              marginBottom: 12,
-              fontSize: 13,
-            }}
-          />
-
-          <label
-            style={{
-              display: "block",
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#374151",
-              marginBottom: 4,
-            }}
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px 10px",
-              borderRadius: 10,
-              border: "1px solid #d1d5db",
-              marginBottom: 10,
-              fontSize: 13,
-            }}
-          />
-
-          {error && (
-            <div
-              style={{
-                marginBottom: 10,
-                fontSize: 12,
-                color: "#b91c1c",
-                background: "#fee2e2",
-                borderRadius: 10,
-                padding: "6px 8px",
-              }}
-            >
-              {error}
+        <section className="login-panel">
+          <div className="login-card">
+            <div className="login-logo">
+              <Image src={companyLogo} alt="Artin Azma" priority />
             </div>
-          )}
+            <span className="portal-eyebrow">Management Center</span>
+            <h2>Welcome back</h2>
+            <p className="login-subtitle">Enter your account details to continue.</p>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              marginTop: 4,
-              padding: "9px 0",
-              borderRadius: 999,
-              border: "none",
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "#fff",
-              background: "linear-gradient(135deg,#2563eb,#4f46e5,#a855f7)",
-              boxShadow: "0 18px 40px rgba(37,99,235,0.55)",
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
-            {loading ? "در حال ورود..." : "Login"}
-          </button>
-        </form>
-      </div>
-    </div>
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="username">Username</label>
+              <div className="login-input-wrap">
+                <FiUser aria-hidden="true" />
+                <input
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required
+                />
+              </div>
+
+              <label htmlFor="password">Password</label>
+              <div className="login-input-wrap">
+                <FiLock aria-hidden="true" />
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="login-error" role="alert">
+                  {error}
+                </div>
+              )}
+
+              <button type="submit" className="login-submit" disabled={loading}>
+                <span>{loading ? "Signing in…" : "Sign in"}</span>
+                {!loading && <FiArrowRight aria-hidden="true" />}
+              </button>
+            </form>
+            <p className="login-security-note">Protected company access</p>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
