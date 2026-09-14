@@ -26,6 +26,7 @@ import EventSlideshow from "../../components/EventSlideshow";
 import TotalDealsIcon from "../../components/TotalDealsIcon";
 import YearToDateTripsIcon from "../../components/YearToDateTripsIcon";
 import TvModeFrame from "../../components/TvModeFrame";
+import { DashboardNotice, DashboardSkeleton } from "../../components/DashboardState";
 
 import {
   FiSend,
@@ -239,14 +240,15 @@ export default function GroupDashboard() {
 
   // ⬅️ اینجا دیگه می‌تونیم لودینگ و ارور را هندل کنیم
   if (!isReady || isLoading || !raw) {
-    return <div style={{ padding: 16 }}>Loading…</div>;
+    return <DashboardSkeleton label={`Loading Group ${groupKey} dashboard…`} cards={7} panels={3} />;
   }
 
   if (error) {
     return (
-      <div style={{ padding: 16, color: "#d44800" }}>
-        Error loading data: {String(error.message || error)}
-      </div>
+      <DashboardNotice
+        title={`Group ${groupKey} data is unavailable`}
+        detail={String(error.message || error)}
+      />
     );
   }
 
