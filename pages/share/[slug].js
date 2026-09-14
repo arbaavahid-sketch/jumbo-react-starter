@@ -28,6 +28,7 @@ import GroupSalesBars from "../../components/GroupSalesBars";
 import TotalDealsIcon from "../../components/TotalDealsIcon";
 import YearToDateTripsIcon from "../../components/YearToDateTripsIcon";
 import TvModeFrame from "../../components/TvModeFrame";
+import DashboardPageHeader from "../../components/DashboardPageHeader";
 
 import {
   ResponsiveContainer,
@@ -56,6 +57,7 @@ import {
   FiCamera,
   FiBookOpen,
   FiTool,
+  FiUsers,
 } from "react-icons/fi";
 
 // ---------- getServerSideProps ----------
@@ -460,27 +462,14 @@ function PublicGroupDashboard({ groupKey }) {
           <meta name="description" content={`Offers sent for group ${groupKey}.`} />
         </Head>
 
-        <div className="dashboard-header">
-          <h1 className="dashboard-title">{pageTitle}</h1>
-          <div className="dashboard-brand">
-            <Image
-              src={companyLogo}
-              alt="company logo"
-              style={{ width: 160, height: 80, objectFit: "contain", display: "block" }}
-            />
-            <div
-              style={{
-                fontSize: 12,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: "#4b5563",
-              }}
-            >
-              <LiveClock />
-            </div>
-            {viewToggle}
-          </div>
-        </div>
+        <DashboardPageHeader
+          eyebrow={`GROUP ${groupKey} / OFFERS`}
+          title={`${pageTitle} — Offers`}
+          description={`Offers sent and pipeline details for Group ${groupKey}.`}
+          Icon={FiUsers}
+          accent="#3478c7"
+        />
+        <div className="group-view-toggle-row">{viewToggle}</div>
 
         <section className="section news-section">
           <div className="news-block" style={{ marginBottom: 20 }}>
@@ -522,28 +511,14 @@ function PublicGroupDashboard({ groupKey }) {
         />
       </Head>
 
-      {/* Header */}
-      <div className="dashboard-header">
-        <h1 className="dashboard-title">{pageTitle}</h1>
-        <div className="dashboard-brand">
-          <Image
-            src={companyLogo}
-            alt="company logo"
-            style={{ width: 160, height: 80, objectFit: "contain", display: "block" }}
-          />
-          <div
-            style={{
-              fontSize: 12,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#4b5563",
-            }}
-          >
-            <LiveClock />
-          </div>
-          {viewToggle}
-        </div>
-      </div>
+      <DashboardPageHeader
+        eyebrow={`GROUP ${groupKey}`}
+        title={pageTitle}
+        description={`Performance, pipeline and weekly activity for Group ${groupKey}.`}
+        Icon={FiUsers}
+        accent="#3478c7"
+      />
+      <div className="group-view-toggle-row">{viewToggle}</div>
 
       {/* News */}
       <section className="section news-section">
