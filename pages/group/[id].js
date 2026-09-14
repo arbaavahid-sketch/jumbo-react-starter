@@ -148,22 +148,13 @@ function DeltaBadge({ pct, dir, inf }) {
 function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon }) {
   return (
     <div
-      style={{
-        position: "relative",
-        background: "#ffffff",
-        borderRadius: 18,
-        padding: 16,
-        boxShadow: "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)",
-        overflow: "visible",
-        transition: "box-shadow 160ms ease",
-      }}
+      className="dashboard-metric-card"
+      style={{ "--metric-accent": accent }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow =
-          "0 20px 55px rgba(15,23,42,0.14), 0 0 0 1px rgba(148,163,184,0.3)";
+        e.currentTarget.style.boxShadow = "var(--shadow-card-hover)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow =
-          "0 18px 45px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.25)";
+        e.currentTarget.style.boxShadow = "var(--shadow-card)";
       }}
     >
       <div
@@ -176,47 +167,22 @@ function StatCard({ label, value, delta, Icon, accent = "#2563eb", actionIcon })
         }}
       >
         <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              color: "#6b7280",
-              marginBottom: 6,
-              fontWeight: 800, // 👈 این خط رو اضافه کن برای بولد شدن
-            }}
-          >
-            {label}
-          </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <div className="kpi-value" style={{ fontWeight: 800, fontSize: 22, color: "#020617" }}>
-              {value}
-            </div>
+          <div className="dashboard-metric-label">{label}</div>
+          <div className="dashboard-metric-value-row">
+            <div className="dashboard-metric-value">{value}</div>
             {delta ? <DeltaBadge {...delta} /> : null}
           </div>
         </div>
 
         {/* اگر actionIcon نداشتیم، آیکون معمولی KPI */}
         {Icon && !actionIcon && (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(15,23,42,0.06)",
-              color: accent,
-              boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-            }}
-          >
+          <div className="dashboard-metric-icon">
             <Icon size={16} />
           </div>
         )}
 
         {/* اگر actionIcon پاس داده شد (مثل لینک MOM) */}
-        {actionIcon}
+        {actionIcon ? <span className="dashboard-metric-action">{actionIcon}</span> : null}
       </div>
     </div>
   );
@@ -407,52 +373,52 @@ export default function GroupDashboard() {
             <meta name="description" content={`Offers sent for group ${groupKey}.`} />
           </Head>
 
-        <div className="dashboard-header">
-          <h1 className="dashboard-title">{pageTitle}</h1>
-          <div className="dashboard-brand">
-            <Image
-              src={companyLogo}
-              alt="company logo"
-              style={{
-                width: 160,
-                height: 80,
-                objectFit: "contain",
-                display: "block",
-              }}
-            />
-            <div
-              style={{
-                fontSize: 12,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: "#4b5563",
-              }}
-            >
-              <LiveClock />
+          <div className="dashboard-header">
+            <h1 className="dashboard-title">{pageTitle}</h1>
+            <div className="dashboard-brand">
+              <Image
+                src={companyLogo}
+                alt="company logo"
+                style={{
+                  width: 160,
+                  height: 80,
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+              <div
+                style={{
+                  fontSize: 12,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "#4b5563",
+                }}
+              >
+                <LiveClock />
+              </div>
+              {viewToggle}
             </div>
-            {viewToggle}
-          </div>
-        </div>
-
-        <section className="section news-section">
-          <div className="news-block" style={{ marginBottom: 20 }}>
-            <NewsTicker />
           </div>
 
-          <div className="news-block" style={{ marginBottom: 20 }}>
-            <RatesStrip />
-          </div>
-        </section>
+          <section className="section news-section">
+            <div className="news-block" style={{ marginBottom: 20 }}>
+              <NewsTicker />
+            </div>
 
-        {hasCeoMessage && (
-          <section className="section" style={{ marginTop: 0 }}>
-            <CeoMessage text={rawCeoText} />
+            <div className="news-block" style={{ marginBottom: 20 }}>
+              <RatesStrip />
+            </div>
           </section>
-        )}
 
-        <section className="section" style={{ marginTop: 0 }}>
-          <GroupOffersTable rows={groupOfferRows} groupKey={groupKey} />
-        </section>
+          {hasCeoMessage && (
+            <section className="section" style={{ marginTop: 0 }}>
+              <CeoMessage text={rawCeoText} />
+            </section>
+          )}
+
+          <section className="section" style={{ marginTop: 0 }}>
+            <GroupOffersTable rows={groupOfferRows} groupKey={groupKey} />
+          </section>
 
           <section className="section">
             <div className="news-block" style={{ marginTop: 24 }}>
@@ -492,193 +458,193 @@ export default function GroupDashboard() {
           />
         </Head>
 
-      {/* هدر بالا: عنوان + لوگو + ساعت */}
-      <div className="dashboard-header">
-        <h1 className="dashboard-title">{pageTitle}</h1>
-        <div className="dashboard-brand">
-          <Image
-            src={companyLogo}
-            alt="company logo"
-            style={{
-              width: 160,
-              height: 80,
-              objectFit: "contain",
-              display: "block",
-            }}
-          />
-          <div
-            style={{
-              fontSize: 12,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#4b5563",
-            }}
-          >
-            <LiveClock />
+        {/* هدر بالا: عنوان + لوگو + ساعت */}
+        <div className="dashboard-header">
+          <h1 className="dashboard-title">{pageTitle}</h1>
+          <div className="dashboard-brand">
+            <Image
+              src={companyLogo}
+              alt="company logo"
+              style={{
+                width: 160,
+                height: 80,
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+            <div
+              style={{
+                fontSize: 12,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "#4b5563",
+              }}
+            >
+              <LiveClock />
+            </div>
+            {viewToggle}
           </div>
-          {viewToggle}
-        </div>
-      </div>
-
-      {/* خبر فارسی + TGJU */}
-      <section className="section news-section">
-        <div className="news-block" style={{ marginBottom: 20 }}>
-          <NewsTicker />
         </div>
 
-        <div className="news-block" style={{ marginBottom: 20 }}>
-          <RatesStrip />
-        </div>
-      </section>
+        {/* خبر فارسی + TGJU */}
+        <section className="section news-section">
+          <div className="news-block" style={{ marginBottom: 20 }}>
+            <NewsTicker />
+          </div>
 
-      {/* پیام CEO اگر وجود دارد */}
-      {hasCeoMessage && (
-        <section className="section" style={{ marginTop: 0 }}>
-          <CeoMessage text={rawCeoText} />
+          <div className="news-block" style={{ marginBottom: 20 }}>
+            <RatesStrip />
+          </div>
         </section>
-      )}
 
-      {/* KPI + Charts */}
-      <section className="section kpi-section" style={{ marginTop: 0, marginBottom: 0 }}>
-        {/* 1) KPI grid: 2 rows (4x2) */}
-        <div className="dashboard-kpi-grid">
-          <StatCard
-            label="Total Sales (2026)"
-            value={fmtEUR(latest?.total_sales_eur)}
-            delta={deltas.total_sales_eur}
-            accent="#0ea5e9"
-            actionIcon={<TotalDealsIcon deals={totalDealsForGroup} />}
-          />
-          <StatCard
-            label="Offers Sent"
-            value={latest?.offers_sent ?? 0}
-            delta={deltas.offers_sent}
-            Icon={FiSend}
-            accent="#6366f1"
-          />
-          <StatCard
-            label="Total Deals in Sales process"
-            value={curr?.in_sales_process ?? 0}
-            delta={deltas.in_sales_process}
-            Icon={FiShoppingBag}
-            accent="#f97316"
-          />
-          <StatCard
-            label="Deals in Supply process"
-            value={curr?.in_supply ?? 0}
-            delta={deltas.in_supply}
-            Icon={FiTruck}
-            accent="#22c55e"
-          />
-          <StatCard
-            label="Deals in Technical process"
-            value={curr?.in_technical ?? 0}
-            delta={deltas.in_technical}
-            Icon={FiActivity}
-            accent="#ec4899"
-          />
-          <StatCard
-            label="Mega Projects"
-            value={latest?.mega_deals ?? 0}
-            delta={deltas.mega_deals}
-            accent="#eab308"
-            actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
-          />
-          <StatCard
-            label="Last Group Planning meeting"
-            value={latest?.last_meeting || "-"}
-            accent="#3b82f6"
-            actionIcon={
-              momLink ? (
-                <a
-                  href={momLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="مشاهده لینک جلسه (MOM)"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 999,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "rgba(59,130,246,0.12)",
-                    color: "#3b82f6",
-                    boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-                    textDecoration: "none",
-                  }}
-                >
-                  <FiLink size={16} />
-                </a>
-              ) : (
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 999,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "rgba(15,23,42,0.06)",
-                    color: "#3b82f6",
-                    boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
-                  }}
-                >
-                  <FiCalendar size={16} />
+        {/* پیام CEO اگر وجود دارد */}
+        {hasCeoMessage && (
+          <section className="section" style={{ marginTop: 0 }}>
+            <CeoMessage text={rawCeoText} />
+          </section>
+        )}
+
+        {/* KPI + Charts */}
+        <section className="section kpi-section" style={{ marginTop: 0, marginBottom: 0 }}>
+          {/* 1) KPI grid: 2 rows (4x2) */}
+          <div className="dashboard-kpi-grid">
+            <StatCard
+              label="Total Sales (2026)"
+              value={fmtEUR(latest?.total_sales_eur)}
+              delta={deltas.total_sales_eur}
+              accent="#0ea5e9"
+              actionIcon={<TotalDealsIcon deals={totalDealsForGroup} />}
+            />
+            <StatCard
+              label="Offers Sent"
+              value={latest?.offers_sent ?? 0}
+              delta={deltas.offers_sent}
+              Icon={FiSend}
+              accent="#6366f1"
+            />
+            <StatCard
+              label="Total Deals in Sales process"
+              value={curr?.in_sales_process ?? 0}
+              delta={deltas.in_sales_process}
+              Icon={FiShoppingBag}
+              accent="#f97316"
+            />
+            <StatCard
+              label="Deals in Supply process"
+              value={curr?.in_supply ?? 0}
+              delta={deltas.in_supply}
+              Icon={FiTruck}
+              accent="#22c55e"
+            />
+            <StatCard
+              label="Deals in Technical process"
+              value={curr?.in_technical ?? 0}
+              delta={deltas.in_technical}
+              Icon={FiActivity}
+              accent="#ec4899"
+            />
+            <StatCard
+              label="Mega Projects"
+              value={latest?.mega_deals ?? 0}
+              delta={deltas.mega_deals}
+              accent="#eab308"
+              actionIcon={<MegaDealsIcon deals={megaDealsForGroup} />}
+            />
+            <StatCard
+              label="Last Group Planning meeting"
+              value={latest?.last_meeting || "-"}
+              accent="#3b82f6"
+              actionIcon={
+                momLink ? (
+                  <a
+                    href={momLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="مشاهده لینک جلسه (MOM)"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 999,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "rgba(59,130,246,0.12)",
+                      color: "#3b82f6",
+                      boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <FiLink size={16} />
+                  </a>
+                ) : (
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 999,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "rgba(15,23,42,0.06)",
+                      color: "#3b82f6",
+                      boxShadow: "0 0 0 1px rgba(148,163,184,0.35)",
+                    }}
+                  >
+                    <FiCalendar size={16} />
+                  </div>
+                )
+              }
+            />
+            <StatCard
+              label="Weekly Trips"
+              value={latest?.weekly_trips ?? 0}
+              delta={deltas.weekly_trips}
+              accent="#0d9488"
+              actionIcon={
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />
+                  <YearToDateTripsIcon
+                    trips={weeklyTripsForGroup}
+                    referenceDate={curr?.date}
+                    groupKey={groupKey}
+                  />
                 </div>
-              )
-            }
-          />
-          <StatCard
-            label="Weekly Trips"
-            value={latest?.weekly_trips ?? 0}
-            delta={deltas.weekly_trips}
-            accent="#0d9488"
-            actionIcon={
-              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                <WeeklyTripsIcon trips={currTrips} currDate={curr?.date} />
-                <YearToDateTripsIcon
-                  trips={weeklyTripsForGroup}
-                  referenceDate={curr?.date}
-                  groupKey={groupKey}
-                />
-              </div>
-            }
-          />
-        </div>
-
-        {/* 2) Charts row: same height */}
-        <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
-          <div style={{ height: 320 }}>
-            <GroupSalesBars data={salesBarData} />
+              }
+            />
           </div>
 
-          <div style={{ height: 320 }}>
-            <MembersHistoryChart rows={members[groupKey] || []} />
-          </div>
-        </div>
-      </section>
+          {/* 2) Charts row: same height */}
+          <div className="dashboard-two-col-grid" style={{ marginTop: 14 }}>
+            <div style={{ height: 320 }}>
+              <GroupSalesBars data={salesBarData} />
+            </div>
 
-      {/* Tables */}
-      <div style={{ marginTop: 0 }}>
-        {/* Row 1: Deal Exec + AR */}
-        <div className="dashboard-two-col-grid">
-          <div>
-            <DealsExecTable rows={dealsForGroup} />
+            <div style={{ height: 320 }}>
+              <MembersHistoryChart rows={members[groupKey] || []} />
+            </div>
           </div>
+        </section>
 
-          <div>
-            <ARListTable rows={arForGroup} />
-          </div>
-        </div>
-
-        {/* Row 2: Logistic AA (فاصله کم) */}
+        {/* Tables */}
         <div style={{ marginTop: 0 }}>
-          <LogisticAATable rows={logisticRows} datasetDate={curr?.date || ""} />
-        </div>
-      </div>
+          {/* Row 1: Deal Exec + AR */}
+          <div className="dashboard-two-col-grid">
+            <div>
+              <DealsExecTable rows={dealsForGroup} />
+            </div>
 
-      {/* Bloomberg News پایین صفحه */}
+            <div>
+              <ARListTable rows={arForGroup} />
+            </div>
+          </div>
+
+          {/* Row 2: Logistic AA (فاصله کم) */}
+          <div style={{ marginTop: 0 }}>
+            <LogisticAATable rows={logisticRows} datasetDate={curr?.date || ""} />
+          </div>
+        </div>
+
+        {/* Bloomberg News پایین صفحه */}
         <section className="section">
           <div className="news-block" style={{ marginTop: 24 }}>
             <NewsTickerEn />
