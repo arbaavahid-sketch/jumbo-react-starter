@@ -16,6 +16,7 @@ import Head from "next/head";
 import useSWR from "swr";
 import CeoMessage from "../components/CeoMessage";
 import DashboardPageHeader from "../components/DashboardPageHeader";
+import { DashboardNotice, DashboardSkeleton } from "../components/DashboardState";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -198,46 +199,16 @@ export default function TechnicalDashboard() {
   let body;
 
   if (error) {
-    body = (
-      <div
-        style={{
-          padding: 24,
-          borderRadius: 24,
-          background: "linear-gradient(135deg,rgba(239,68,68,0.08),rgba(248,113,113,0.25))",
-          color: "#7f1d1d",
-          border: "1px solid rgba(248,113,113,0.45)",
-        }}
-      >
-        {error.message}
-      </div>
-    );
+    body = <DashboardNotice title="Technical data could not load" detail={error.message} />;
   } else if (isLoading || !data) {
-    body = (
-      <div
-        style={{
-          padding: 24,
-          borderRadius: 24,
-          background: "linear-gradient(135deg,rgba(0,95,158,0.05),rgba(0,184,148,0.05))",
-          border: "1px solid rgba(148,163,184,0.35)",
-          color: "#4b5563",
-        }}
-      >
-        Loading technical data…
-      </div>
-    );
+    body = <DashboardSkeleton label="Loading technical data…" cards={8} panels={3} />;
   } else if (!data.latest) {
     body = (
-      <div
-        style={{
-          padding: 24,
-          borderRadius: 24,
-          background: "linear-gradient(135deg,rgba(0,95,158,0.08),rgba(0,184,148,0.10))",
-          boxShadow: "0 24px 60px rgba(15,23,42,0.08), 0 0 0 1px rgba(148,163,184,0.35)",
-          color: "#0f172a",
-        }}
-      >
-        No technical data yet.
-      </div>
+      <DashboardNotice
+        tone="empty"
+        title="No technical data yet"
+        detail="The source is connected but does not contain a current record."
+      />
     );
   } else {
     const t = data.latest;

@@ -37,6 +37,7 @@ import {
 } from "recharts";
 import RatesStrip from "../../components/RatesStrip";
 import GroupOffersTable, { normalizeGroupKey } from "../../components/GroupOffersTable";
+import { DashboardNotice, DashboardSkeleton } from "../../components/DashboardState";
 
 const fetcher = fetchJson;
 
@@ -709,9 +710,12 @@ export default function Admin() {
 function LoadState({ title, detail, tone = "info" }) {
   return (
     <main style={page}>
-      <div style={{ ...panel, borderColor: tone === "danger" ? "#fecaca" : "#bfdbfe" }}>
-        <h1 style={{ margin: 0, fontSize: 22 }}>{title}</h1>
-        {detail ? <p style={{ color: "#64748b" }}>{detail}</p> : null}
+      <div style={shell}>
+        {tone === "danger" ? (
+          <DashboardNotice title={title} detail={detail} />
+        ) : (
+          <DashboardSkeleton label={title} cards={8} panels={2} />
+        )}
       </div>
     </main>
   );

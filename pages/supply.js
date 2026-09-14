@@ -16,6 +16,7 @@ import {
 import NewsTickerEn from "../components/NewsTickerEn";
 import CeoMessage from "../components/CeoMessage";
 import DashboardPageHeader from "../components/DashboardPageHeader";
+import { DashboardNotice, DashboardSkeleton } from "../components/DashboardState";
 import {
   FiShoppingBag,
   FiCalendar,
@@ -317,9 +318,7 @@ export default function SupplyDashboard() {
           ) : null}
 
           {error ? (
-            <div role="alert" style={errorStyle}>
-              {error.message}
-            </div>
+            <DashboardNotice title="Supply data could not load" detail={error.message} />
           ) : null}
           {mainError ? (
             <div role="alert" style={errorStyle}>
@@ -328,7 +327,7 @@ export default function SupplyDashboard() {
           ) : null}
 
           {!error && (isLoading || !data) ? (
-            <div style={loadingStyle}>Loading supply data...</div>
+            <DashboardSkeleton label="Loading supply data…" cards={8} panels={2} />
           ) : null}
 
           {!error && !isLoading && data ? (
@@ -534,14 +533,6 @@ export default function SupplyDashboard() {
     </>
   );
 }
-
-const loadingStyle = {
-  padding: 18,
-  borderRadius: 16,
-  border: "1px solid #bae6fd",
-  background: "#eff6ff",
-  color: "#0c4a6e",
-};
 
 const errorStyle = {
   padding: 18,
