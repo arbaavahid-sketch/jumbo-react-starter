@@ -105,7 +105,12 @@ export default function AppShell({ children }) {
               ))}
 
               <div className="app-nav-group">
-                <button type="button" className="app-nav-link app-nav-trigger">
+                <button
+                  type="button"
+                  className="app-nav-link app-nav-trigger"
+                  aria-haspopup="menu"
+                  aria-label="Open group dashboards"
+                >
                   <FiUsers aria-hidden="true" />
                   <span>Groups</span>
                   <FiChevronDown className="app-nav-chevron" aria-hidden="true" />
