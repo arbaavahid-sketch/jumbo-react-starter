@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FiExternalLink, FiRefreshCw } from "react-icons/fi";
+import { isNewOffer, nextOfferChange } from "../lib/group-offers";
 
 const GROUP_OFFERS_SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1HIooVZO-SdR3Dn6tcRnmnUcVLUVCJlLmg_pixa8JgAE/edit?gid=0#gid=0";
@@ -107,6 +108,7 @@ export default function GroupOffersTable({ rows = [], groupKey = "" }) {
   const autoScrollIntervalRef = useRef(null);
   const userInteractingRef = useRef(false);
   const resumeTimeoutRef = useRef(null);
+  const [now, setNow] = useState(null);
 
   const filteredRows = useMemo(() => {
     const normalizedGroup = normalizeGroupKey(groupKey);
@@ -119,6 +121,29 @@ export default function GroupOffersTable({ rows = [], groupKey = "" }) {
           sortDateValue(b.close_date) - sortDateValue(a.close_date),
       );
   }, [rows, groupKey]);
+
+  useEffect(() => {
+    let timer;
+    const update = () => {
+      const time = Date.now();
+      setNow(time);
+      clearTimeout(timer);
+      // Wake at the next expiry, including on unattended TV displays. The
+      // periodic check also covers sleep/resume and system-clock adjustments.
+      const delay = Math.min(60_000, nextOfferChange(filteredRows, time) - time);
+      timer = setTimeout(update, Math.max(1, delay));
+    };
+    timer = setTimeout(update, 0);
+    window.addEventListener("focus", update);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("focus", update);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [filteredRows]);
+
+  const newOffersCount = filteredRows.filter((row) => isNewOffer(row, now)).length;
 
   useEffect(() => {
     const box = scrollRef.current;
@@ -190,6 +215,11 @@ export default function GroupOffersTable({ rows = [], groupKey = "" }) {
         <div>
           <div style={eyebrowStyle}>Group {normalizeGroupKey(groupKey)}</div>
           <h2 style={titleStyle}>Offers Sent</h2>
+          <div style={newLegendStyle}>
+            <span style={newSwatchStyle} aria-hidden="true" />
+            New offers are highlighted for 7 days after import
+            {newOffersCount > 0 ? ` (${newOffersCount} new)` : ""}
+          </div>
         </div>
         <div style={summaryRowStyle}>
           <div style={summaryItemStyle}>
@@ -236,10 +266,19 @@ export default function GroupOffersTable({ rows = [], groupKey = "" }) {
             ) : (
               filteredRows.map((row, idx) => (
                 <tr
-                  key={`${row.deal_name}-${idx}`}
-                  style={idx % 2 === 0 ? rowEvenStyle : rowOddStyle}
+                  key={row.record_id || `${row.deal_name}-${idx}`}
+                  style={
+                    isNewOffer(row, now) ? rowNewStyle : idx % 2 === 0 ? rowEvenStyle : rowOddStyle
+                  }
                 >
-                  <td style={dealCellStyle}>{row.deal_name || "-"}</td>
+                  <td style={dealCellStyle}>
+                    {row.deal_name || "-"}
+                    {isNewOffer(row, now) && (
+                      <span style={newBadgeStyle} title="Added in the last 7 days">
+                        New
+                      </span>
+                    )}
+                  </td>
                   <td style={tdStyle}>{row.close_date || "-"}</td>
                   <td style={tdStyle}>{row.owner || "-"}</td>
                   <td style={amountCellStyle}>
@@ -384,6 +423,41 @@ const rowEvenStyle = {
 
 const rowOddStyle = {
   background: "#f9fafb",
+};
+
+const rowNewStyle = {
+  background: "#fef3c7",
+  boxShadow: "inset 4px 0 #d97706",
+};
+
+const newBadgeStyle = {
+  display: "inline-block",
+  marginLeft: 8,
+  padding: "2px 7px",
+  borderRadius: 5,
+  background: "#92400e",
+  color: "#ffffff",
+  fontSize: 12,
+  fontWeight: 800,
+  verticalAlign: "middle",
+};
+
+const newLegendStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 6,
+  marginTop: 6,
+  color: "#64748b",
+  fontSize: 12,
+};
+
+const newSwatchStyle = {
+  width: 12,
+  height: 12,
+  flexShrink: 0,
+  borderRadius: 3,
+  border: "1px solid #d97706",
+  background: "#fef3c7",
 };
 
 const emptyCellStyle = {

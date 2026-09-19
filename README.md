@@ -1,5 +1,33 @@
 This is a Next.js dashboard project.
 
+## Offers Sent refreshes
+
+The Offers Sent source sheet stores `Record ID` and `Added At` in columns J/K,
+beside the existing A:E data and G:I summary. `Added At` is an ISO timestamp
+with a timezone, assigned when an offer is first imported into this board.
+The dashboard highlights that row in amber with a `New` label for exactly
+seven days. Existing rows without an import date remain unhighlighted.
+The same timestamp is used for signed-in, admin and shared dashboards;
+refreshing, reopening, renaming a deal, or changing its amount does not reset it.
+
+For each user-supplied HubSpot export:
+
+1. Read the current source sheet, including J/K, and extract the export's rows.
+2. Use `prepareOffersUpdate` in `lib/group-offers-import.mjs` with `currentDeals`,
+   `existingRows`, and the actual `importedAt` timestamp. On the first migration
+   only, provide `previousDeals` from the previous export to identify legacy rows.
+3. Review `addedIds`, `counts` and `excludedOwners`. Group assignments come from
+   existing owner mappings; do not assign unknown owners to a group by guessing.
+4. Write the prepared offers to A:E and J:K together. Clear leftover old rows
+   in those ranges if the list shrinks. Preserve formatting and the G:I summary
+   formulas, extending their ranges if the data grows past them. Keep numeric
+   close dates as date serials and apply the existing date format to new rows.
+5. Read back the rows and summary, then verify new and unchanged timestamps.
+
+Do not use HubSpot's `Last Modified Date` or `Close Date` for `Added At`.
+The import timestamp represents when the record was added to the dashboard,
+not the unknown historical date it entered HubSpot's Offer Sent stage.
+
 ## Authentication and public links
 
 Set `LOGIN_USER`, `LOGIN_PASS`, and `AUTH_SECRET` in the server environment before starting the app. There are no fallback login credentials. Generate a random session secret using `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`; set the generated value as `AUTH_SECRET` (at least 32 characters). Keep it out of Git and configure it separately in the hosting environment before deploying.

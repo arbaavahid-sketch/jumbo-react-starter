@@ -3,6 +3,7 @@ import { fetchSheetText, sheetUnavailable } from "../../lib/sheet-fetch";
 
 import { splitDeal } from "../../lib/logistic";
 import { requireReadAccess, scopePayload } from "../../lib/access";
+import { offerAddedAt } from "../../lib/group-offers";
 function dateSortValue(input) {
   const raw = String(input || "").trim();
   if (!raw) return 0;
@@ -290,6 +291,8 @@ export function mapSheetsToPayload({
 
       return {
         index,
+        record_id: pickField(r, ["Record ID", "record_id"]),
+        added_at: offerAddedAt(pickField(r, ["Added At", "added_at"])),
         deal_name: pickField(r, ["Deal Name", "deal name", "deal_name", "Deal"]),
         close_date: pickField(r, ["Close Date", "close date", "close_date"]),
         owner,
