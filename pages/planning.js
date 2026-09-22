@@ -458,6 +458,17 @@ export default function Planning() {
                   </div>
                 ) : (
                   <>
+                    {plan.warnings.length > 0 && (
+                      <div className="planning-alert is-warning" role="alert">
+                        <strong>
+                          The sheet&apos;s totals do not match its rows — check the General
+                          milestones sheet after the latest update.
+                        </strong>
+                        {plan.warnings.map((w, i) => (
+                          <p key={i}>{w}</p>
+                        ))}
+                      </div>
+                    )}
                     <div className="planning-metrics planning-metrics-sales">
                       <div className="planning-metric">
                         <span>Yearly sales target</span>
@@ -633,8 +644,10 @@ export default function Planning() {
                           </>
                         )}
                         <p className="planning-footnote">
-                          Read from the General milestones sheet. Actual and Remaining fill in as
-                          soon as they are entered in the file.
+                          Read from the General milestones sheet. Each person belongs to the group
+                          whose &quot;Total Group …&quot; row comes next below them; new people and
+                          new groups appear automatically. Actual and Remaining fill in as soon as
+                          they are entered in the file.
                         </p>
                       </div>
                     )}

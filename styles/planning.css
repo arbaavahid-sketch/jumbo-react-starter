@@ -541,6 +541,14 @@
   background: #e8f5f0;
   color: #22644d;
 }
+.planning-alert.is-warning {
+  background: #fff8e6;
+  border-color: #f3d48a;
+  color: #7a5200;
+}
+.planning-alert.is-warning p {
+  margin: 6px 0 0;
+}
 .planning-alert.is-error {
   background: #fff0ed;
   color: #a03624;

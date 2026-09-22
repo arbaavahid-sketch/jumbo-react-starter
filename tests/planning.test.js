@@ -8,6 +8,7 @@ import {
   parsePlanningTeams,
   parsePlanningWorkbook,
   parseSalesPlan,
+  salesPlanWarnings,
   planningBucket,
   planningDigest,
   planningGroups,
@@ -432,8 +433,65 @@ describe("workbook parsing", () => {
       { name: "Big Lab Projects", amount: 2000000 },
       { name: "Export team", amount: 300000 },
     ]);
+    expect(plan.warnings).toEqual([]);
     expect(parseSalesPlan([["Milestones"], ["x"]])).toBeNull();
     expect(parsePlanningWorkbook([{ name: "Sept", rows: [HEADER] }]).salesPlan).toBeNull();
+  });
+  it("survives a reorganised Sales Control table and flags totals that no longer add up", () => {
+    const rows = [
+      [
+        "Sales Control by team",
+        "Year target",
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4",
+        "Actual",
+        "Remaining",
+        "Note",
+      ],
+      ["Mona", "€200,000", "€50,000", "€50,000", "€50,000", "€50,000", "€10,000", "€190,000"],
+      ["New Hire", "€100,000", "€25,000", "€25,000", "€25,000", "€25,000"],
+      ["Group A total", "€200,000", "€50,000", "€50,000", "€50,000", "€50,000", "€10,000"],
+      ["Sara", "€300,000", "€75,000", "€75,000", "€75,000", "€75,000"],
+      ["Sum Group D", "€300,000", "€75,000", "€75,000", "€75,000", "€75,000"],
+      ["Late Joiner", "€50,000"],
+      ["Grand total", "€600,000"],
+    ];
+    const plan = parseSalesPlan(rows);
+    expect(plan.groups.map((g) => `${g.name}: ${g.people.map((p) => p.name).join(",")}`)).toEqual([
+      "Group A: Mona,New Hire",
+      "Group D: Sara",
+      ": Late Joiner",
+    ]);
+    expect(plan.groups[0].people[0]).toMatchObject({
+      target: 200000,
+      actual: 10000,
+      remaining: 190000,
+    });
+    expect(plan.groupsTotal.target).toBe(600000);
+    expect(plan.warnings).toEqual([
+      "Sales control · Total Group A (year target): the sheet total is €200,000 but the rows above it add up to €300,000.",
+      "Sales control · Total Group A (Q1): the sheet total is €50,000 but the rows above it add up to €75,000.",
+      "Sales control · Total Group A (Q2): the sheet total is €50,000 but the rows above it add up to €75,000.",
+      "Sales control · Total Group A (Q3): the sheet total is €50,000 but the rows above it add up to €75,000.",
+      "Sales control · Total Group A (Q4): the sheet total is €50,000 but the rows above it add up to €75,000.",
+      "Sales control · Total (year target): the sheet total is €600,000 but the rows above it add up to €500,000.",
+      'Sales control: Late Joiner appear after the last "Total Group" row and belong to no group.',
+    ]);
+    expect(
+      salesPlanWarnings({
+        currency: "€",
+        targets: [{ name: "A", amount: 100 }],
+        targetsTotal: 250,
+        monthly: [],
+        monthlyTotal: { planned: null, actual: null },
+        groups: [],
+        groupsTotal: null,
+      }),
+    ).toEqual([
+      "Yearly target by brand: the sheet total is €250 but the rows above it add up to €100.",
+    ]);
   });
   it("assigns optional teams by name variant", () => {
     const data = parsePlanningWorkbook(sheets(), {
