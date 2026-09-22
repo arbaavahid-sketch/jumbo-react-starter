@@ -564,7 +564,18 @@ export default function Planning() {
                     </div>
                     {plan.groups.length > 0 && (
                       <div className="planning-panel">
-                        <h2>Sales control by team</h2>
+                        <div className="planning-toolbar">
+                          <h2>Sales control by team</h2>
+                          <div className="planning-legend">
+                            {plan.groups
+                              .filter((g) => g.name)
+                              .map((g, gi) => (
+                                <span key={g.name} className={`planning-tone-${gi % 6}`}>
+                                  {g.name}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
                         <div className="planning-table-scroll">
                           <table className="planning-table planning-compact">
                             <thead>
@@ -583,7 +594,7 @@ export default function Planning() {
                               {plan.groups.map((g, gi) => (
                                 <Fragment key={gi}>
                                   {g.people.map((p) => (
-                                    <tr key={p.name}>
+                                    <tr key={p.name} className={`planning-tone-${gi % 6}`}>
                                       <td>{p.name}</td>
                                       <td className="planning-num">{money(p.target)}</td>
                                       {p.quarters.map((q, i) => (
@@ -596,7 +607,7 @@ export default function Planning() {
                                     </tr>
                                   ))}
                                   {g.total && (
-                                    <tr className="planning-total">
+                                    <tr className={`planning-total planning-tone-${gi % 6}`}>
                                       <td>Total {g.name}</td>
                                       <td className="planning-num">{money(g.total.target)}</td>
                                       {g.total.quarters.map((q, i) => (
