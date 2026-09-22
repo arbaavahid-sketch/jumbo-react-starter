@@ -439,11 +439,11 @@
   background: #eff6ff;
   font-weight: 600;
 }
-.planning-bars li.is-current i {
-  background: #173f7a;
-}
 .planning-bars li.is-past i {
-  background: #dbe7f5;
+  opacity: 0.4;
+}
+.planning-bars li.is-current {
+  box-shadow: inset 0 0 0 1px #c5d6ea;
 }
 .planning-bars li.is-past span,
 .planning-bars li.is-past strong {
@@ -468,7 +468,7 @@
   border-radius: 7px;
 }
 .planning-bars i {
-  background: #b7d9f8;
+  background: var(--brand, #b7d9f8);
 }
 .planning-bars b {
   background: #173f7a;
@@ -539,6 +539,24 @@ tr.planning-total[class*="planning-tone-"] td {
   color: #1e293b;
   font-size: 12px;
   border-left: 4px solid var(--tone-strong);
+}
+.planning-quarters span {
+  background: transparent;
+  border: 0;
+  padding: 2px 0 2px 14px;
+  position: relative;
+  color: #526579;
+}
+.planning-quarters span::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  transform: translateY(-50%);
+  background: var(--brand);
 }
 .planning-heading td {
   font-weight: 600;

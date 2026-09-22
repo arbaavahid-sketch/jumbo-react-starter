@@ -506,15 +506,19 @@ export default function Planning() {
                       <div className="planning-panel">
                         <div className="planning-toolbar">
                           <h2>Sales prediction by month</h2>
-                          {!hasActual && (
-                            <span className="planning-badge">actual not reported</span>
-                          )}
+                          <div className="planning-legend planning-quarters">
+                            {["Q1", "Q2", "Q3", "Q4"].map((q, i) => (
+                              <span key={q} className={`planning-brand-${i * 2}`}>
+                                {q}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                         <ul className={`planning-bars${hasActual ? " has-actual" : ""}`}>
                           {plan.monthly.map((m) => (
                             <li
                               key={m.month}
-                              className={`${m.month === period.month ? "is-current" : ""}${m.month < period.month ? " is-past" : ""}`}
+                              className={`planning-brand-${Math.floor(m.month / 3) * 2}${m.month === period.month ? " is-current" : ""}${m.month < period.month ? " is-past" : ""}`}
                             >
                               <span>{PLANNING_MONTHS[m.month].slice(0, 3)}</span>
                               <div>
@@ -528,6 +532,11 @@ export default function Planning() {
                             </li>
                           ))}
                         </ul>
+                        {!hasActual && (
+                          <p className="planning-footnote">
+                            Actual sales are not reported in the file yet.
+                          </p>
+                        )}
                         {plan.quarters.some((q) => q.planned !== null) && (
                           <p className="planning-footnote">
                             {plan.quarters
