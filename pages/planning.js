@@ -130,8 +130,9 @@ export default function Planning() {
         ["done", FiFlag],
       ];
   const byTeam = config.teams.length > 0;
-  const groups = planningGroups(scoped, config.teams);
-  const carriedOf = (tasks) => tasks.filter((t) => planningBucket(t, period) === "carried").length;
+  // Cards describe the same set as the table: the live scope, or the chosen month.
+  const groups = planningGroups(monthTasks, config.teams);
+  const carriedOf = (tasks) => tasks.filter((t) => countBucket(t) === "carried").length;
   const cards = byTeam
     ? groups.map((g) => {
         const tasks = g.people.flatMap((p) => p.tasks);
@@ -195,7 +196,8 @@ export default function Planning() {
         a.row - b.row,
     );
   const preview = planningDigest(config, data, now);
-  const milestones = (data?.milestones || []).filter((m) => m.month === period.month);
+  const milestoneMonth = inScope || monthFilter === "all" ? period.month : Number(monthFilter);
+  const milestones = (data?.milestones || []).filter((m) => m.month === milestoneMonth);
   const plan = data?.salesPlan || null;
   const money = (value) => formatMoney(value, plan?.currency || "");
   const thisMonthPlan = plan?.monthly.find((m) => m.month === period.month);
@@ -309,7 +311,7 @@ export default function Planning() {
                 {milestones.length > 0 && (
                   <div className="planning-milestones">
                     <strong>
-                      <FiFlag aria-hidden="true" /> {PLANNING_MONTHS[period.month]} milestones
+                      <FiFlag aria-hidden="true" /> {PLANNING_MONTHS[milestoneMonth]} milestones
                     </strong>
                     <ul>
                       {milestones.map((m, i) => (
@@ -331,7 +333,7 @@ export default function Planning() {
                     </span>
                     <strong>{byTeam ? "All teams" : "Everyone"}</strong>
                     <span className="planning-group-count">
-                      {data ? scoped.filter((t) => !t.closed).length : "—"}
+                      {data ? monthTasks.filter((t) => !t.closed).length : "—"}
                       <em>open</em>
                     </span>
                     {data && (
