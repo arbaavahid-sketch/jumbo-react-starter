@@ -449,7 +449,11 @@ export default function Planning() {
                                   <span className={`planning-badge ${bucket}`}>
                                     {PLANNING_BUCKETS[bucket]}
                                   </span>
-                                  <small>{task.status || "—"}</small>
+                                  {task.status &&
+                                    task.status.toLowerCase() !==
+                                      PLANNING_BUCKETS[bucket].toLowerCase() && (
+                                      <small>{task.status}</small>
+                                    )}
                                 </td>
                                 <td className="planning-text">
                                   {open ? task.comment : firstLine(task.comment)}
