@@ -112,23 +112,38 @@ export default function Planning() {
   );
   const byTeam = config.teams.length > 0;
   const groups = planningGroups(scoped, config.teams);
+  const carriedOf = (tasks) => tasks.filter((t) => planningBucket(t, period) === "carried").length;
   const cards = byTeam
-    ? groups.map((g) => ({
-        id: g.name,
-        name: g.name,
-        open: g.people.reduce((sum, p) => sum + p.tasks.length, 0),
-        detail: g.people.map((p) => p.name).join(", ") || "Nobody listed",
-        matches: (task) => task.teams.includes(g.name),
-      }))
+    ? groups.map((g) => {
+        const tasks = g.people.flatMap((p) => p.tasks);
+        return {
+          id: g.name,
+          name: g.name,
+          open: tasks.length,
+          carried: carriedOf(tasks),
+          detail: g.people.map((p) => p.name).join(", ") || "Nobody listed",
+          matches: (task) => task.teams.includes(g.name),
+        };
+      })
     : groups[0].people.map((p) => ({
         id: p.name,
         name: p.name,
         open: p.tasks.length,
+        carried: carriedOf(p.tasks),
         detail: (data?.people.find((x) => x.name === p.name)?.variants || [])
           .filter((v) => v !== p.name)
           .join(", "),
         matches: (task) => (task.people.length ? task.people : [UNASSIGNED]).includes(p.name),
       }));
+  const maxOpen = Math.max(...cards.map((c) => c.open), 1);
+  const initials = (name) =>
+    name
+      .split(/[\s/]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase();
   const selected = cards.find((card) => card.id === group);
   const openCount = new Map();
   for (const task of scoped)
@@ -288,27 +303,40 @@ export default function Planning() {
                 )}
                 <div className="planning-group-grid">
                   <button
-                    className={`planning-group${group === "all" ? " is-selected" : ""}`}
+                    className={`planning-group is-everyone${group === "all" ? " is-selected" : ""}`}
                     onClick={() => setGroup("all")}
                   >
-                    <strong>
-                      <FiUsers aria-hidden="true" /> {byTeam ? "All teams" : "Everyone"}
-                    </strong>
-                    <span>
-                      {data ? `${scoped.filter((t) => !t.closed).length} open` : "No data yet"}
+                    <span className="planning-avatar">
+                      <FiUsers aria-hidden="true" />
                     </span>
+                    <strong>{byTeam ? "All teams" : "Everyone"}</strong>
+                    <span className="planning-group-count">
+                      {data ? scoped.filter((t) => !t.closed).length : "—"}
+                      <em>open</em>
+                    </span>
+                    {data && (
+                      <small>
+                        {cards.length} {byTeam ? "teams" : "people"}
+                      </small>
+                    )}
                   </button>
-                  {cards.map((card) => (
+                  {cards.map((card, ci) => (
                     <button
                       key={card.id}
-                      className={`planning-group${group === card.id ? " is-selected" : ""}${card.id === UNASSIGNED ? " is-unassigned" : ""}`}
+                      className={`planning-group planning-brand-${ci % 8}${group === card.id ? " is-selected" : ""}${card.id === UNASSIGNED ? " is-unassigned" : ""}`}
                       onClick={() => setGroup(card.id)}
+                      title={card.detail ? `${card.name} — ${card.detail}` : card.name}
                     >
+                      <span className="planning-avatar">{initials(card.name)}</span>
                       <strong>{card.name}</strong>
-                      <span>{card.open} open</span>
-                      {card.detail && (
-                        <small>{byTeam ? card.detail : `also: ${card.detail}`}</small>
-                      )}
+                      <span className="planning-group-count">
+                        {card.open}
+                        <em>open</em>
+                        {card.carried > 0 && <i>{card.carried} carried</i>}
+                      </span>
+                      <span className="planning-group-bar" aria-hidden="true">
+                        <i style={{ width: `${(card.open / maxOpen) * 100}%` }} />
+                      </span>
                     </button>
                   ))}
                 </div>
