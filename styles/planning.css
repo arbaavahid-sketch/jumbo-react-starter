@@ -515,6 +515,116 @@ tr.planning-total[class*="planning-tone-"] td {
 .planning-child td {
   border-bottom-color: #f1f5f9;
 }
+.planning-inline-kpis {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.planning-inline-kpis div {
+  display: grid;
+  text-align: right;
+}
+.planning-inline-kpis span {
+  color: #64748b;
+  font-size: 12px;
+}
+.planning-inline-kpis strong {
+  font-size: 20px;
+  color: #173f7a;
+}
+.planning-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.planning-card {
+  border: 1px solid #dde6ef;
+  border-radius: 14px;
+  padding: 18px 20px;
+  background: #fafcfe;
+}
+.planning-card h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #526579;
+  font-weight: 500;
+}
+.planning-card > strong {
+  display: block;
+  font-size: 24px;
+  color: #173f7a;
+  margin: 4px 0 12px;
+}
+.planning-stack {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e8eef5;
+  gap: 2px;
+}
+.planning-stack i {
+  display: block;
+  background: var(--tone-strong, #94a3b8);
+}
+.planning-card ul {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.planning-card ul:not(.planning-mini-bars) li {
+  display: grid;
+  grid-template-columns: 1fr 44px auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  padding-left: 16px;
+  position: relative;
+}
+.planning-card ul:not(.planning-mini-bars) li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: var(--tone-strong, #94a3b8);
+}
+.planning-card li em {
+  font-style: normal;
+  color: #64748b;
+  text-align: right;
+  font-size: 12px;
+}
+.planning-card li b {
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.planning-mini-bars li {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) 1.2fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.planning-mini-bars div {
+  height: 10px;
+  background: #e8eef5;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.planning-mini-bars i {
+  display: block;
+  height: 100%;
+  background: #173f7a;
+  border-radius: 5px;
+}
 .planning-total td {
   font-weight: 600;
   background: #fafcfe;

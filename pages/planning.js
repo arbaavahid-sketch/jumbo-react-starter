@@ -639,43 +639,96 @@ export default function Planning() {
                             </tbody>
                           </table>
                         </div>
-                        {plan.extra.length > 0 && (
-                          <>
-                            <h2>Other targets</h2>
-                            <table className="planning-table planning-compact planning-half">
-                              <tbody>
-                                {plan.extra.map((e, i) => (
-                                  <Fragment key={i}>
-                                    <tr
-                                      className={
-                                        e.total
-                                          ? "planning-total"
-                                          : e.children.length
-                                            ? "planning-heading"
-                                            : ""
-                                      }
-                                    >
-                                      <td>{e.name}</td>
-                                      <td className="planning-num">{money(e.amount)}</td>
-                                    </tr>
+                      </div>
+                    )}
+                    {plan.extra.length > 0 && (
+                      <div className="planning-panel">
+                        <div className="planning-toolbar">
+                          <div>
+                            <h2>Target breakdown</h2>
+                            <p>How the yearly target splits by segment, sales group and person.</p>
+                          </div>
+                          <div className="planning-inline-kpis">
+                            {plan.extra
+                              .filter((e) => e.total)
+                              .map((e) => (
+                                <div key={e.name}>
+                                  <span>{e.name}</span>
+                                  <strong>{money(e.amount)}</strong>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                        <div className="planning-cards">
+                          {plan.extra
+                            .filter((e) => e.children.length)
+                            .map((e) => {
+                              const base = e.children.reduce((n, c) => n + (c.amount || 0), 0) || 1;
+                              return (
+                                <div className="planning-card" key={e.name}>
+                                  <h3>{e.name}</h3>
+                                  <strong>{money(e.amount)}</strong>
+                                  <div className="planning-stack" aria-hidden="true">
                                     {e.children.map((c) => {
                                       const gi = plan.groups.findIndex((g) => g.name === c.name);
                                       return (
-                                        <tr
+                                        <i
                                           key={c.name}
-                                          className={`planning-child${gi >= 0 ? ` planning-tone-${gi % 6}` : ""}`}
-                                        >
-                                          <td>{c.name}</td>
-                                          <td className="planning-num">{money(c.amount)}</td>
-                                        </tr>
+                                          className={gi >= 0 ? `planning-tone-${gi % 6}` : ""}
+                                          style={{ width: `${((c.amount || 0) / base) * 100}%` }}
+                                        />
                                       );
                                     })}
-                                  </Fragment>
-                                ))}
-                              </tbody>
-                            </table>
-                          </>
-                        )}
+                                  </div>
+                                  <ul>
+                                    {e.children.map((c) => {
+                                      const gi = plan.groups.findIndex((g) => g.name === c.name);
+                                      return (
+                                        <li
+                                          key={c.name}
+                                          className={gi >= 0 ? `planning-tone-${gi % 6}` : ""}
+                                        >
+                                          <span>{c.name}</span>
+                                          <em>{Math.round(((c.amount || 0) / base) * 100)}%</em>
+                                          <b>{money(c.amount)}</b>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
+                              );
+                            })}
+                          {plan.extra.some((e) => !e.total && !e.children.length) && (
+                            <div className="planning-card">
+                              <h3>Individual &amp; team targets</h3>
+                              <strong>
+                                {money(
+                                  plan.extra
+                                    .filter((e) => !e.total && !e.children.length)
+                                    .reduce((n, e) => n + (e.amount || 0), 0),
+                                )}
+                              </strong>
+                              <ul className="planning-mini-bars">
+                                {plan.extra
+                                  .filter((e) => !e.total && !e.children.length)
+                                  .map((e, _, all) => {
+                                    const max = Math.max(...all.map((x) => x.amount || 0), 1);
+                                    return (
+                                      <li key={e.name}>
+                                        <span>{e.name}</span>
+                                        <div>
+                                          <i
+                                            style={{ width: `${((e.amount || 0) / max) * 100}%` }}
+                                          />
+                                        </div>
+                                        <b>{money(e.amount)}</b>
+                                      </li>
+                                    );
+                                  })}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
                         <p className="planning-footnote">
                           Read from the General milestones sheet. Each person belongs to the group
                           whose &quot;Total Group …&quot; row comes next below them; new people and
