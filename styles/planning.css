@@ -133,23 +133,40 @@
   background: #eff6ff;
 }
 .planning-tabbar {
-  display: flex;
-  gap: 8px;
-  border-bottom: 1px solid #dce5ed;
+  display: inline-flex;
+  gap: 4px;
   margin: 24px 0;
-  padding-bottom: 12px;
+  padding: 4px;
+  background: #e6edf5;
+  border: 1px solid #d3deea;
+  border-radius: 14px;
   overflow-x: auto;
+  max-width: 100%;
 }
-.planning-tabbar button {
+.planning-page .planning-tabbar button {
   white-space: nowrap;
   background: transparent;
-  border-color: transparent;
-  color: #64748b;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #3b5470;
+  font-weight: 500;
+  padding: 10px 22px;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
 }
-.planning-tabbar button[aria-selected="true"] {
-  background: #e5edf8;
+.planning-page .planning-tabbar button:hover {
+  background: #ffffff99;
   color: #173f7a;
-  border-color: #c5d6ea;
+}
+.planning-page .planning-tabbar button[aria-selected="true"] {
+  background: #173f7a;
+  color: white;
+  box-shadow: 0 2px 6px #173f7a40;
+}
+.planning-page .planning-tabbar button[aria-selected="true"]:hover {
+  background: #123262;
 }
 .planning-group-grid {
   display: grid;
