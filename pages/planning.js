@@ -128,6 +128,10 @@ export default function Planning() {
         matches: (task) => (task.people.length ? task.people : [UNASSIGNED]).includes(p.name),
       }));
   const selected = cards.find((card) => card.id === group);
+  const openCount = new Map();
+  for (const task of scoped)
+    if (!task.closed) openCount.set(task.person, (openCount.get(task.person) || 0) + 1);
+  const rank = (person) => (person ? -(openCount.get(person) || 0) : 1);
   const visibleTasks = (
     monthFilter === "scope"
       ? scoped
@@ -143,7 +147,14 @@ export default function Planning() {
           .includes(search.trim().toLowerCase())
       );
     })
-    .sort((a, b) => a.month - b.month || a.person.localeCompare(b.person) || a.row - b.row);
+    .sort(
+      // Same order as the digest: busiest person first, then that person's oldest work first.
+      (a, b) =>
+        rank(a.person) - rank(b.person) ||
+        a.person.localeCompare(b.person) ||
+        a.month - b.month ||
+        a.row - b.row,
+    );
   const preview = planningDigest(config, data, now);
   const milestones = (data?.milestones || []).filter((m) => m.month === period.month);
   const ready = status.drive && status.mail;
