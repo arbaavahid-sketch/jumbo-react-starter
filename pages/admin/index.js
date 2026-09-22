@@ -8,6 +8,7 @@ import {
   FiActivity,
   FiAlertTriangle,
   FiBarChart2,
+  FiCalendar,
   FiCheckSquare,
   FiClock,
   FiDatabase,
@@ -315,6 +316,7 @@ export default function Admin() {
               <ActionLink href="/" label="Portal" />
               <ActionLink href="/admin/messages" label="CEO Messages" Icon={FiMessageSquare} />
               <ActionLink href="/admin/weekly-history" label="Weekly History" Icon={FiBarChart2} />
+              <ActionLink href="/planning" label="Planning" Icon={FiCalendar} />
               <button type="button" onClick={() => refreshMain()} style={refreshButton}>
                 Refresh
               </button>
