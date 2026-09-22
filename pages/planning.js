@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   FiAlertCircle,
   FiCalendar,
@@ -10,6 +10,7 @@ import {
   FiMail,
   FiRefreshCw,
   FiSend,
+  FiTrendingUp,
   FiUsers,
 } from "react-icons/fi";
 import {
@@ -21,6 +22,7 @@ import {
   planningGroups,
   planningPeriod,
   planningScope,
+  formatMoney,
 } from "../lib/planning";
 
 const formatTimestamp = (value) =>
@@ -157,6 +159,10 @@ export default function Planning() {
     );
   const preview = planningDigest(config, data, now);
   const milestones = (data?.milestones || []).filter((m) => m.month === period.month);
+  const plan = data?.salesPlan || null;
+  const money = (value) => formatMoney(value, plan?.currency || "");
+  const thisMonthPlan = plan?.monthly.find((m) => m.month === period.month);
+  const maxMonthly = plan ? Math.max(...plan.monthly.map((m) => m.planned || 0), 1) : 1;
   const ready = status.drive && status.mail;
 
   return (
@@ -246,6 +252,7 @@ export default function Planning() {
             <div className="planning-tabbar" role="tablist" aria-label="Planning sections">
               {[
                 ["tasks", "Actions", FiCalendar],
+                ["sales", "Sales plan", FiTrendingUp],
                 ["email", "Daily digest", FiMail],
               ].map(([key, label, Icon]) => (
                 <button
@@ -433,6 +440,206 @@ export default function Planning() {
                     merged automatically.
                   </p>
                 </div>
+              </section>
+            )}
+            {tab === "sales" && (
+              <section id="planning-sales" role="tabpanel" aria-labelledby="tab-sales">
+                {!plan ? (
+                  <div className="planning-panel">
+                    <div className="planning-empty">
+                      <FiTrendingUp aria-hidden="true" />
+                      <h3>No sales plan found</h3>
+                      <p>
+                        The General milestones sheet with &quot;Total planned Sales Target&quot;,
+                        &quot;Sales Prediction&quot; and &quot;Sales Control by team&quot; was not
+                        read yet.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="planning-metrics planning-metrics-sales">
+                      <div className="planning-metric">
+                        <span>Yearly sales target</span>
+                        <strong>{money(plan.targetsTotal)}</strong>
+                      </div>
+                      <div className="planning-metric">
+                        <span>Monthly predictions total</span>
+                        <strong>{money(plan.monthlyTotal.planned)}</strong>
+                        <small>
+                          actual{" "}
+                          {plan.monthlyTotal.actual
+                            ? money(plan.monthlyTotal.actual)
+                            : "not reported"}
+                        </small>
+                      </div>
+                      <div className="planning-metric open">
+                        <span>{PLANNING_MONTHS[period.month]} target</span>
+                        <strong>{money(thisMonthPlan?.planned ?? null)}</strong>
+                        <small>
+                          actual{" "}
+                          {thisMonthPlan?.actual ? money(thisMonthPlan.actual) : "not reported"}
+                        </small>
+                      </div>
+                      <div className="planning-metric">
+                        <span>Sales team target</span>
+                        <strong>{money(plan.groupsTotal?.target ?? null)}</strong>
+                        <small>
+                          {plan.groups.reduce((n, g) => n + g.people.length, 0)} people ·{" "}
+                          {plan.groups.length} groups
+                        </small>
+                      </div>
+                    </div>
+                    <div className="planning-sales-grid">
+                      <div className="planning-panel">
+                        <h2>Sales prediction by month</h2>
+                        <ul className="planning-bars">
+                          {plan.monthly.map((m) => (
+                            <li
+                              key={m.month}
+                              className={m.month === period.month ? "is-current" : ""}
+                            >
+                              <span>{PLANNING_MONTHS[m.month].slice(0, 3)}</span>
+                              <div>
+                                <i style={{ width: `${((m.planned || 0) / maxMonthly) * 100}%` }} />
+                                {m.actual ? (
+                                  <b style={{ width: `${(m.actual / maxMonthly) * 100}%` }} />
+                                ) : null}
+                              </div>
+                              <strong>{money(m.planned)}</strong>
+                              <small>{m.actual ? money(m.actual) : "—"}</small>
+                            </li>
+                          ))}
+                        </ul>
+                        {plan.quarters.some((q) => q.planned !== null) && (
+                          <p className="planning-footnote">
+                            {plan.quarters
+                              .filter((q) => q.planned !== null)
+                              .map(
+                                (q) =>
+                                  `${q.name}: ${money(q.planned)} planned, ${q.actual ? money(q.actual) : "actual not reported"}`,
+                              )
+                              .join(" · ")}
+                          </p>
+                        )}
+                      </div>
+                      <div className="planning-panel">
+                        <h2>Yearly target by brand</h2>
+                        <table className="planning-table planning-compact">
+                          <tbody>
+                            {plan.targets.map((t) => (
+                              <tr key={t.name}>
+                                <td>{t.name}</td>
+                                <td className="planning-num">{money(t.amount)}</td>
+                              </tr>
+                            ))}
+                            <tr className="planning-total">
+                              <td>Total</td>
+                              <td className="planning-num">{money(plan.targetsTotal)}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        {plan.priorities.length > 0 && (
+                          <>
+                            <h2>Monthly priorities</h2>
+                            <ol className="planning-priorities">
+                              {plan.priorities.map((p, i) => (
+                                <li key={i}>{p.replace(/^\d+\s*[-.)]\s*/, "")}</li>
+                              ))}
+                            </ol>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {plan.groups.length > 0 && (
+                      <div className="planning-panel">
+                        <h2>Sales control by team</h2>
+                        <div className="planning-table-scroll">
+                          <table className="planning-table planning-compact">
+                            <thead>
+                              <tr>
+                                <th>Salesperson</th>
+                                <th className="planning-num">Year target</th>
+                                <th className="planning-num">Q1</th>
+                                <th className="planning-num">Q2</th>
+                                <th className="planning-num">Q3</th>
+                                <th className="planning-num">Q4</th>
+                                <th className="planning-num">Actual</th>
+                                <th className="planning-num">Remaining</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {plan.groups.map((g, gi) => (
+                                <Fragment key={gi}>
+                                  {g.people.map((p) => (
+                                    <tr key={p.name}>
+                                      <td>{p.name}</td>
+                                      <td className="planning-num">{money(p.target)}</td>
+                                      {p.quarters.map((q, i) => (
+                                        <td key={i} className="planning-num">
+                                          {money(q)}
+                                        </td>
+                                      ))}
+                                      <td className="planning-num">{money(p.actual)}</td>
+                                      <td className="planning-num">{money(p.remaining)}</td>
+                                    </tr>
+                                  ))}
+                                  {g.total && (
+                                    <tr className="planning-total">
+                                      <td>Total {g.name}</td>
+                                      <td className="planning-num">{money(g.total.target)}</td>
+                                      {g.total.quarters.map((q, i) => (
+                                        <td key={i} className="planning-num">
+                                          {money(q)}
+                                        </td>
+                                      ))}
+                                      <td className="planning-num">{money(g.total.actual)}</td>
+                                      <td className="planning-num">{money(g.total.remaining)}</td>
+                                    </tr>
+                                  )}
+                                </Fragment>
+                              ))}
+                              {plan.groupsTotal && (
+                                <tr className="planning-total planning-grand">
+                                  <td>Total</td>
+                                  <td className="planning-num">{money(plan.groupsTotal.target)}</td>
+                                  {plan.groupsTotal.quarters.map((q, i) => (
+                                    <td key={i} className="planning-num">
+                                      {money(q)}
+                                    </td>
+                                  ))}
+                                  <td className="planning-num">{money(plan.groupsTotal.actual)}</td>
+                                  <td className="planning-num">
+                                    {money(plan.groupsTotal.remaining)}
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        {plan.extra.length > 0 && (
+                          <>
+                            <h2>Other targets</h2>
+                            <table className="planning-table planning-compact planning-half">
+                              <tbody>
+                                {plan.extra.map((e, i) => (
+                                  <tr key={i}>
+                                    <td>{e.name}</td>
+                                    <td className="planning-num">{money(e.amount)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </>
+                        )}
+                        <p className="planning-footnote">
+                          Read from the General milestones sheet. Actual and Remaining fill in as
+                          soon as they are entered in the file.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
               </section>
             )}
             {tab === "email" && (

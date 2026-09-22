@@ -4,8 +4,10 @@ import * as XLSX from "xlsx";
 import {
   isClosedStatus,
   nameKey,
+  parseMoney,
   parsePlanningTeams,
   parsePlanningWorkbook,
+  parseSalesPlan,
   planningBucket,
   planningDigest,
   planningGroups,
@@ -177,15 +179,15 @@ const sheets = () => [
         "Total planned Sales Target",
         "",
         "",
+        "Sales Prediction",
+        "Actual Sales",
         "",
         "",
         "",
+        "Planned",
+        "Actual",
         "",
-        "",
-        "",
-        "",
-        "",
-        "",
+        "Monthly Tasks priorities",
         "",
         "",
         "",
@@ -199,6 +201,49 @@ const sheets = () => [
         "",
         "ignored after blank",
       ],
+      [
+        "",
+        "",
+        "Jan",
+        "€280,000.00",
+        "",
+        "",
+        "",
+        "Q1",
+        "€840,000.00",
+        "€0.00",
+        "0.00%",
+        "1- Get fullpayments",
+      ],
+      [
+        "Chromatek",
+        "€300,000",
+        "Feb",
+        "€280,000.00",
+        "€10,000.00",
+        "",
+        "",
+        "Q2",
+        "",
+        "",
+        "",
+        "2- Get prepayments",
+      ],
+      ["STPC", "€3,500,000", "Sept", "€414,000.00", "", "", "", "Q3", "", "", "", ""],
+      ["Total", "€3,800,000", "Oct", "€414,000.00", "", "", "", "Q4", "", "", "", "3- Training"],
+      ["", "", "Total", "€1,388,000.00", "€10,000.00"],
+      [],
+      ["Sales Control by team", "", "Q1", "Q2", "Q3", "Q4", "Actual", "", "Remaining"],
+      ["Mona", "€200,000", "€42,000", "€33,900", "€62,100", "€62,000", "€5,000", "", "€195,000"],
+      ["Ali ", "€900,000", "€189,000", "€152,550", "€279,450", "€279,000"],
+      ["", "", "€0", "€0", "€0", "€0"],
+      ["Total Group A", "€1,100,000", "€231,000", "€186,450", "€341,550", "€341,000"],
+      ["Hamid", "€200,000", "€42,000", "€33,900", "€62,100", "€62,000"],
+      ["Totlal Group C", "€200,000", "€42,000", "€33,900", "€62,100", "€62,000"],
+      ["Total", "€1,300,000", "€273,000", "€220,350", "€403,650", "€403,000"],
+      [],
+      ["Big Lab Projects", "€2,000,000"],
+      ["Export team", "€300,000"],
     ],
   },
   {
@@ -347,6 +392,49 @@ describe("workbook parsing", () => {
     });
     expect(() => parsePlanningWorkbook([{ name: "Sheet1", rows: [] }])).toThrow("No monthly sheet");
   });
+  it("reads the sales plan tables from the milestones sheet by their labels", () => {
+    expect(parseMoney("€280,000.00")).toBe(280000);
+    expect(parseMoney(3500000)).toBe(3500000);
+    expect(parseMoney("")).toBeNull();
+    expect(parseMoney("(1,000)")).toBe(-1000);
+    const plan = parsePlanningWorkbook(sheets()).salesPlan;
+    expect(plan.currency).toBe("€");
+    expect(plan.targets).toEqual([
+      { name: "Chromatek", amount: 300000 },
+      { name: "STPC", amount: 3500000 },
+    ]);
+    expect(plan.targetsTotal).toBe(3800000);
+    expect(plan.monthly).toEqual([
+      { month: 0, planned: 280000, actual: null },
+      { month: 1, planned: 280000, actual: 10000 },
+      { month: 8, planned: 414000, actual: null },
+      { month: 9, planned: 414000, actual: null },
+    ]);
+    expect(plan.monthlyTotal).toEqual({ planned: 1388000, actual: 10000 });
+    expect(plan.quarters[0]).toEqual({ name: "Q1", planned: 840000, actual: 0 });
+    expect(plan.quarters).toHaveLength(4);
+    expect(plan.priorities).toEqual(["1- Get fullpayments", "2- Get prepayments", "3- Training"]);
+    expect(
+      plan.groups.map(
+        (g) => `${g.name}: ${g.people.map((p) => p.name).join(",")} = ${g.total.target}`,
+      ),
+    ).toEqual(["Group A: Mona,Ali = 1100000", "Group C: Hamid = 200000"]);
+    expect(plan.groups[0].people[0]).toEqual({
+      name: "Mona",
+      target: 200000,
+      quarters: [42000, 33900, 62100, 62000],
+      actual: 5000,
+      remaining: 195000,
+    });
+    expect(plan.groups[0].people[1].actual).toBeNull();
+    expect(plan.groupsTotal.target).toBe(1300000);
+    expect(plan.extra).toEqual([
+      { name: "Big Lab Projects", amount: 2000000 },
+      { name: "Export team", amount: 300000 },
+    ]);
+    expect(parseSalesPlan([["Milestones"], ["x"]])).toBeNull();
+    expect(parsePlanningWorkbook([{ name: "Sept", rows: [HEADER] }]).salesPlan).toBeNull();
+  });
   it("assigns optional teams by name variant", () => {
     const data = parsePlanningWorkbook(sheets(), {
       teams: parsePlanningTeams("Supply=Azat,Mostafa;Logistics=Uliana"),
@@ -406,6 +494,9 @@ describe("workbook parsing", () => {
     expect(digest.subject).toBe("Artin Azma daily planning | 22 September 2026");
     expect(digest.text).toContain("8 days left in September");
     expect(digest.text).toContain("- Oil Show participate [in process]");
+    expect(digest.text).toContain("September sales target: €414,000 · actual: not reported yet");
+    expect(digest.text).toContain("Monthly priorities\n- 1- Get fullpayments");
+    expect(digest.html).toContain("<li>2- Get prepayments</li>");
     expect(digest.text).toContain("Ulyana — 4 open");
     expect(digest.text).toContain("carried over from August");
     expect(digest.text).not.toContain("Site visit at Lamerd");

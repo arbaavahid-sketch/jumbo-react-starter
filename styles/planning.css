@@ -368,6 +368,114 @@
   font-size: 12px;
   margin-top: 2px;
 }
+.planning-metrics-sales .planning-metric {
+  cursor: default;
+  grid-template-columns: 1fr;
+  align-content: start;
+}
+.planning-metrics-sales .planning-metric strong {
+  font-size: 26px;
+  white-space: nowrap;
+}
+.planning-metric small {
+  color: #64748b;
+  font-size: 12px;
+}
+.planning-sales-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 20px;
+}
+.planning-sales-grid .planning-panel {
+  margin-top: 0;
+}
+.planning-panel h2 + .planning-table,
+.planning-panel .planning-table + h2 {
+  margin-top: 12px;
+}
+.planning-bars {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.planning-bars li {
+  display: grid;
+  grid-template-columns: 36px 1fr 96px 80px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  padding: 3px 6px;
+  border-radius: 8px;
+}
+.planning-bars li.is-current {
+  background: #eff6ff;
+  font-weight: 600;
+}
+.planning-bars span {
+  color: #526579;
+}
+.planning-bars div {
+  position: relative;
+  height: 14px;
+  background: #f0f4fa;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.planning-bars i,
+.planning-bars b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 7px;
+}
+.planning-bars i {
+  background: #b7d9f8;
+}
+.planning-bars b {
+  background: #173f7a;
+}
+.planning-bars strong {
+  text-align: right;
+}
+.planning-bars small {
+  text-align: right;
+  color: #64748b;
+}
+.planning-compact td,
+.planning-compact th {
+  padding: 7px 10px;
+  font-size: 13px;
+}
+.planning-compact {
+  min-width: 0;
+}
+.planning-compact tbody tr {
+  cursor: default;
+}
+.planning-num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.planning-total td {
+  font-weight: 600;
+  background: #fafcfe;
+}
+.planning-grand td {
+  background: #eff6ff;
+  border-top: 2px solid #173f7a;
+}
+.planning-half {
+  max-width: 520px;
+}
+.planning-priorities {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  line-height: 1.7;
+}
 .planning-checklist {
   list-style: none;
   padding: 0;
@@ -491,6 +599,15 @@
   }
   .planning-milestones ul {
     columns: 1;
+  }
+  .planning-sales-grid {
+    grid-template-columns: 1fr;
+  }
+  .planning-bars li {
+    grid-template-columns: 36px 1fr 80px;
+  }
+  .planning-bars small {
+    display: none;
   }
   .planning-group-grid {
     grid-template-columns: 1fr 1fr;
