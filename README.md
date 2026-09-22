@@ -21,13 +21,17 @@ dashboard; the whole setup is environment variables.
    | `CRON_SECRET`                                                   | Random string; Vercel Cron sends it as `Authorization: Bearer …` to `/api/cron/planning-digest` (schedule in `vercel.json`, 03:30 UTC = 07:00 Tehran, every day). |
    | `PLANNING_TEAMS` (optional)                                     | `Supply=Azat,Mostafa;Logistics=Ulyana` groups the digest by team; without it the digest is grouped by person.                                                     |
    | `PLANNING_LOOKBACK_MONTHS` (optional)                           | How many earlier months' open work is carried over (default 1).                                                                                                   |
+   | `PLANNING_LOCAL_FILE` (local dev only)                          | Path to a local `.xlsx`; used instead of Drive when no service account is configured.                                                                             |
    | `PLANNING_FILE_PATTERN`, `PLANNING_CLOSED_STATUSES` (optional)  | Yearly file name pattern (default `Planning {YYYY}`) and the status values that count as closed.                                                                  |
 
 Month sheets are matched by their first three letters (`Feb`, `Sept`, `Novemb`), a missing header row
 is tolerated, `Azat/Uliana/Mostafa` counts for all three people, and spelling variants of a name
 (Ulyana/Uliana, Pooria/Pouria/Pooriya) are merged automatically. A task is closed when its status
 starts with done / cancel / moved / postponed / not relevant; blank, "in process", "not done" and
-"partially done" stay open. The digest lists the month's milestones, then every open action per
+"partially done" stay open. The General milestones sheet also feeds the **Sales plan** tab (yearly
+target by brand, monthly prediction vs actual, quarterly plan, monthly priorities and the
+per-salesperson "Sales Control by team" table) and adds the month's sales target and priorities to
+the digest. The digest lists the month's milestones, then every open action per
 person with status and latest comment, flagging work carried over from the previous month. If Drive
 cannot be read the digest is skipped for that day (never stale data) and the page shows the last good
 read with a warning. "Send now" on the Daily digest tab sends immediately.
