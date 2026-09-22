@@ -104,12 +104,31 @@ export default function Planning() {
   const source = result?.source || null;
   const tasks = data?.tasks || [];
   const scoped = data ? planningScope(tasks, period, config.lookbackMonths) : [];
-  const counts = Object.fromEntries(
-    Object.keys(PLANNING_BUCKETS).map((key) => [
-      key,
-      scoped.filter((t) => planningBucket(t, period) === key).length,
-    ]),
-  );
+  const inScope = monthFilter === "scope";
+  const monthTasks = inScope
+    ? scoped
+    : tasks.filter((task) => monthFilter === "all" || task.month === Number(monthFilter));
+  // Within one chosen month "carried over" has no meaning, so an open task is judged on its status.
+  const countBucket = (task) =>
+    inScope
+      ? planningBucket(task, period)
+      : task.closed
+        ? "done"
+        : task.status
+          ? "open"
+          : "unstarted";
+  const tiles = inScope
+    ? [
+        ["carried", FiClock],
+        ["open", FiCheck],
+        ["unstarted", FiAlertCircle],
+        ["done", FiFlag],
+      ]
+    : [
+        ["open", FiCheck],
+        ["unstarted", FiAlertCircle],
+        ["done", FiFlag],
+      ];
   const byTeam = config.teams.length > 0;
   const groups = planningGroups(scoped, config.teams);
   const carriedOf = (tasks) => tasks.filter((t) => planningBucket(t, period) === "carried").length;
@@ -149,21 +168,24 @@ export default function Planning() {
   for (const task of scoped)
     if (!task.closed) openCount.set(task.person, (openCount.get(task.person) || 0) + 1);
   const rank = (person) => (person ? -(openCount.get(person) || 0) : 1);
-  const visibleTasks = (
-    monthFilter === "scope"
-      ? scoped
-      : tasks.filter((task) => monthFilter === "all" || task.month === Number(monthFilter))
-  )
-    .filter((task) => {
-      const bucket = planningBucket(task, period);
-      return (
-        (!selected || selected.matches(task)) &&
-        (filter === "all" || (filter === "open" ? !task.closed : bucket === filter)) &&
-        `${task.title} ${task.person} ${task.comment}`
-          .toLowerCase()
-          .includes(search.trim().toLowerCase())
-      );
-    })
+  const countedTasks = monthTasks.filter(
+    (task) =>
+      (!selected || selected.matches(task)) &&
+      `${task.title} ${task.person} ${task.comment}`
+        .toLowerCase()
+        .includes(search.trim().toLowerCase()),
+  );
+  const counts = Object.fromEntries(
+    Object.keys(PLANNING_BUCKETS).map((key) => [
+      key,
+      countedTasks.filter((t) => countBucket(t) === key).length,
+    ]),
+  );
+  const visibleTasks = countedTasks
+    .filter(
+      (task) =>
+        filter === "all" || (filter === "open" ? !task.closed : countBucket(task) === filter),
+    )
     .sort(
       // Same order as the digest: busiest person first, then that person's oldest work first.
       (a, b) =>
@@ -264,21 +286,12 @@ export default function Planning() {
             </div>
             {tab === "tasks" && (
               <section id="planning-tasks" role="tabpanel" aria-labelledby="tab-tasks">
-                <div className="planning-metrics">
-                  {[
-                    ["carried", FiClock],
-                    ["open", FiCheck],
-                    ["unstarted", FiAlertCircle],
-                    ["done", FiFlag],
-                  ].map(([key, Icon]) => (
+                <div className={`planning-metrics${inScope ? "" : " is-month"}`}>
+                  {tiles.map(([key, Icon]) => (
                     <button
                       key={key}
                       className={`planning-metric ${key}${filter === key ? " is-selected" : ""}`}
-                      onClick={() => {
-                        setFilter(key);
-                        setMonthFilter("scope");
-                        setTab("tasks");
-                      }}
+                      onClick={() => setFilter(filter === key ? "all" : key)}
                     >
                       <span className="planning-metric-icon">
                         <Icon aria-hidden="true" />
@@ -286,8 +299,8 @@ export default function Planning() {
                       <span>{PLANNING_BUCKETS[key]}</span>
                       <strong>{data ? counts[key] : "—"}</strong>
                       <small>
-                        {data && scoped.length
-                          ? `${Math.round((counts[key] / scoped.length) * 100)}% of ${scoped.length}`
+                        {data && countedTasks.length
+                          ? `${Math.round((counts[key] / countedTasks.length) * 100)}% of ${countedTasks.length}`
                           : "no data yet"}
                       </small>
                     </button>
@@ -434,7 +447,7 @@ export default function Planning() {
                         </thead>
                         <tbody>
                           {visibleTasks.map((task) => {
-                            const bucket = planningBucket(task, period);
+                            const bucket = countBucket(task);
                             const open = expanded === task.id;
                             return (
                               <tr
