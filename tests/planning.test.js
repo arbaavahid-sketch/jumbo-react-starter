@@ -232,6 +232,9 @@ const sheets = () => [
       ["Ulyana", "Boosters + Europe truck", "in process", ""],
       ["Ulyana", "New logistics manager", "", ""],
       ["Pouria", "Import permission", "", ""],
+      ["Fatima", "Tidying up the office", "", "Done"],
+      ["Samira", "Meeting with Ms. Nabati", "", "in process"],
+      ["Samira", "Update price list", "", "Prices are updated"],
     ],
   },
   { name: "Oct", rows: [HEADER, ["Ulyana", "Plan Q4 logistics", "in process", ""]] },
@@ -299,7 +302,7 @@ describe("workbook parsing", () => {
   it("reads people, header-less rows and milestones; merges name variants to the common spelling", () => {
     const data = parsePlanningWorkbook(sheets());
     expect(data.months).toEqual([7, 8, 9, 10]);
-    expect(data.tasks).toHaveLength(16);
+    expect(data.tasks).toHaveLength(19);
     const shared = data.tasks.find((t) => t.title.startsWith("Supplier relationship"));
     expect(shared.people).toEqual(["Azat", "Ulyana", "Mostafa"]);
     expect(shared.teams).toEqual([]);
@@ -308,11 +311,12 @@ describe("workbook parsing", () => {
     expect(data.tasks.some((t) => t.title === "Actions")).toBe(false);
     expect(data.people.map((p) => `${p.name}:${p.count}`)).toEqual([
       "Ulyana:5",
+      "Fatima:3",
       "Mostafa:3",
       "Azat:2",
       "Deniz:2",
-      "Fatima:2",
       "Pooria:2",
+      "Samira:2",
       "Mohsen:1",
     ]);
     expect(data.people.find((p) => p.name === "Ulyana").variants.sort()).toEqual([
@@ -328,6 +332,19 @@ describe("workbook parsing", () => {
       { month: 8, title: "Oil Show participate", status: "in process" },
       { month: 8, title: "Catalyst contract", status: "" },
     ]);
+    // "Done" / "in process" written in the Comments column count as the status.
+    expect(data.tasks.find((t) => t.title.startsWith("Tidying"))).toMatchObject({
+      status: "Done",
+      closed: true,
+    });
+    expect(data.tasks.find((t) => t.title.startsWith("Update price"))).toMatchObject({
+      status: "",
+      closed: false,
+    });
+    expect(data.tasks.find((t) => t.title.startsWith("Meeting with"))).toMatchObject({
+      status: "in process",
+      closed: false,
+    });
     expect(() => parsePlanningWorkbook([{ name: "Sheet1", rows: [] }])).toThrow("No monthly sheet");
   });
   it("assigns optional teams by name variant", () => {
@@ -359,8 +376,11 @@ describe("workbook parsing", () => {
       "Sept:9": "open",
       "Sept:10": "unstarted",
       "Sept:11": "unstarted",
+      "Sept:12": "done",
+      "Sept:13": "open",
+      "Sept:14": "unstarted",
     });
-    expect(planningScope(data.tasks, period(), 0)).toHaveLength(9);
+    expect(planningScope(data.tasks, period(), 0)).toHaveLength(12);
     expect(
       planningBucket(
         data.tasks.find((t) => t.sheet === "Oct"),
@@ -374,6 +394,7 @@ describe("workbook parsing", () => {
       "Mostafa:3",
       "Azat:2",
       "Pooria:2",
+      "Samira:2",
       "Fatima:1",
       "Mohsen:1",
       "Unassigned:1",
@@ -400,7 +421,7 @@ describe("workbook parsing", () => {
     );
     expect(byTeam.text).toContain("Supply — 5 open tasks");
     expect(byTeam.text).toContain("Sales — 0 open tasks\nNo open tasks.");
-    expect(byTeam.text).toContain("Unassigned — 8 open tasks");
+    expect(byTeam.text).toContain("Unassigned — 10 open tasks");
     expect(planningDigest({}, null, SEPT).text).toContain("has not been read yet");
   });
 });
@@ -500,7 +521,7 @@ describe("Google Drive reading and the daily email", () => {
       name: "Planning 2026.xlsx",
       url: "https://drive.google.com/file/d/file1/view",
     });
-    expect(result.data.tasks).toHaveLength(16);
+    expect(result.data.tasks).toHaveLength(19);
     expect(result.data.people[0].name).toBe("Ulyana");
     const list = calls.find((c) => c.url.startsWith("https://www.googleapis.com/drive/v3/files?"));
     const q = new URL(list.url).searchParams.get("q");
