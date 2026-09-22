@@ -280,9 +280,16 @@ export default function Planning() {
                         setTab("tasks");
                       }}
                     >
-                      <Icon aria-hidden="true" />
+                      <span className="planning-metric-icon">
+                        <Icon aria-hidden="true" />
+                      </span>
                       <span>{PLANNING_BUCKETS[key]}</span>
                       <strong>{data ? counts[key] : "—"}</strong>
+                      <small>
+                        {data && scoped.length
+                          ? `${Math.round((counts[key] / scoped.length) * 100)}% of ${scoped.length}`
+                          : "no data yet"}
+                      </small>
                     </button>
                   ))}
                 </div>
@@ -435,9 +442,23 @@ export default function Planning() {
                                 className={open ? "is-expanded" : ""}
                                 onClick={() => setExpanded(open ? null : task.id)}
                               >
-                                <td>
-                                  <strong>{task.person || UNASSIGNED}</strong>
-                                  {byTeam && <small>{task.teams.join(", ")}</small>}
+                                <td className="planning-person">
+                                  <span
+                                    className={`planning-avatar planning-brand-${
+                                      Math.max(
+                                        0,
+                                        cards.findIndex(
+                                          (c) => c.id === (task.person || UNASSIGNED),
+                                        ),
+                                      ) % 8
+                                    }`}
+                                  >
+                                    {initials(task.person || UNASSIGNED)}
+                                  </span>
+                                  <span>
+                                    <strong>{task.person || UNASSIGNED}</strong>
+                                    {byTeam && <small>{task.teams.join(", ")}</small>}
+                                  </span>
                                 </td>
                                 <td className="planning-text">
                                   {open ? task.title : firstLine(task.title)}
@@ -458,7 +479,11 @@ export default function Planning() {
                                 <td className="planning-text">
                                   {open ? task.comment : firstLine(task.comment)}
                                 </td>
-                                <td>{PLANNING_MONTHS[task.month].slice(0, 3)}</td>
+                                <td>
+                                  <span className="planning-month-pill">
+                                    {PLANNING_MONTHS[task.month].slice(0, 3)}
+                                  </span>
+                                </td>
                               </tr>
                             );
                           })}
