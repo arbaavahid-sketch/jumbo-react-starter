@@ -1,5 +1,37 @@
 This is a Next.js dashboard project.
 
+## Planning
+
+`/planning` reads the yearly planning workbook (`Planning 2026.xlsx`: one sheet per month with
+`Responsible person | Actions | Status | Comments`, plus `General milestones`) straight from Google
+Drive and emails a management digest every morning at 07:00 Tehran. Nothing is entered in the
+dashboard; the whole setup is environment variables.
+
+1. Create a Google Cloud service account (Drive API enabled) and share the planning folder — or just the
+   workbook — with its e-mail address as **Viewer**. That is the only "access" step.
+2. Set on the server (Vercel → Environment Variables):
+
+   | Variable                                                        | Purpose                                                                                                                                                           |
+   | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`            | Service-account credentials (`private_key` from the JSON key; `                                                                                                   |
+   | ` line breaks are fine).                                        |
+   | `PLANNING_DRIVE_FOLDER_ID`                                      | Folder that holds one file per year named `Planning {YYYY}` (`.xlsx` or Google Sheet). Or set `PLANNING_FILE_ID` to pin a single file.                            |
+   | `PLANNING_DIGEST_TO`                                            | Digest recipients, comma-separated.                                                                                                                               |
+   | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | Any SMTP sender (Gmail: `smtp.gmail.com`, 587, an App Password).                                                                                                  |
+   | `CRON_SECRET`                                                   | Random string; Vercel Cron sends it as `Authorization: Bearer …` to `/api/cron/planning-digest` (schedule in `vercel.json`, 03:30 UTC = 07:00 Tehran, every day). |
+   | `PLANNING_TEAMS` (optional)                                     | `Supply=Azat,Mostafa;Logistics=Ulyana` groups the digest by team; without it the digest is grouped by person.                                                     |
+   | `PLANNING_LOOKBACK_MONTHS` (optional)                           | How many earlier months' open work is carried over (default 1).                                                                                                   |
+   | `PLANNING_FILE_PATTERN`, `PLANNING_CLOSED_STATUSES` (optional)  | Yearly file name pattern (default `Planning {YYYY}`) and the status values that count as closed.                                                                  |
+
+Month sheets are matched by their first three letters (`Feb`, `Sept`, `Novemb`), a missing header row
+is tolerated, `Azat/Uliana/Mostafa` counts for all three people, and spelling variants of a name
+(Ulyana/Uliana, Pooria/Pouria/Pooriya) are merged automatically. A task is closed when its status
+starts with done / cancel / moved / postponed / not relevant; blank, "in process", "not done" and
+"partially done" stay open. The digest lists the month's milestones, then every open action per
+person with status and latest comment, flagging work carried over from the previous month. If Drive
+cannot be read the digest is skipped for that day (never stale data) and the page shows the last good
+read with a warning. "Send now" on the Daily digest tab sends immediately.
+
 ## Offers Sent refreshes
 
 The Offers Sent source sheet stores `Record ID` and `Added At` in columns J/K,

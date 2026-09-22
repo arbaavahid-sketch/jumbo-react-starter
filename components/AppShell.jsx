@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   FiActivity,
   FiBarChart2,
+  FiCalendar,
   FiChevronDown,
   FiClock,
   FiGrid,
@@ -24,6 +25,7 @@ const mainLinks = [
   { href: "/admin", label: "Management", icon: FiGrid, exact: true },
   { href: "/technical", label: "Technical", icon: FiActivity },
   { href: "/supply", label: "Supply", icon: FiPackage },
+  { href: "/planning", label: "Planning", icon: FiCalendar },
 ];
 
 const groupLinks = [

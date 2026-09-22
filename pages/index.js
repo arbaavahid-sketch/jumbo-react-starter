@@ -5,6 +5,7 @@ import {
   FiActivity,
   FiArrowRight,
   FiBarChart2,
+  FiCalendar,
   FiCheckCircle,
   FiClock,
   FiGrid,
@@ -16,6 +17,14 @@ import {
 import { fetchJson } from "../lib/fetch-json";
 
 const sections = [
+  {
+    href: "/planning",
+    eyebrow: "Team planning",
+    title: "Planning",
+    description: "Monthly team plans, task deadlines and the daily management digest.",
+    icon: FiCalendar,
+    tone: "teal",
+  },
   {
     href: "/admin",
     eyebrow: "Management",

@@ -10,6 +10,8 @@ export function proxy(req) {
     pathname === "/login" ||
     pathname === "/api/login" ||
     pathname === "/favicon.ico" ||
+    // Cron routes verify their own bearer secret (Vercel Cron has no session cookie).
+    pathname.startsWith("/api/cron/") ||
     // --- مسیرهای لینک عمومی ---
     pathname.startsWith("/share/") ||
     // --- APIهای لازم برای داشبورد آزاد ---
@@ -21,7 +23,8 @@ export function proxy(req) {
 
   const slug = req.nextUrl.searchParams.get("share");
   if (pathname.startsWith("/api/") && slug !== null) {
-    if (req.method === "GET" && canShareRead(shareScope(slug), pathname)) return NextResponse.next();
+    if (req.method === "GET" && canShareRead(shareScope(slug), pathname))
+      return NextResponse.next();
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   // --- مسیرهای محافظت‌شده ---
@@ -30,7 +33,8 @@ export function proxy(req) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/api/")) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (pathname.startsWith("/api/"))
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const loginUrl = new URL("/login", req.url);
   loginUrl.searchParams.set("next", pathname + search);
   return NextResponse.redirect(loginUrl);

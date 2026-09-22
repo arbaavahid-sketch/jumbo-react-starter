@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { shareMiddleware } from "../lib/share-client";
 import AppShell from "../components/AppShell";
 import "../styles/globals.css";
+import "../styles/planning.css";
 
 export default function MyApp({ Component, pageProps }) {
   const swrConfig = useMemo(() => ({ use: [shareMiddleware(pageProps.slug)] }), [pageProps.slug]);
