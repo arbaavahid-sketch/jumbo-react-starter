@@ -163,6 +163,7 @@ export default function Planning() {
   const money = (value) => formatMoney(value, plan?.currency || "");
   const thisMonthPlan = plan?.monthly.find((m) => m.month === period.month);
   const maxMonthly = plan ? Math.max(...plan.monthly.map((m) => m.planned || 0), 1) : 1;
+  const hasActual = Boolean(plan?.monthly.some((m) => m.actual));
   const ready = status.drive && status.mail;
 
   return (
@@ -503,12 +504,17 @@ export default function Planning() {
                     </div>
                     <div className="planning-sales-grid">
                       <div className="planning-panel">
-                        <h2>Sales prediction by month</h2>
-                        <ul className="planning-bars">
+                        <div className="planning-toolbar">
+                          <h2>Sales prediction by month</h2>
+                          {!hasActual && (
+                            <span className="planning-badge">actual not reported</span>
+                          )}
+                        </div>
+                        <ul className={`planning-bars${hasActual ? " has-actual" : ""}`}>
                           {plan.monthly.map((m) => (
                             <li
                               key={m.month}
-                              className={m.month === period.month ? "is-current" : ""}
+                              className={`${m.month === period.month ? "is-current" : ""}${m.month < period.month ? " is-past" : ""}`}
                             >
                               <span>{PLANNING_MONTHS[m.month].slice(0, 3)}</span>
                               <div>
@@ -518,7 +524,7 @@ export default function Planning() {
                                 ) : null}
                               </div>
                               <strong>{money(m.planned)}</strong>
-                              <small>{m.actual ? money(m.actual) : "—"}</small>
+                              {hasActual && <small>{m.actual ? money(m.actual) : "—"}</small>}
                             </li>
                           ))}
                         </ul>
@@ -536,20 +542,31 @@ export default function Planning() {
                       </div>
                       <div className="planning-panel">
                         <h2>Yearly target by brand</h2>
-                        <table className="planning-table planning-compact">
-                          <tbody>
-                            {plan.targets.map((t) => (
-                              <tr key={t.name}>
-                                <td>{t.name}</td>
-                                <td className="planning-num">{money(t.amount)}</td>
-                              </tr>
-                            ))}
-                            <tr className="planning-total">
-                              <td>Total</td>
-                              <td className="planning-num">{money(plan.targetsTotal)}</td>
-                            </tr>
-                          </tbody>
-                        </table>
+                        <ul className="planning-brand-bars">
+                          {[...plan.targets]
+                            .map((t, i) => ({ ...t, tone: i % 8 }))
+                            .sort((x, y) => (y.amount || 0) - (x.amount || 0))
+                            .map((t) => {
+                              const base = plan.targetsTotal || 1;
+                              const share = ((t.amount || 0) / base) * 100;
+                              return (
+                                <li key={t.name} className={`planning-brand-${t.tone}`}>
+                                  <span>{t.name}</span>
+                                  <div>
+                                    <i style={{ width: `${share}%` }} />
+                                  </div>
+                                  <em>{Math.round(share)}%</em>
+                                  <b>{money(t.amount)}</b>
+                                </li>
+                              );
+                            })}
+                          <li className="planning-brand-total">
+                            <span>Total</span>
+                            <div />
+                            <em />
+                            <b>{money(plan.targetsTotal)}</b>
+                          </li>
+                        </ul>
                         {plan.priorities.length > 0 && (
                           <>
                             <h2>Monthly priorities</h2>
