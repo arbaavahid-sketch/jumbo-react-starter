@@ -645,10 +645,32 @@ export default function Planning() {
                             <table className="planning-table planning-compact planning-half">
                               <tbody>
                                 {plan.extra.map((e, i) => (
-                                  <tr key={i}>
-                                    <td>{e.name}</td>
-                                    <td className="planning-num">{money(e.amount)}</td>
-                                  </tr>
+                                  <Fragment key={i}>
+                                    <tr
+                                      className={
+                                        e.total
+                                          ? "planning-total"
+                                          : e.children.length
+                                            ? "planning-heading"
+                                            : ""
+                                      }
+                                    >
+                                      <td>{e.name}</td>
+                                      <td className="planning-num">{money(e.amount)}</td>
+                                    </tr>
+                                    {e.children.map((c) => {
+                                      const gi = plan.groups.findIndex((g) => g.name === c.name);
+                                      return (
+                                        <tr
+                                          key={c.name}
+                                          className={`planning-child${gi >= 0 ? ` planning-tone-${gi % 6}` : ""}`}
+                                        >
+                                          <td>{c.name}</td>
+                                          <td className="planning-num">{money(c.amount)}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </Fragment>
                                 ))}
                               </tbody>
                             </table>

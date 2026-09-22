@@ -504,6 +504,17 @@ tr.planning-total[class*="planning-tone-"] td {
   font-size: 12px;
   border-left: 4px solid var(--tone-strong);
 }
+.planning-heading td {
+  font-weight: 600;
+  padding-top: 12px;
+}
+.planning-child td:first-child {
+  padding-left: 28px;
+  color: #526579;
+}
+.planning-child td {
+  border-bottom-color: #f1f5f9;
+}
 .planning-total td {
   font-weight: 600;
   background: #fafcfe;

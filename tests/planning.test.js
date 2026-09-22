@@ -244,6 +244,9 @@ const sheets = () => [
       ["Total", "€1,300,000", "€273,000", "€220,350", "€403,650", "€403,000"],
       [],
       ["Big Lab Projects", "€2,000,000"],
+      ["Group A", "€1,500,000"],
+      ["Group C", "€500,000"],
+      ["Total sales for 2026", "€2,300,000"],
       ["Export team", "€300,000"],
     ],
   },
@@ -430,8 +433,17 @@ describe("workbook parsing", () => {
     expect(plan.groups[0].people[1].actual).toBeNull();
     expect(plan.groupsTotal.target).toBe(1300000);
     expect(plan.extra).toEqual([
-      { name: "Big Lab Projects", amount: 2000000 },
-      { name: "Export team", amount: 300000 },
+      {
+        name: "Big Lab Projects",
+        amount: 2000000,
+        total: false,
+        children: [
+          { name: "Group A", amount: 1500000 },
+          { name: "Group C", amount: 500000 },
+        ],
+      },
+      { name: "Total sales for 2026", amount: 2300000, total: true, children: [] },
+      { name: "Export team", amount: 300000, total: false, children: [] },
     ]);
     expect(plan.warnings).toEqual([]);
     expect(parseSalesPlan([["Milestones"], ["x"]])).toBeNull();
