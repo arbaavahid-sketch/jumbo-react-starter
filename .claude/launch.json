@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "planning-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "3107"],
+      "port": 3107,
+      "env": {
+        "LOGIN_USER": "planning-preview",
+        "LOGIN_PASS": "planning-local-review",
+        "AUTH_SECRET": "planning-local-review-secret-0123456789abcdef0123456789abcdef"
+      }
+    }
+  ]
+}
