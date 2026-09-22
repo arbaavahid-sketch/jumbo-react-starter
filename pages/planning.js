@@ -227,28 +227,6 @@ export default function Planning() {
                 </div>
               </div>
             )}
-            <div className="planning-metrics">
-              {[
-                ["carried", FiClock],
-                ["open", FiCheck],
-                ["unstarted", FiAlertCircle],
-                ["done", FiFlag],
-              ].map(([key, Icon]) => (
-                <button
-                  key={key}
-                  className={`planning-metric ${key}${filter === key && tab === "tasks" ? " is-selected" : ""}`}
-                  onClick={() => {
-                    setFilter(key);
-                    setMonthFilter("scope");
-                    setTab("tasks");
-                  }}
-                >
-                  <Icon aria-hidden="true" />
-                  <span>{PLANNING_BUCKETS[key]}</span>
-                  <strong>{data ? counts[key] : "—"}</strong>
-                </button>
-              ))}
-            </div>
             <div className="planning-tabbar" role="tablist" aria-label="Planning sections">
               {[
                 ["tasks", "Actions", FiCalendar],
@@ -270,6 +248,28 @@ export default function Planning() {
             </div>
             {tab === "tasks" && (
               <section id="planning-tasks" role="tabpanel" aria-labelledby="tab-tasks">
+                <div className="planning-metrics">
+                  {[
+                    ["carried", FiClock],
+                    ["open", FiCheck],
+                    ["unstarted", FiAlertCircle],
+                    ["done", FiFlag],
+                  ].map(([key, Icon]) => (
+                    <button
+                      key={key}
+                      className={`planning-metric ${key}${filter === key ? " is-selected" : ""}`}
+                      onClick={() => {
+                        setFilter(key);
+                        setMonthFilter("scope");
+                        setTab("tasks");
+                      }}
+                    >
+                      <Icon aria-hidden="true" />
+                      <span>{PLANNING_BUCKETS[key]}</span>
+                      <strong>{data ? counts[key] : "—"}</strong>
+                    </button>
+                  ))}
+                </div>
                 {milestones.length > 0 && (
                   <div className="planning-milestones">
                     <strong>

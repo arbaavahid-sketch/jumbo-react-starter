@@ -97,7 +97,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin: 24px 0;
+  margin: 0 0 24px;
 }
 .planning-page .planning-metric {
   display: grid;
@@ -136,7 +136,7 @@
   display: flex;
   gap: 8px;
   border-bottom: 1px solid #dce5ed;
-  margin-bottom: 24px;
+  margin: 24px 0;
   padding-bottom: 12px;
   overflow-x: auto;
 }
@@ -372,6 +372,9 @@
   cursor: default;
   grid-template-columns: 1fr;
   align-content: start;
+  border: 1px solid #dce5ed;
+  border-radius: 16px;
+  background: white;
 }
 .planning-metrics-sales .planning-metric strong {
   font-size: 26px;
