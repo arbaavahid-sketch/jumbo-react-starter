@@ -70,7 +70,7 @@ Set `LOGIN_USER`, `LOGIN_PASS`, and `AUTH_SECRET` in the server environment befo
 
 Signed login sessions expire after eight hours. Changing the credentials or secret invalidates existing sessions. Older unsigned cookies require signing in again.
 
-Existing `/share/` links grant read access to the corresponding dashboard. Treat those links as access credentials. API requests from these pages carry a `share` query parameter; group responses contain only that group's records. Technical links expose the technical queue and technical message; supply links expose supply data and the supply message. Unassigned logistics records are excluded from public group responses. Signed-in dashboards retain full access. Public group comparisons now contain only the selected group.
+Existing `/share/` links grant read access to the corresponding dashboard. Treat those links as access credentials. API requests from these pages carry a `share` query parameter; group responses contain that group's records plus the common LOGISTIC AA board. Technical links expose the technical queue and technical message; supply links expose supply data and the supply message. Signed-in dashboards retain full access. Public group comparisons contain only the selected group. Public and signed-in group pages use the same dashboard component for consistent styling, tables and view settings; event slideshows remain available only to signed-in viewers.
 
 Before release, verify login and each public dashboard with the production environment configured. Authentication protects this application's endpoints; it does not change sharing permissions on the source Google Sheets or external Drive links.
 

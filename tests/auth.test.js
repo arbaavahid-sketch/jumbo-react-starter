@@ -85,16 +85,20 @@ describe("API access boundaries", () => {
     expect(proxy(request(`/api/data.test?share=${slug}`)).status).toBe(401);
     expect(proxy(request(`/api/supply?share=${slug}`)).status).toBe(401);
   });
-  it("removes other groups, unowned logistics, and unknown fields from public responses", () => {
+  it("shares the logistics board while removing other groups and unknown fields", () => {
     const payload = { groups: [{ key: "A" }, { key: "B" }], weekly_reports: [{ group: "A" }, { group: "B" }],
       members: { A: [1], B: [2] }, latest: { A: {}, B: {} }, ceo_messages: { A: "a", B: "b", TECH: "t", SUPPLY: "s" },
-      group_offers: [{ group_key: "A" }, { group_key: "B" }], logistic_aa: [{ secret: true }], internal: "private", technical_queue: [1] };
+      group_offers: [{ group_key: "A" }, { group_key: "B" }], logistic_aa: [{ center: "Europe Truck 22", deal_no: "7686" }], internal: "private", technical_queue: [1] };
     const result = scopePayload(payload, "A");
     expect(result.groups).toEqual([{ key: "A" }]);
     expect(result.weekly_reports).toEqual([{ group: "A" }]);
     expect(result.members).toEqual({ A: [1] });
     expect(result.group_offers).toEqual([{ group_key: "A" }]);
-    expect(result.logistic_aa).toEqual([]);
+    for (const group of ["A", "B", "C"]) {
+      expect(scopePayload(payload, group).logistic_aa).toEqual(payload.logistic_aa);
+    }
+    expect(scopePayload({}, "A").logistic_aa).toEqual([]);
+    expect(scopePayload(payload, "UNKNOWN")).toEqual({});
     expect(result.internal).toBeUndefined();
     expect(result.technical_queue).toBeUndefined();
     expect(scopePayload(payload, "SUPPLY")).toEqual({ ceo_messages: { SUPPLY: "s" } });
